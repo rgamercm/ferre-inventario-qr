@@ -45,6 +45,18 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+/* Ocultar barra de scroll en elementos táctiles móviles */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+
 /* Global Category Tabs (Barra Superior de Evaluación) */
 .category-tab-active {
   background: var(--c-crimson) !important;
@@ -137,56 +149,57 @@ body {
          ======================================================== -->
     <div id="viewMobileApp" class="w-full sm:max-w-md bg-white sm:rounded-3xl sm:shadow-2xl sm:border sm:border-slate-200/80 overflow-hidden flex flex-col min-h-screen sm:min-h-[740px] relative animate-fade-in">
       
-      <!-- Barra superior nativa de la App -->
-      <div id="appTopBar" class="bg-[#2A363B] text-white px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-40 border-b border-slate-700/40">
-        <div class="flex items-center gap-2.5">
-          <!-- Botón Volver Universal -->
-          <button id="globalBackBtn" onclick="navigateBack()" class="hidden flex items-center gap-1 text-xs font-bold bg-[#1f282c] hover:bg-[#E84A5F] text-white px-2.5 py-1.5 rounded-lg transition-all shadow-sm">
-            <span>←</span>
-            <span>Volver</span>
-          </button>
-          <div class="flex items-center gap-2">
-            <span id="screenIconHeader" class="text-base">🏪</span>
-            <span id="screenTitleHeader" class="font-bold text-sm tracking-tight">FerreInventario</span>
+      <!-- Encabezado Móvil Nativo Fijo (Fila 1: App Header + Fila 2: Ticker BCV) -->
+      <div id="appStickyHeader" class="sticky top-0 z-40 shadow-xs flex flex-col select-none">
+        <!-- Fila 1: Barra Superior Principal de la App -->
+        <div id="appTopBar" class="bg-[#2A363B] text-white px-3.5 py-2.5 flex items-center justify-between border-b border-slate-700/60">
+          <div class="flex items-center gap-2 min-w-0">
+            <!-- Botón Volver Universal -->
+            <button id="globalBackBtn" onclick="navigateBack()" class="hidden flex items-center gap-1 text-[11px] font-bold bg-[#1f282c] hover:bg-[#E84A5F] active:scale-95 text-white px-2 py-1 rounded-lg transition-all shadow-xs shrink-0">
+              <span>←</span>
+              <span>Volver</span>
+            </button>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span id="screenIconHeader" class="text-base shrink-0">🏪</span>
+              <span id="screenTitleHeader" class="font-bold text-sm tracking-tight truncate">FerreInventario</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Campana de Notificaciones -->
+            <button onclick="openNotificationsModal()" class="relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Centro de Notificaciones">
+              <span class="text-base">🔔</span>
+              <span id="badgeCount" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-[#E84A5F] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">0</span>
+            </button>
+            <!-- Menú Drawer -->
+            <button onclick="toggleDrawer()" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Menú">
+              <span class="text-base">☰</span>
+            </button>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <!-- Campana de Notificaciones -->
-          <button onclick="openNotificationsModal()" class="relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-lg transition" title="Centro de Notificaciones">
-            <span class="text-base">🔔</span>
-            <span id="badgeCount" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-[#E84A5F] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">0</span>
-          </button>
-          <!-- Menú Drawer -->
-          <button onclick="toggleDrawer()" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 rounded-lg transition" title="Menú">
-            <span class="text-base">☰</span>
-          </button>
+        <!-- Fila 2: Ticker de Tasas Oficiales BCV (Diseñado Especialmente para Móviles, 100% Responsivo) -->
+        <div id="bcvTickerBar" class="bg-[#192226] text-white px-3 py-1 flex items-center justify-between text-[11px] border-b border-slate-800 shadow-2xs">
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar min-w-0 py-0.5">
+            <span class="flex items-center gap-1 font-bold text-[#FECEAB] shrink-0 text-[10px] tracking-wide">
+              <span>🏛️ BCV:</span>
+            </span>
+            <div class="flex items-center gap-2 font-mono font-bold text-[10px] sm:text-[11px] whitespace-nowrap">
+              <span class="text-slate-200 shrink-0">💵 <span id="bcvRateUsdText" class="text-[#99B898]">Bs. 918,77</span></span>
+              <span class="text-slate-500 shrink-0">|</span>
+              <span class="text-slate-300 shrink-0">💶 <span id="bcvRateEurText" class="text-[#FECEAB]">Bs. 1.009,07</span></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0 ml-1.5">
+            <button onclick="syncBcvRates()" class="px-2 py-0.5 rounded-lg bg-slate-700/90 hover:bg-[#E84A5F] active:scale-95 text-[10px] font-bold text-white transition flex items-center gap-1 shadow-2xs" title="Sincronizar en tiempo real con API oficial del BCV">
+              <span id="syncBcvSpinner">🔄</span>
+              <span class="text-[9.5px]">Sync</span>
+            </button>
+            <button onclick="openBcvRatesModal()" class="px-1.5 py-0.5 rounded-lg bg-slate-700/90 hover:bg-slate-600 active:scale-95 text-[10px] font-bold text-slate-300 transition" title="Ajustar tasas manualmente">
+              ✏️
+            </button>
+          </div>
         </div>
-
-      <!-- Ticker de Tasas Oficiales BCV (Sincronización en Vivo) -->
-      <div class="bg-[#1a2327] text-white px-3 py-1.5 flex items-center justify-between text-[11px] border-b border-slate-700/60 sticky top-[49px] z-30 shadow-xs">
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span class="flex items-center gap-1 font-bold text-[#FECEAB] shrink-0">
-            <span>🏛️ BCV:</span>
-          </span>
-          <span class="flex items-center gap-1 font-mono font-bold text-white shrink-0">
-            <span>💵 USD:</span> <span id="bcvRateUsdText" class="text-[#99B898]">Bs. 918.77</span>
-          </span>
-          <span class="text-slate-500">|</span>
-          <span class="flex items-center gap-1 font-mono font-bold text-slate-300 shrink-0">
-            <span>💶 EUR:</span> <span id="bcvRateEurText" class="text-[#FECEAB]">Bs. 1,009.07</span>
-          </span>
-        </div>
-        <div class="flex items-center gap-1 shrink-0 ml-1">
-          <button onclick="syncBcvRates()" class="px-2 py-0.5 rounded-lg bg-slate-700/80 hover:bg-[#E84A5F] text-[10px] font-bold text-white transition flex items-center gap-1 shadow-xs" title="Sincronizar en tiempo real con API oficial del BCV">
-            <span id="syncBcvSpinner">🔄</span>
-            <span class="hidden xs:inline">Sync</span>
-          </button>
-          <button onclick="openBcvRatesModal()" class="px-1.5 py-0.5 rounded-lg bg-slate-700/80 hover:bg-slate-600 text-[10px] font-bold text-slate-300 transition" title="Ajustar tasas manualmente">
-            ✏️
-          </button>
-        </div>
-      </div>
       </div>
 
       <!-- CUERPO DE PANTALLAS DE LA APP (SCROLLABLE) -->
@@ -797,7 +810,7 @@ body {
       </div> <!-- Fin cuerpo pantallas -->
 
       <!-- BARRA DE NAVEGACIÓN INFERIOR (BOTTOM NAV) NATIVA DE LA APP -->
-      <nav class="bg-white border-t border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-lg absolute bottom-0 inset-x-0 z-30">
+      <nav id="appBottomNav" class="bg-white border-t border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-lg absolute bottom-0 inset-x-0 z-30">
         <button onclick="navigateTo('screenDashboard')" id="navBtnDashboard" class="nav-btn flex flex-col items-center py-1 px-2 rounded-xl text-[#E84A5F] font-bold text-[10px] transition">
           <span class="text-lg">🏠</span>
           <span>Inicio</span>
@@ -1591,12 +1604,24 @@ body {
   }
 
   function updateAppHeader(screenId) {
+    const stickyHeader = document.getElementById('appStickyHeader');
+    const bottomNav = document.getElementById('appBottomNav') || document.querySelector('nav.absolute.bottom-0');
     const backBtn = document.getElementById('globalBackBtn');
     const titleEl = document.getElementById('screenTitleHeader');
     const iconEl = document.getElementById('screenIconHeader');
 
-    // El botón volver aparece en todas partes excepto en Dashboard, Splash y Login
-    if (screenId === 'screenDashboard' || screenId === 'screenSplash' || screenId === 'screenLogin') {
+    // En Splash y Login ocultamos encabezado y barra de navegación inferior para look nativo móvil
+    if (screenId === 'screenSplash' || screenId === 'screenLogin') {
+      if (stickyHeader) stickyHeader.classList.add('hidden');
+      if (bottomNav) bottomNav.classList.add('hidden');
+      return;
+    } else {
+      if (stickyHeader) stickyHeader.classList.remove('hidden');
+      if (bottomNav) bottomNav.classList.remove('hidden');
+    }
+
+    // El botón volver aparece en todas partes excepto en Dashboard
+    if (screenId === 'screenDashboard') {
       backBtn.classList.add('hidden');
     } else {
       backBtn.classList.remove('hidden');
