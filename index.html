@@ -293,28 +293,27 @@ body {
             </div>
           </div>
 
-          <!-- Gráfico Semanal de Movimientos (Dinámico e Interactivo) -->
+          <!-- Gráfico Semanal de Movimientos (Barras Dobles Comparativas: Entradas vs Salidas) -->
           <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex items-center justify-between mb-2">
               <div>
                 <h4 class="text-xs font-bold text-[#2A363B] flex items-center gap-1.5">
-                  <span>📈 Flujo de Movimientos Semanales</span>
+                  <span>📈 Flujo Diario: Entradas vs Salidas</span>
                 </h4>
-                <p class="text-[10px] text-slate-400">Entradas vs Salidas por día (Toca cualquier barra)</p>
+                <p class="text-[10px] text-slate-400">Toca cualquier día (ej: Martes) para ver el desglose detallado</p>
               </div>
-              <span id="chartWeeklyTotalBadge" class="text-[10px] font-extrabold text-[#99B898] bg-[#99B898]/15 px-2.5 py-1 rounded-full">119 mov</span>
+              <span id="chartWeeklyTotalBadge" class="text-[10px] font-black text-[#2A363B] bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">110 operaciones</span>
             </div>
 
-            <!-- Contenedor dinámico de barras con altura calculada en px -->
-            <div id="weeklyBarsContainer" class="flex items-end justify-between gap-1.5 h-32 pt-3 px-1 pb-1 border-b border-slate-100">
-              <!-- Inyectado dinámicamente con alturas visibles en px -->
+            <!-- Contenedor dinámico de barras dobles con altura en px -->
+            <div id="weeklyBarsContainer" class="flex items-end justify-between gap-1.5 h-36 pt-3 px-1 pb-1 border-b border-slate-100">
+              <!-- Renderizado dinámico con barras dobles (Verde = Entradas, Rojo = Salidas) -->
             </div>
 
-            <!-- Leyenda explicativa -->
-            <div class="flex justify-between items-center text-[10px] text-slate-500 mt-2.5 px-1">
-              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#99B898]"></span> Entradas (Stock +)</span>
-              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#E84A5F]"></span> Salidas (Ventas)</span>
-              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#FF847C]"></span> Ajustes Mixtos</span>
+            <!-- Leyenda explicativa clara y realista -->
+            <div class="flex justify-between items-center text-[10px] text-slate-600 mt-2.5 px-1 font-semibold">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-[#99B898] inline-block shadow-xs"></span> 📥 Entradas (Mercancía recibida)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-[#E84A5F] inline-block shadow-xs"></span> 📤 Salidas (Ventas / Despachos)</span>
             </div>
           </div>
 
@@ -690,6 +689,74 @@ body {
               </div>
               <span>›</span>
             </button>
+
+          </div>
+
+        </div>
+
+      
+        <!-- ===== PANTALLA: DETALLE DE MOVIMIENTOS DEL DÍA ===== -->
+        <div id="screenDayDetail" class="screen hidden p-4 space-y-4">
+          
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            
+            <!-- Encabezado del Día -->
+            <div class="flex items-start justify-between">
+              <div>
+                <span id="dayDetailBadge" class="text-[10px] font-bold text-[#E84A5F] bg-[#E84A5F]/10 px-2.5 py-0.5 rounded-full">
+                  Martes 17/11/2026
+                </span>
+                <h3 id="dayDetailTitle" class="text-sm font-black text-[#2A363B] mt-1">
+                  Flujo de Movimientos del Día
+                </h3>
+                <p class="text-[11px] text-slate-500">Historial de productos que entraron y salieron en este turno</p>
+              </div>
+              <button onclick="exportCurrentDayCSV()" class="px-2.5 py-1 bg-[#2A363B] hover:bg-black text-white text-[10px] font-bold rounded-lg shadow-sm transition flex items-center gap-1">
+                <span>📥 Descargar CSV</span>
+              </button>
+            </div>
+
+            <!-- Selector Rápido de Días -->
+            <div class="flex gap-1 overflow-x-auto pb-1 text-[11px] no-scrollbar">
+              <button onclick="selectDayDetailTab('Lun')" id="dayTabLun" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Lun (14)</button>
+              <button onclick="selectDayDetailTab('Mar')" id="dayTabMar" class="day-tab px-3 py-1 rounded-xl bg-[#2A363B] text-white font-bold whitespace-nowrap shadow-sm transition">Mar (19)</button>
+              <button onclick="selectDayDetailTab('Mié')" id="dayTabMié" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Mié (11)</button>
+              <button onclick="selectDayDetailTab('Jue')" id="dayTabJue" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Jue (28)</button>
+              <button onclick="selectDayDetailTab('Vie')" id="dayTabVie" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Vie (22)</button>
+              <button onclick="selectDayDetailTab('Sáb')" id="dayTabSáb" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Sáb (12)</button>
+              <button onclick="selectDayDetailTab('Dom')" id="dayTabDom" class="day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-bold whitespace-nowrap hover:bg-slate-200 transition">Dom (4)</button>
+            </div>
+
+            <!-- Resumen de Métricas del Día -->
+            <div class="grid grid-cols-3 gap-2 text-center text-xs py-2.5 bg-slate-50 rounded-xl border border-slate-100">
+              <div>
+                <span class="text-[10px] text-slate-400 block font-medium">Operaciones:</span>
+                <span id="dayMetricTotalOps" class="font-black text-[#2A363B] text-sm">19</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block font-medium">📥 Entradas:</span>
+                <span id="dayMetricEntradas" class="font-black text-[#99B898] text-sm">6 ops</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block font-medium">📤 Salidas:</span>
+                <span id="dayMetricSalidas" class="font-black text-[#E84A5F] text-sm">13 ops</span>
+              </div>
+            </div>
+
+            <!-- Filtros de Tipo y Búsqueda -->
+            <div class="space-y-2 pt-1">
+              <div class="flex gap-1.5 text-[11px]">
+                <button onclick="filterDayMovementsType('todos')" id="filterDayAll" class="px-2.5 py-1 rounded-lg bg-[#2A363B] text-white font-bold">Todos</button>
+                <button onclick="filterDayMovementsType('Entrada')" id="filterDayEntradas" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200">📥 Solo Entradas</button>
+                <button onclick="filterDayMovementsType('Salida')" id="filterDaySalidas" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200">📤 Solo Salidas</button>
+              </div>
+              <input type="text" id="daySearchInput" oninput="handleDaySearch(this.value)" placeholder="Buscar por producto, factura o ticket..." class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl outline-none bg-white">
+            </div>
+
+            <!-- Lista Cronológica de Transacciones del Día -->
+            <div id="dayMovementsListContainer" class="space-y-2 pt-1 max-h-[380px] overflow-y-auto pr-1">
+              <!-- Renderizado dinámico -->
+            </div>
 
           </div>
 
@@ -1384,6 +1451,7 @@ body {
       screenProducts: { title: 'Catálogo de Inventario', icon: '📦' },
       screenDetail: { title: 'Ficha de Producto', icon: '🔍' },
       screenReports: { title: 'Reportes & Exportación', icon: '📊' },
+      screenDayDetail: { title: 'Flujo Diario de Stock', icon: '📅' },
       screenProfile: { title: 'Perfil de Administrador', icon: '👤' }
     };
 
@@ -1450,68 +1518,394 @@ body {
   // ==========================================
   
   // ==========================================
-  // GRÁFICO DINÁMICO DE MOVIMIENTOS SEMANALES
+  // BASE DE DATOS CRONOLÓGICA DE MOVIMIENTOS DIARIOS
   // ==========================================
-  var weeklyMovementData = [
-    { day: 'Lun', entradas: 10, salidas: 4, color: '#99B898' },
-    { day: 'Mar', entradas: 6, salidas: 13, color: '#FF847C' },
-    { day: 'Mié', entradas: 8, salidas: 3, color: '#99B898' },
-    { day: 'Jue', entradas: 7, salidas: 21, color: '#E84A5F' },
-    { day: 'Vie', entradas: 9, salidas: 13, color: '#FF847C' },
-    { day: 'Sáb', entradas: 8, salidas: 4, color: '#FECEAB' },
-    { day: 'Dom', entradas: 2, salidas: 2, color: '#94A3B8' }
-  ];
+  var DAILY_MOVEMENTS_DB = {
+    Lun: {
+      date: 'Lunes 16/11/2026',
+      entradas: 10, salidas: 4,
+      records: [
+        { time: '08:15 AM', type: 'Entrada', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 15, doc: 'Factura Prov. #ST-9912', user: 'Roger García' },
+        { time: '08:45 AM', type: 'Entrada', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 30, doc: 'Factura Prov. #ST-9912', user: 'Roger García' },
+        { time: '09:20 AM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ticket Mostrador #1001', user: 'Roger García' },
+        { time: '10:00 AM', type: 'Entrada', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 200, doc: 'Guía Despacho #771', user: 'Roger García' },
+        { time: '10:30 AM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 25, doc: 'Ticket Mostrador #1002', user: 'Roger García' },
+        { time: '11:15 AM', type: 'Entrada', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 8, doc: 'Factura Prov. #MN-402', user: 'Roger García' },
+        { time: '11:45 AM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 3, doc: 'Ticket Mostrador #1003', user: 'Roger García' },
+        { time: '01:30 PM', type: 'Entrada', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 10, doc: 'Factura Prov. #ST-9920', user: 'Roger García' },
+        { time: '02:10 PM', type: 'Entrada', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 50, doc: 'Factura Prov. #TB-101', user: 'Roger García' },
+        { time: '03:00 PM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 5, doc: 'Ticket Mostrador #1004', user: 'Roger García' },
+        { time: '03:40 PM', type: 'Entrada', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 25, doc: 'Factura Prov. #BS-880', user: 'Roger García' },
+        { time: '04:15 PM', type: 'Entrada', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 18, doc: 'Factura Prov. #MN-402', user: 'Roger García' },
+        { time: '04:50 PM', type: 'Entrada', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 40, doc: 'Factura Prov. #TB-101', user: 'Roger García' },
+        { time: '05:20 PM', type: 'Entrada', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 3, doc: 'Factura Prov. #FJ-300', user: 'Roger García' }
+      ]
+    },
+    Mar: {
+      date: 'Martes 17/11/2026',
+      entradas: 6, salidas: 13,
+      records: [
+        { time: '08:05 AM', type: 'Entrada', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 10, doc: 'Factura Prov. #ST-9940', user: 'Roger García' },
+        { time: '08:30 AM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 4, doc: 'Ticket Mostrador #1005', user: 'Roger García' },
+        { time: '09:00 AM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 5, doc: 'Despacho Constructora Sol #V-301', user: 'Roger García' },
+        { time: '09:40 AM', type: 'Entrada', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 50, doc: 'Factura Prov. #TB-102', user: 'Roger García' },
+        { time: '10:15 AM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 3, doc: 'Ticket Mostrador #1006', user: 'Roger García' },
+        { time: '10:50 AM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 6, doc: 'Ticket Mostrador #1007', user: 'Roger García' },
+        { time: '11:20 AM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 50, doc: 'Residencias El Parque #V-302', user: 'Roger García' },
+        { time: '11:55 AM', type: 'Entrada', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 25, doc: 'Factura Prov. #BS-883', user: 'Roger García' },
+        { time: '01:10 PM', type: 'Salida', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 2, doc: 'Ticket Mostrador #1008', user: 'Roger García' },
+        { time: '01:45 PM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 2, doc: 'Ticket Mostrador #1009', user: 'Roger García' },
+        { time: '02:20 PM', type: 'Entrada', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 15, doc: 'Factura Prov. #MN-405', user: 'Roger García' },
+        { time: '02:50 PM', type: 'Salida', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 2, doc: 'Ticket Mostrador #1010', user: 'Roger García' },
+        { time: '03:15 PM', type: 'Salida', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 3, doc: 'Ticket Mostrador #1011', user: 'Roger García' },
+        { time: '03:45 PM', type: 'Salida', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 6, doc: 'Ticket Mostrador #1012', user: 'Roger García' },
+        { time: '04:10 PM', type: 'Entrada', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 5, doc: 'Factura Prov. #SD-110', user: 'Roger García' },
+        { time: '04:35 PM', type: 'Salida', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 4, doc: 'Ticket Mostrador #1013', user: 'Roger García' },
+        { time: '05:00 PM', type: 'Salida', code: 'FER-009', name: 'Interruptor Sencillo 10A', icon: '💡', qty: 8, doc: 'Ticket Mostrador #1014', user: 'Roger García' },
+        { time: '05:25 PM', type: 'Salida', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 1, doc: 'Ticket Mostrador #1015', user: 'Roger García' },
+        { time: '05:40 PM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 2, doc: 'Ticket Mostrador #1016', user: 'Roger García' }
+      ]
+    },
+    Mié: {
+      date: 'Miércoles 18/11/2026',
+      entradas: 8, salidas: 3,
+      records: [
+        { time: '08:30 AM', type: 'Entrada', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 10, doc: 'Factura Prov. #ST-9980', user: 'Roger García' },
+        { time: '09:15 AM', type: 'Entrada', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 20, doc: 'Factura Prov. #ST-9980', user: 'Roger García' },
+        { time: '10:00 AM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ticket Mostrador #1020', user: 'Roger García' },
+        { time: '10:45 AM', type: 'Entrada', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 150, doc: 'Guía Despacho #790', user: 'Roger García' },
+        { time: '11:30 AM', type: 'Entrada', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 12, doc: 'Factura Prov. #MN-410', user: 'Roger García' },
+        { time: '01:20 PM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 30, doc: 'Ticket Mostrador #1021', user: 'Roger García' },
+        { time: '02:15 PM', type: 'Entrada', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 40, doc: 'Factura Prov. #TB-105', user: 'Roger García' },
+        { time: '03:10 PM', type: 'Entrada', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 15, doc: 'Factura Prov. #BS-890', user: 'Roger García' },
+        { time: '03:50 PM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 4, doc: 'Ticket Mostrador #1022', user: 'Roger García' },
+        { time: '04:30 PM', type: 'Entrada', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 30, doc: 'Factura Prov. #TB-105', user: 'Roger García' },
+        { time: '05:00 PM', type: 'Entrada', code: 'FER-009', name: 'Interruptor Sencillo 10A', icon: '💡', qty: 20, doc: 'Factura Prov. #BT-200', user: 'Roger García' }
+      ]
+    },
+    Jue: {
+      date: 'Jueves 19/11/2026',
+      entradas: 7, salidas: 21,
+      records: [
+        { time: '08:00 AM', type: 'Entrada', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 25, doc: 'Factura Prov. #FJ-310', user: 'Roger García' },
+        { time: '08:20 AM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 4, doc: 'Despacho Taller Metalúrgico', user: 'Roger García' },
+        { time: '08:45 AM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 6, doc: 'Despacho Taller Metalúrgico', user: 'Roger García' },
+        { time: '09:10 AM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 80, doc: 'Obra Electrificación Centro', user: 'Roger García' },
+        { time: '09:35 AM', type: 'Entrada', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 15, doc: 'Factura Prov. #SD-115', user: 'Roger García' },
+        { time: '10:00 AM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 10, doc: 'Obra Remodelación Mall', user: 'Roger García' },
+        { time: '10:25 AM', type: 'Salida', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 4, doc: 'Ticket Mostrador #1030', user: 'Roger García' },
+        { time: '10:50 AM', type: 'Salida', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 6, doc: 'Ticket Mostrador #1031', user: 'Roger García' },
+        { time: '11:15 AM', type: 'Salida', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 3, doc: 'Ticket Mostrador #1032', user: 'Roger García' },
+        { time: '11:40 AM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 8, doc: 'Ticket Mostrador #1033', user: 'Roger García' },
+        { time: '12:05 PM', type: 'Entrada', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 12, doc: 'Factura Prov. #ST-9990', user: 'Roger García' },
+        { time: '01:30 PM', type: 'Salida', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 12, doc: 'Plomería Urgencias C.A.', user: 'Roger García' },
+        { time: '02:00 PM', type: 'Salida', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 5, doc: 'Ticket Mostrador #1035', user: 'Roger García' },
+        { time: '02:30 PM', type: 'Salida', code: 'FER-009', name: 'Interruptor Sencillo 10A', icon: '💡', qty: 10, doc: 'Ticket Mostrador #1036', user: 'Roger García' },
+        { time: '03:00 PM', type: 'Entrada', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 20, doc: 'Factura Prov. #MN-415', user: 'Roger García' },
+        { time: '03:25 PM', type: 'Salida', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 8, doc: 'Carpintería Moderna', user: 'Roger García' },
+        { time: '03:50 PM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 6, doc: 'Ticket Mostrador #1038', user: 'Roger García' },
+        { time: '04:15 PM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 45, doc: 'Ticket Mostrador #1039', user: 'Roger García' },
+        { time: '04:35 PM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 4, doc: 'Ticket Mostrador #1040', user: 'Roger García' },
+        { time: '04:55 PM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ticket Mostrador #1041', user: 'Roger García' },
+        { time: '05:10 PM', type: 'Entrada', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 25, doc: 'Factura Prov. #TB-110', user: 'Roger García' }
+      ]
+    },
+    Vie: {
+      date: 'Viernes 20/11/2026 (Hoy)',
+      entradas: 9, salidas: 13,
+      records: [
+        { time: '08:15 AM', type: 'Entrada', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 10, doc: 'Factura Prov. #ST-1001', user: 'Roger García' },
+        { time: '08:50 AM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 3, doc: 'Ticket Mostrador #1050', user: 'Roger García' },
+        { time: '09:20 AM', type: 'Entrada', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 8, doc: 'Factura Prov. #MN-420', user: 'Roger García' },
+        { time: '09:55 AM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 35, doc: 'Ticket Mostrador #1051', user: 'Roger García' },
+        { time: '10:30 AM', type: 'Entrada', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 30, doc: 'Factura Prov. #TB-115', user: 'Roger García' },
+        { time: '11:05 AM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 4, doc: 'Ticket Mostrador #1052', user: 'Roger García' },
+        { time: '11:40 AM', type: 'Entrada', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 15, doc: 'Factura Prov. #BS-895', user: 'Roger García' },
+        { time: '12:15 PM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ticket Mostrador #1053', user: 'Roger García' },
+        { time: '01:30 PM', type: 'Entrada', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 12, doc: 'Factura Prov. #MN-420', user: 'Roger García' },
+        { time: '02:00 PM', type: 'Salida', code: 'FER-005', name: 'Llave Ajustable 10 pulg', icon: '🔧', qty: 2, doc: 'Ticket Mostrador #1054', user: 'Roger García' },
+        { time: '02:40 PM', type: 'Entrada', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 20, doc: 'Factura Prov. #TB-115', user: 'Roger García' },
+        { time: '03:15 PM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 6, doc: 'Ticket Mostrador #1055', user: 'Roger García' },
+        { time: '03:50 PM', type: 'Entrada', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 10, doc: 'Factura Prov. #SD-120', user: 'Roger García' },
+        { time: '04:15 PM', type: 'Salida', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 3, doc: 'Ticket Mostrador #1056', user: 'Roger García' },
+        { time: '04:40 PM', type: 'Salida', code: 'FER-009', name: 'Interruptor Sencillo 10A', icon: '💡', qty: 5, doc: 'Ticket Mostrador #1057', user: 'Roger García' },
+        { time: '05:05 PM', type: 'Entrada', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 100, doc: 'Guía Despacho #805', user: 'Roger García' },
+        { time: '05:25 PM', type: 'Salida', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 2, doc: 'Ticket Mostrador #1058', user: 'Roger García' },
+        { time: '05:45 PM', type: 'Salida', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 4, doc: 'Ticket Mostrador #1059', user: 'Roger García' },
+        { time: '06:00 PM', type: 'Salida', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 8, doc: 'Ticket Mostrador #1060', user: 'Roger García' },
+        { time: '06:15 PM', type: 'Salida', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 5, doc: 'Ticket Mostrador #1061', user: 'Roger García' },
+        { time: '06:30 PM', type: 'Salida', code: 'FER-007', name: 'Tornillo Drywall 6x1', icon: '🔩', qty: 1, doc: 'Ticket Mostrador #1062', user: 'Roger García' },
+        { time: '06:45 PM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 2, doc: 'Ticket Mostrador #1063', user: 'Roger García' }
+      ]
+    },
+    Sáb: {
+      date: 'Sábado 21/11/2026',
+      entradas: 8, salidas: 4,
+      records: [
+        { time: '08:30 AM', type: 'Entrada', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 5, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '09:00 AM', type: 'Entrada', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 10, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '09:30 AM', type: 'Salida', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ticket Mostrador #1070', user: 'Roger García' },
+        { time: '10:00 AM', type: 'Entrada', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 20, doc: 'Factura Prov. #TB-120', user: 'Roger García' },
+        { time: '10:30 AM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 15, doc: 'Ticket Mostrador #1071', user: 'Roger García' },
+        { time: '11:00 AM', type: 'Entrada', code: 'FER-008', name: 'Broca concreto 1/2 pulg', icon: '⚙️', qty: 10, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '11:30 AM', type: 'Salida', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 2, doc: 'Ticket Mostrador #1072', user: 'Roger García' },
+        { time: '12:00 PM', type: 'Entrada', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 5, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '12:30 PM', type: 'Salida', code: 'FER-003', name: 'Pintura Blanca 1gal Montana', icon: '🎨', qty: 1, doc: 'Ticket Mostrador #1073', user: 'Roger García' },
+        { time: '01:00 PM', type: 'Entrada', code: 'FER-010', name: 'Rodillo para pintura 9 pulg', icon: '🖌️', qty: 8, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '01:30 PM', type: 'Entrada', code: 'FER-011', name: 'Tubo PVC 1/2 pulg (3m)', icon: '🪠', qty: 10, doc: 'Reposición Interna', user: 'Roger García' },
+        { time: '01:50 PM', type: 'Entrada', code: 'FER-012', name: 'Clavos de Acero 2 pulg', icon: '📌', qty: 5, doc: 'Reposición Interna', user: 'Roger García' }
+      ]
+    },
+    Dom: {
+      date: 'Domingo 22/11/2026',
+      entradas: 2, salidas: 2,
+      records: [
+        { time: '09:15 AM', type: 'Entrada', code: 'FER-001', name: 'Martillo Stanley 16oz', icon: '🔨', qty: 2, doc: 'Ajuste Guardia', user: 'Roger García' },
+        { time: '10:00 AM', type: 'Salida', code: 'FER-006', name: 'Cinta Teflón 3/4 pulg', icon: '🚿', qty: 2, doc: 'Ticket Urgencia Plomería', user: 'Roger García' },
+        { time: '11:30 AM', type: 'Entrada', code: 'FER-002', name: 'Destornillador Phillips #2', icon: '🪛', qty: 2, doc: 'Ajuste Guardia', user: 'Roger García' },
+        { time: '12:45 PM', type: 'Salida', code: 'FER-004', name: 'Cable #12 AWG (metro)', icon: '⚡', qty: 10, doc: 'Ticket Urgencia Eléctrica', user: 'Roger García' }
+      ]
+    }
+  };
 
+  var selectedDayKey = 'Mar';
+  var selectedDayFilter = 'todos';
+  var selectedDaySearch = '';
+
+  // RENDERIZADO DEL GRÁFICO CON BARRAS DOBLES (VERDE = ENTRADAS, ROJO = SALIDAS)
   function renderWeeklyChart() {
     var container = document.getElementById('weeklyBarsContainer');
     var badge = document.getElementById('chartWeeklyTotalBadge');
     if (!container) return;
 
+    var days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     var grandTotal = 0;
-    var maxDayTotal = 1;
-    for (var i = 0; i < weeklyMovementData.length; i++) {
-      var tot = weeklyMovementData[i].entradas + weeklyMovementData[i].salidas;
-      grandTotal += tot;
-      if (tot > maxDayTotal) maxDayTotal = tot;
-    }
+    var maxSingleVal = 1;
+
+    days.forEach(function(d) {
+      var data = DAILY_MOVEMENTS_DB[d];
+      if (data) {
+        var tot = data.entradas + data.salidas;
+        grandTotal += tot;
+        if (data.entradas > maxSingleVal) maxSingleVal = data.entradas;
+        if (data.salidas > maxSingleVal) maxSingleVal = data.salidas;
+      }
+    });
 
     if (badge) {
       badge.textContent = grandTotal + ' operaciones esta semana';
     }
 
-    var trackHeight = 76; // px de altura disponible para las barras
+    var trackHeight = 76; // px de altura disponible
 
     var html = '';
-    for (var idx = 0; idx < weeklyMovementData.length; idx++) {
-      var d = weeklyMovementData[idx];
+    days.forEach(function(dayKey) {
+      var d = DAILY_MOVEMENTS_DB[dayKey];
       var total = d.entradas + d.salidas;
-      var barHeightPx = Math.max(18, Math.round((total / maxDayTotal) * trackHeight));
 
-      var barColor = d.color;
-      if (d.salidas > d.entradas * 1.5) {
-        barColor = '#E84A5F';
-      } else if (d.entradas > d.salidas * 1.5) {
-        barColor = '#99B898';
-      } else {
-        barColor = '#FF847C';
-      }
+      // Alturas calculadas en píxeles para cada barra individual
+      var hEntrada = Math.max(8, Math.round((d.entradas / maxSingleVal) * trackHeight));
+      var hSalida = Math.max(8, Math.round((d.salidas / maxSingleVal) * trackHeight));
 
-      html += '<div onclick="showDayMovementDetail(' + idx + ')" class="flex-1 flex flex-col items-center justify-end h-full cursor-pointer group" title="' + d.day + ': ' + total + ' operaciones (' + d.entradas + ' entradas, ' + d.salidas + ' salidas)">' +
-        '<span class="text-[9px] font-extrabold text-[#2A363B] mb-1 group-hover:scale-125 transition-transform">' + total + '</span>' +
-        '<div class="w-full max-w-[28px] bg-slate-100 rounded-lg flex items-end justify-center p-0.5" style="height:' + trackHeight + 'px;">' +
-          '<div class="w-full rounded-md transition-all duration-300 group-hover:brightness-90 shadow-sm" style="height:' + barHeightPx + 'px; background-color:' + barColor + ';"></div>' +
+      html += '<div onclick="openDayDetailScreen(\'' + dayKey + '\')" class="flex-1 flex flex-col items-center justify-end h-full cursor-pointer group hover:bg-slate-50/80 p-1 rounded-xl transition" title="' + dayKey + ': ' + total + ' operaciones (' + d.entradas + ' entradas, ' + d.salidas + ' salidas) — Toca para ver detalle">' +
+        '<div class="flex items-center gap-1 mb-1">' +
+          '<span class="text-[9px] font-extrabold text-[#2A363B] group-hover:scale-110 transition-transform">' + total + '</span>' +
         '</div>' +
-        '<span class="text-[10px] font-bold text-slate-500 mt-1.5 group-hover:text-[#E84A5F] transition-colors">' + d.day + '</span>' +
+        '<!-- Mini-track con barras dobles lado a lado -->' +
+        '<div class="w-full max-w-[34px] bg-slate-100 rounded-lg flex items-end justify-center gap-1 p-1" style="height:' + trackHeight + 'px;">' +
+          '<!-- Barra Entradas (Verde #99B898) -->' +
+          '<div class="w-2.5 rounded-t-sm transition-all duration-300 shadow-xs" style="height:' + hEntrada + 'px; background-color:#99B898;" title="Entradas: ' + d.entradas + '"></div>' +
+          '<!-- Barra Salidas (Rojo #E84A5F) -->' +
+          '<div class="w-2.5 rounded-t-sm transition-all duration-300 shadow-xs" style="height:' + hSalida + 'px; background-color:#E84A5F;" title="Salidas: ' + d.salidas + '"></div>' +
+        '</div>' +
+        '<span class="text-[10px] font-bold text-slate-600 mt-1.5 group-hover:text-[#E84A5F] transition-colors">' + dayKey + '</span>' +
+        '<span class="text-[8px] text-slate-400 font-medium">' + d.entradas + 'e / ' + d.salidas + 's</span>' +
       '</div>';
-    }
+    });
+
     container.innerHTML = html;
   }
 
-  function showDayMovementDetail(dayIdx) {
-    var d = weeklyMovementData[dayIdx];
-    if (!d) return;
-    var tot = d.entradas + d.salidas;
-    showToast('📊 ' + d.day + ': ' + tot + ' operaciones en total (' + d.entradas + ' Entradas 📥, ' + d.salidas + ' Salidas 📤)');
+  // ABRIR PANTALLA DE DETALLE DEL DÍA
+  function openDayDetailScreen(dayKey) {
+    if (!DAILY_MOVEMENTS_DB[dayKey]) dayKey = 'Mar';
+    selectedDayKey = dayKey;
+    selectedDayFilter = 'todos';
+    selectedDaySearch = '';
+
+    var searchInput = document.getElementById('daySearchInput');
+    if (searchInput) searchInput.value = '';
+
+    renderDayDetailScreen();
+    navigateTo('screenDayDetail');
+    showToast('📅 Mostrando movimientos detallados de ' + DAILY_MOVEMENTS_DB[dayKey].date);
+  }
+
+  function selectDayDetailTab(dayKey) {
+    selectedDayKey = dayKey;
+    renderDayDetailScreen();
+  }
+
+  function filterDayMovementsType(type) {
+    selectedDayFilter = type;
+    renderDayMovementsList();
+
+    // Actualizar estilos de chips de filtro
+    var allBtn = document.getElementById('filterDayAll');
+    var inBtn = document.getElementById('filterDayEntradas');
+    var outBtn = document.getElementById('filterDaySalidas');
+
+    [allBtn, inBtn, outBtn].forEach(function(b) {
+      if (b) b.className = 'px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200';
+    });
+
+    if (type === 'todos' && allBtn) allBtn.className = 'px-2.5 py-1 rounded-lg bg-[#2A363B] text-white font-bold';
+    if (type === 'Entrada' && inBtn) inBtn.className = 'px-2.5 py-1 rounded-lg bg-[#99B898] text-[#2A363B] font-bold';
+    if (type === 'Salida' && outBtn) outBtn.className = 'px-2.5 py-1 rounded-lg bg-[#E84A5F] text-white font-bold';
+  }
+
+  function handleDaySearch(val) {
+    selectedDaySearch = val.trim().toLowerCase();
+    renderDayMovementsList();
+  }
+
+  function renderDayDetailScreen() {
+    var dayData = DAILY_MOVEMENTS_DB[selectedDayKey];
+    if (!dayData) return;
+
+    // Actualizar badges y títulos
+    var badge = document.getElementById('dayDetailBadge');
+    var title = document.getElementById('dayDetailTitle');
+    var mOps = document.getElementById('dayMetricTotalOps');
+    var mIn = document.getElementById('dayMetricEntradas');
+    var mOut = document.getElementById('dayMetricSalidas');
+
+    if (badge) badge.textContent = dayData.date;
+    if (title) title.textContent = 'Detalle de Movimientos — ' + dayData.date.split(' ')[0];
+
+    var totalOps = dayData.records.length;
+    var countIn = dayData.records.filter(function(r){ return r.type === 'Entrada'; }).length;
+    var countOut = dayData.records.filter(function(r){ return r.type === 'Salida'; }).length;
+
+    var sumQtyIn = 0;
+    var sumQtyOut = 0;
+    dayData.records.forEach(function(r) {
+      if (r.type === 'Entrada') sumQtyIn += r.qty;
+      else sumQtyOut += r.qty;
+    });
+
+    if (mOps) mOps.textContent = totalOps;
+    if (mIn) mIn.textContent = countIn + ' (' + (sumQtyIn > 0 ? '+' : '') + sumQtyIn + ' u)';
+    if (mOut) mOut.textContent = countOut + ' (-' + sumQtyOut + ' u)';
+
+    // Actualizar tabs de días
+    var days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    days.forEach(function(d) {
+      var tab = document.getElementById('dayTab' + d);
+      if (tab) {
+        if (d === selectedDayKey) {
+          tab.className = 'day-tab px-3 py-1 rounded-xl bg-[#2A363B] text-white font-bold whitespace-nowrap shadow-sm transition';
+        } else {
+          tab.className = 'day-tab px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-semibold whitespace-nowrap hover:bg-slate-200 transition';
+        }
+      }
+    });
+
+    renderDayMovementsList();
+  }
+
+  function renderDayMovementsList() {
+    var container = document.getElementById('dayMovementsListContainer');
+    if (!container) return;
+
+    var dayData = DAILY_MOVEMENTS_DB[selectedDayKey];
+    if (!dayData || !dayData.records) {
+      container.innerHTML = '<p class="text-xs text-slate-400">Sin registros para este día</p>';
+      return;
+    }
+
+    var records = dayData.records;
+
+    // Filtrar por tipo
+    if (selectedDayFilter !== 'todos') {
+      records = records.filter(function(r) { return r.type === selectedDayFilter; });
+    }
+
+    // Filtrar por búsqueda
+    if (selectedDaySearch) {
+      records = records.filter(function(r) {
+        return r.name.toLowerCase().includes(selectedDaySearch) ||
+               r.code.toLowerCase().includes(selectedDaySearch) ||
+               r.doc.toLowerCase().includes(selectedDaySearch);
+      });
+    }
+
+    if (records.length === 0) {
+      container.innerHTML = '<div class="p-6 text-center text-slate-400 bg-slate-50 rounded-xl"><span class="text-2xl block mb-1">🔍</span><p class="text-xs font-bold text-slate-600">No hay movimientos que coincidan con el filtro</p></div>';
+      return;
+    }
+
+    container.innerHTML = records.map(function(r) {
+      var isEntrada = r.type === 'Entrada';
+      var badgeColor = isEntrada ? 'bg-[#99B898]/20 text-[#2A363B] border-[#99B898]/40' : 'bg-[#E84A5F]/15 text-[#E84A5F] border-[#E84A5F]/30';
+      var qtyColor = isEntrada ? 'text-[#99B898]' : 'text-[#E84A5F]';
+
+      return '<div class="bg-white p-3 rounded-xl border border-slate-200/90 shadow-xs hover:border-slate-400 transition flex items-center justify-between gap-3">' +
+        '<div class="flex items-center gap-2.5 min-w-0">' +
+          '<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">' +
+            (r.icon || '📦') +
+          '</div>' +
+          '<div class="min-w-0">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="text-[9px] font-bold px-2 py-0.5 rounded-md border ' + badgeColor + '">' +
+                (isEntrada ? '📥 Entrada' : '📤 Salida') +
+              '</span>' +
+              '<span class="text-[10px] text-slate-400 font-mono font-bold">' + r.time + '</span>' +
+            '</div>' +
+            '<h4 class="text-xs font-bold text-[#2A363B] truncate mt-0.5">' + r.name + '</h4>' +
+            '<p class="text-[10px] text-slate-500 font-medium truncate">' + r.doc + ' · ' + r.user + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="text-right shrink-0">' +
+          '<span class="text-xs font-black ' + qtyColor + ' block">' + (isEntrada ? '+' : '-') + r.qty + ' unid.</span>' +
+          '<button onclick="findAndOpenProductByCode(\'' + r.code + '\')" class="text-[9px] font-bold text-[#2A363B] bg-slate-100 hover:bg-[#FECEAB] px-2 py-0.5 rounded-md mt-1 transition inline-block">' +
+            'Ficha →' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function findAndOpenProductByCode(code) {
+    var p = products.find(function(x){ return x.code.toUpperCase() === code.toUpperCase(); });
+    if (p) {
+      openProductDetail(p.id);
+    } else {
+      showToast('Producto ' + code + ' no encontrado');
+    }
+  }
+
+  function exportCurrentDayCSV() {
+    var dayData = DAILY_MOVEMENTS_DB[selectedDayKey];
+    if (!dayData) return;
+
+    var csvContent = '\uFEFFHora,Tipo Movimiento,Código Producto,Nombre del Producto,Cantidad,Documento Referencia,Responsable\n';
+    dayData.records.forEach(function(r) {
+      var cleanName = '"' + r.name.replace(/"/g, '""') + '"';
+      var cleanDoc = '"' + r.doc.replace(/"/g, '""') + '"';
+      csvContent += r.time + ',' + r.type + ',' + r.code + ',' + cleanName + ',' + r.qty + ',' + cleanDoc + ',"' + r.user + '"\n';
+    });
+
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Movimientos_' + selectedDayKey + '_' + dayData.date.replace(/[^a-zA-Z0-9]/g, '_') + '.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('✅ Movimientos de ' + selectedDayKey + ' exportados en CSV');
   }
 
   function updateKPIs() {
@@ -1794,7 +2188,22 @@ body {
     });
 
     saveProducts();
-    weeklyMovementData[4].salidas += (type==="Salida"?qty:0); weeklyMovementData[4].entradas += (type==="Entrada"?qty:0);
+    var nowTime = new Date().toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+    var newRecord = {
+      time: nowTime,
+      type: type,
+      code: currentDetailProduct.code,
+      name: currentDetailProduct.name,
+      icon: currentDetailProduct.icon || '📦',
+      qty: qty,
+      doc: type === 'Entrada' ? 'Recepción Manual #RM-' + Math.floor(Math.random()*900+100) : 'Despacho Mostrador #DM-' + Math.floor(Math.random()*900+100),
+      user: 'Roger García'
+    };
+    if (DAILY_MOVEMENTS_DB.Vie) {
+      DAILY_MOVEMENTS_DB.Vie.records.unshift(newRecord);
+      if (type === 'Entrada') DAILY_MOVEMENTS_DB.Vie.entradas++;
+      else DAILY_MOVEMENTS_DB.Vie.salidas++;
+    }
     renderWeeklyChart();
     openProductDetail(currentDetailProduct.id);
     showToast(`✅ ${type} de ${qty} unidades registrada correctamente`);
