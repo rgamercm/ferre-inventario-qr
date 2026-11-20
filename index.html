@@ -293,49 +293,28 @@ body {
             </div>
           </div>
 
-          <!-- Gráfico Semanal de Movimientos -->
-          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-xs font-bold text-[#2A363B] flex items-center gap-1.5">
-                <span>📈 Movimientos de la Semana</span>
-              </h4>
-              <span class="text-[10px] font-bold text-[#99B898] bg-[#99B898]/15 px-2 py-0.5 rounded-full">+18% flujo</span>
+          <!-- Gráfico Semanal de Movimientos (Dinámico e Interactivo) -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h4 class="text-xs font-bold text-[#2A363B] flex items-center gap-1.5">
+                  <span>📈 Flujo de Movimientos Semanales</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Entradas vs Salidas por día (Toca cualquier barra)</p>
+              </div>
+              <span id="chartWeeklyTotalBadge" class="text-[10px] font-extrabold text-[#99B898] bg-[#99B898]/15 px-2.5 py-1 rounded-full">119 mov</span>
             </div>
-            <!-- Barras del gráfico -->
-            <div class="flex items-end justify-between gap-1.5 h-24 pt-4 px-2 border-b border-slate-100">
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#99B898] rounded-t-md transition-all hover:bg-[#85a884]" style="height: 45%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Lun</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#FF847C] rounded-t-md transition-all hover:bg-[#f0736b]" style="height: 65%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Mar</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#99B898] rounded-t-md transition-all hover:bg-[#85a884]" style="height: 35%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Mié</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#E84A5F] rounded-t-md transition-all hover:bg-[#d43f53]" style="height: 85%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Jue</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#FF847C] rounded-t-md transition-all hover:bg-[#f0736b]" style="height: 70%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Vie</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-[#FECEAB] rounded-t-md transition-all hover:bg-[#f3bf99]" style="height: 40%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Sáb</span>
-              </div>
-              <div class="flex-1 flex flex-col items-center gap-1">
-                <div class="w-full bg-slate-300 rounded-t-md transition-all" style="height: 20%;"></div>
-                <span class="text-[9px] font-bold text-slate-400">Dom</span>
-              </div>
+
+            <!-- Contenedor dinámico de barras con altura calculada en px -->
+            <div id="weeklyBarsContainer" class="flex items-end justify-between gap-1.5 h-32 pt-3 px-1 pb-1 border-b border-slate-100">
+              <!-- Inyectado dinámicamente con alturas visibles en px -->
             </div>
-            <div class="flex justify-between items-center text-[10px] text-slate-400 mt-2 px-1">
-              <span>🟢 Entradas</span>
-              <span>🔴 Salidas</span>
-              <span>🟠 Ajustes</span>
+
+            <!-- Leyenda explicativa -->
+            <div class="flex justify-between items-center text-[10px] text-slate-500 mt-2.5 px-1">
+              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#99B898]"></span> Entradas (Stock +)</span>
+              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#E84A5F]"></span> Salidas (Ventas)</span>
+              <span class="flex items-center gap-1 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-[#FF847C]"></span> Ajustes Mixtos</span>
             </div>
           </div>
 
@@ -1319,6 +1298,7 @@ body {
 
     // Inicializar vistas
     updateKPIs();
+    renderWeeklyChart();
     renderProductsList();
     populateQuickScanSelect();
     renderNotifications();
@@ -1468,6 +1448,72 @@ body {
   // ==========================================
   // KPIs Y MÉTRICAS EN VIVO
   // ==========================================
+  
+  // ==========================================
+  // GRÁFICO DINÁMICO DE MOVIMIENTOS SEMANALES
+  // ==========================================
+  var weeklyMovementData = [
+    { day: 'Lun', entradas: 10, salidas: 4, color: '#99B898' },
+    { day: 'Mar', entradas: 6, salidas: 13, color: '#FF847C' },
+    { day: 'Mié', entradas: 8, salidas: 3, color: '#99B898' },
+    { day: 'Jue', entradas: 7, salidas: 21, color: '#E84A5F' },
+    { day: 'Vie', entradas: 9, salidas: 13, color: '#FF847C' },
+    { day: 'Sáb', entradas: 8, salidas: 4, color: '#FECEAB' },
+    { day: 'Dom', entradas: 2, salidas: 2, color: '#94A3B8' }
+  ];
+
+  function renderWeeklyChart() {
+    var container = document.getElementById('weeklyBarsContainer');
+    var badge = document.getElementById('chartWeeklyTotalBadge');
+    if (!container) return;
+
+    var grandTotal = 0;
+    var maxDayTotal = 1;
+    for (var i = 0; i < weeklyMovementData.length; i++) {
+      var tot = weeklyMovementData[i].entradas + weeklyMovementData[i].salidas;
+      grandTotal += tot;
+      if (tot > maxDayTotal) maxDayTotal = tot;
+    }
+
+    if (badge) {
+      badge.textContent = grandTotal + ' operaciones esta semana';
+    }
+
+    var trackHeight = 76; // px de altura disponible para las barras
+
+    var html = '';
+    for (var idx = 0; idx < weeklyMovementData.length; idx++) {
+      var d = weeklyMovementData[idx];
+      var total = d.entradas + d.salidas;
+      var barHeightPx = Math.max(18, Math.round((total / maxDayTotal) * trackHeight));
+
+      var barColor = d.color;
+      if (d.salidas > d.entradas * 1.5) {
+        barColor = '#E84A5F';
+      } else if (d.entradas > d.salidas * 1.5) {
+        barColor = '#99B898';
+      } else {
+        barColor = '#FF847C';
+      }
+
+      html += '<div onclick="showDayMovementDetail(' + idx + ')" class="flex-1 flex flex-col items-center justify-end h-full cursor-pointer group" title="' + d.day + ': ' + total + ' operaciones (' + d.entradas + ' entradas, ' + d.salidas + ' salidas)">' +
+        '<span class="text-[9px] font-extrabold text-[#2A363B] mb-1 group-hover:scale-125 transition-transform">' + total + '</span>' +
+        '<div class="w-full max-w-[28px] bg-slate-100 rounded-lg flex items-end justify-center p-0.5" style="height:' + trackHeight + 'px;">' +
+          '<div class="w-full rounded-md transition-all duration-300 group-hover:brightness-90 shadow-sm" style="height:' + barHeightPx + 'px; background-color:' + barColor + ';"></div>' +
+        '</div>' +
+        '<span class="text-[10px] font-bold text-slate-500 mt-1.5 group-hover:text-[#E84A5F] transition-colors">' + d.day + '</span>' +
+      '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function showDayMovementDetail(dayIdx) {
+    var d = weeklyMovementData[dayIdx];
+    if (!d) return;
+    var tot = d.entradas + d.salidas;
+    showToast('📊 ' + d.day + ': ' + tot + ' operaciones en total (' + d.entradas + ' Entradas 📥, ' + d.salidas + ' Salidas 📤)');
+  }
+
   function updateKPIs() {
     const totalProdEl = document.getElementById('kpiTotalProducts');
     const lowStockEl = document.getElementById('kpiLowStock');
@@ -1748,6 +1794,8 @@ body {
     });
 
     saveProducts();
+    weeklyMovementData[4].salidas += (type==="Salida"?qty:0); weeklyMovementData[4].entradas += (type==="Entrada"?qty:0);
+    renderWeeklyChart();
     openProductDetail(currentDetailProduct.id);
     showToast(`✅ ${type} de ${qty} unidades registrada correctamente`);
 
