@@ -123,8 +123,25 @@
         </div>
     </header>
 
+    <!-- View Mode Switcher -->
+    <div class="max-w-[1500px] mx-auto px-4 my-3 flex items-center justify-between flex-wrap gap-2">
+        <div class="inline-flex p-1 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-md">
+            <button id="btnDfdGraphic" onclick="switchDfdView('graphic')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#E84A5F] text-white transition flex items-center gap-1.5 shadow-xs">
+                <span>🎨</span> Diagrama DFD
+            </button>
+            <button id="btnDfdCatalog" onclick="switchDfdView('catalog')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                <span>📋</span> Procesos & Almacenes (Móvil)
+            </button>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700/50">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 3 Entidades · 6 Procesos · 4 Almacenes
+            </span>
+        </div>
+    </div>
+
     <!-- Main Diagram Container -->
-    <main class="max-w-[1500px] mx-auto px-4 py-6">
+    <main class="max-w-[1500px] mx-auto px-4 py-4">
         <!-- Legend -->
         <div class="glass rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-6 justify-center">
             <span class="text-sm font-semibold text-slate-300 mr-2">Leyenda:</span>
@@ -151,6 +168,20 @@
                 </svg>
                 <span class="text-sm text-slate-300">Flujo de Datos</span>
             </div>
+        </div>
+
+        <!-- Mobile Catalog View: Desglose Estructurado de Procesos y Almacenes -->
+        <div id="mobileDfdView" class="hidden space-y-4 mb-6 animate-fade-in">
+            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <span>📋</span> Arquitectura del Flujo de Datos (DFD Nivel 0 y 1)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Lectura cómoda de entidades externas, procesos y almacenes de datos</p>
+                </div>
+                <span class="text-xs font-bold bg-[#E84A5F]/20 text-[#FF847C] px-3 py-1 rounded-full border border-[#E84A5F]/30">FerreInventario QR</span>
+            </div>
+            <div id="mobileDfdGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
         <!-- SVG Diagram -->

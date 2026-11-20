@@ -274,6 +274,37 @@
     width: 0%;
   }
 
+  
+  @media (max-width: 640px) {
+    .actor-box .actor-head {
+      padding: 6px 4px !important;
+      font-size: 10px !important;
+      min-width: 62px !important;
+    }
+    .actor-box .actor-head .actor-emoji {
+      font-size: 16px !important;
+      margin-bottom: 2px !important;
+    }
+    .tab-btn {
+      padding: 8px 12px !important;
+      font-size: 11px !important;
+    }
+    .tab-icon {
+      font-size: 14px !important;
+      margin-bottom: 2px !important;
+    }
+  }
+
+  .timeline-step {
+    transition: all 0.3s ease;
+  }
+  .timeline-step.active-step {
+    border-color: #E84A5F !important;
+    box-shadow: 0 0 15px rgba(232, 74, 95, 0.3);
+    background: rgba(232, 74, 95, 0.08) !important;
+    transform: scale(1.01);
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
@@ -370,8 +401,42 @@
     <div class="progress-fill" id="progressBar"></div>
   </div>
 
+  <!-- View Mode Switcher -->
+  <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+    <div class="inline-flex p-1 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-md">
+      <button id="btnSeqGraphic" onclick="switchSeqView('graphic')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#E84A5F] text-white transition flex items-center gap-1.5 shadow-xs">
+        <span>🎬</span> Diagrama Visual
+      </button>
+      <button id="btnSeqTimeline" onclick="switchSeqView('timeline')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+        <span>📱</span> Flujo Paso a Paso Móvil
+      </button>
+    </div>
+    <div class="text-xs text-slate-400">
+      <span class="inline-flex items-center gap-1.5 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700/50">
+        <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Interacción Dinámica UML
+      </span>
+    </div>
+  </div>
+
+  <!-- Timeline View (Mobile Native View) -->
+  <div id="seqTimelineContainer" class="hidden bg-slate-900/90 rounded-2xl border border-slate-700/80 p-4 mb-6 shadow-xl animate-fade-in">
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+      <div>
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>📱</span> Línea de Tiempo del Flujo Secuencial
+        </h4>
+        <p class="text-xs text-slate-400 mt-0.5">Lectura clara y secuencial de cada mensaje e interacción entre actores</p>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="prevStepTimeline()" class="px-2.5 py-1 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700">◀ Ant</button>
+        <button onclick="nextStepTimeline()" class="px-2.5 py-1 text-xs font-bold bg-[#E84A5F] hover:bg-[#d43f53] text-white rounded-lg">Sig ▶</button>
+      </div>
+    </div>
+    <div id="seqTimelineList" class="space-y-2.5 max-h-[600px] overflow-y-auto pr-1"></div>
+  </div>
+
   <!-- Diagram container -->
-  <div class="bg-slate-800/40 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-2xl overflow-hidden">
+  <div id="diagramContainerVisual" class="bg-slate-800/40 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-2xl overflow-hidden">
     <!-- Scenario title bar -->
     <div class="px-6 py-4 border-b border-slate-700/50 flex items-center gap-3" id="scenarioHeader">
       <span class="text-xl" id="scenarioEmoji">📷</span>
@@ -586,7 +651,10 @@ function renderScenario() {
 
   const canvas = document.getElementById('seqCanvas');
   const numActors = sc.actors.length;
-  const actorSpacing = Math.max(140, Math.min(180, (canvas.clientWidth - 40) / numActors));
+  const isMobile = window.innerWidth < 640;
+  const actorHeadW = isMobile ? 66 : 90;
+  const minSpacing = isMobile ? 75 : 130;
+  const actorSpacing = Math.max(minSpacing, Math.min(180, (canvas.clientWidth - 40) / numActors));
   const canvasWidth = Math.max(actorSpacing * numActors + 40, canvas.clientWidth);
   const canvasHeight = 70 + sc.messages.length * 48 + 60;
   canvas.style.height = Math.max(500, canvasHeight) + 'px';
@@ -624,7 +692,7 @@ function renderScenario() {
     const box = document.createElement('div');
     box.className = 'actor-box';
     box.style.left = x + 'px';
-    box.style.width = '90px';
+    box.style.width = actorHeadW + 'px';
 
     box.innerHTML = `
       <div class="actor-head" style="background:${col.bg}; border-color:${col.border}; color:${col.text}; box-shadow: 0 4px 15px ${col.glow}">

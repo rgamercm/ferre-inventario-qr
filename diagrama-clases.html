@@ -200,13 +200,22 @@
 
         /* Zoom controls */
         .zoom-controls {
-            position: fixed;
-            bottom: 80px;
-            right: 24px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 6px;
             z-index: 100;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            backdrop-filter: blur(8px);
+        }
+        @media (max-width: 640px) {
+            .canvas-wrapper { margin: 0 8px; }
+            header { padding: 12px 14px !important; }
         }
         .zoom-btn {
             width: 40px; height: 40px;
@@ -285,7 +294,7 @@
     </header>
 
     <!-- Legend -->
-    <div class="max-w-7xl mx-auto px-6 py-4">
+    <div id="clasesLegend" class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2">Dominios:</span>
             <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#FF847C,#E84A5F)"></span>Autenticación</span>
@@ -309,8 +318,25 @@
         </div>
     </div>
 
+    <!-- View Mode Switcher (Diagrama Gráfico vs Vista Móvil Estructurada) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 my-3 flex items-center justify-between flex-wrap gap-2">
+        <div class="inline-flex p-1 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-md">
+            <button id="btnViewGraphic" onclick="switchClasesView('graphic')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#E84A5F] text-white transition flex items-center gap-1.5 shadow-xs">
+                <span>🎨</span> Diagrama Gráfico
+            </button>
+            <button id="btnViewCards" onclick="switchClasesView('cards')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                <span>📋</span> Vista Tarjetas Móvil (8 Clases)
+            </button>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1 bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-700/50">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 8 Clases POO · 7 Relaciones
+            </span>
+        </div>
+    </div>
+
     <!-- Diagram Canvas -->
-    <div class="canvas-wrapper" id="canvasWrapper" style="max-height: calc(100vh - 260px);">
+    <div class="canvas-wrapper relative" id="canvasWrapper" style="max-height: calc(100vh - 260px);">
         <div id="diagram-canvas">
             <svg id="svg-relationships">
                 <defs>
@@ -331,6 +357,27 @@
 
             <!-- Classes will be rendered by JS -->
         </div>
+        <!-- Zoom Controls Repositioned inside Canvas Wrapper -->
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomIn()" title="Acercar" style="width:32px;height:32px;font-size:16px;">+</button>
+            <button class="zoom-btn" onclick="autoFitMobile()" title="Ajustar al ancho" style="width:32px;height:32px;font-size:11px;">📱</button>
+            <button class="zoom-btn" onclick="zoomReset()" title="Restablecer" style="width:32px;height:32px;font-size:10px;">100%</button>
+            <button class="zoom-btn" onclick="zoomOut()" title="Alejar" style="width:32px;height:32px;font-size:16px;">−</button>
+        </div>
+    </div>
+
+    <!-- Vista Móvil: Desglose de las 8 Clases en Tarjetas Cómodas y Estructuradas -->
+    <div id="mobileCardsView" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-2 animate-fade-in">
+        <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 mb-4 flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <span>📱</span> Modelo Estructural de Clases (POO)
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Diseño optimizado para lectura cómoda en dispositivos móviles</p>
+            </div>
+            <span class="text-xs bg-[#E84A5F]/20 text-[#FF847C] font-bold px-2.5 py-1 rounded-full border border-[#E84A5F]/30">8 Clases</span>
+        </div>
+        <div id="mobileCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </div>
 
     <!-- Modal -->
@@ -339,12 +386,7 @@
         </div>
     </div>
 
-    <!-- Zoom Controls -->
-    <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomIn()" title="Acercar">+</button>
-        <button class="zoom-btn" onclick="zoomReset()" title="Restablecer" style="font-size:12px;">⟳</button>
-        <button class="zoom-btn" onclick="zoomOut()" title="Alejar">−</button>
-    </div>
+
 
     <!-- Footer -->
     <footer class="border-t border-slate-800/60 py-4 mt-4">
@@ -820,8 +862,147 @@
     function zoomOut() { currentZoom = Math.max(currentZoom - 0.15, 0.4); applyZoom(); }
     function zoomReset() { currentZoom = 1; applyZoom(); }
 
+
+    // ==========================================
+    // DETECCIÓN DE IFRAME & OPTIMIZACIONES MÓVILES
+    // ==========================================
+    if (window.self !== window.top) {
+        // Ocultar navbar redundante cuando está embebido en index.html
+        const nav = document.getElementById('suite-navbar');
+        if (nav) nav.style.display = 'none';
+    }
+
+    function switchClasesView(view) {
+        const gView = document.getElementById('canvasWrapper');
+        const cView = document.getElementById('mobileCardsView');
+        const legend = document.getElementById('clasesLegend');
+        const btnG = document.getElementById('btnViewGraphic');
+        const btnC = document.getElementById('btnViewCards');
+
+        if (view === 'cards') {
+            gView.classList.add('hidden');
+            cView.classList.remove('hidden');
+            if (legend) legend.classList.add('hidden');
+            btnC.classList.add('bg-[#E84A5F]', 'text-white');
+            btnC.classList.remove('text-slate-300');
+            btnG.classList.remove('bg-[#E84A5F]', 'text-white');
+            btnG.classList.add('text-slate-300');
+            renderMobileCards();
+        } else {
+            cView.classList.add('hidden');
+            gView.classList.remove('hidden');
+            if (legend) legend.classList.remove('hidden');
+            btnG.classList.add('bg-[#E84A5F]', 'text-white');
+            btnG.classList.remove('text-slate-300');
+            btnC.classList.remove('bg-[#E84A5F]', 'text-white');
+            btnC.classList.add('text-slate-300');
+            setTimeout(drawRelationships, 60);
+        }
+    }
+
+    function autoFitMobile() {
+        const wrapper = document.getElementById('canvasWrapper');
+        if (wrapper) {
+            const availW = wrapper.clientWidth - 16;
+            const targetW = 1250;
+            const scale = Math.min(1, Math.max(0.35, availW / targetW));
+            currentZoom = Math.round(scale * 100) / 100;
+            applyZoom();
+        }
+    }
+
+    function renderMobileCards() {
+        const grid = document.getElementById('mobileCardsGrid');
+        if (!grid || grid.children.length > 0) return;
+
+        grid.innerHTML = classes.map(cls => {
+            const domainColors = {
+                auth: 'from-[#FF847C] to-[#E84A5F]',
+                core: 'from-[#10b981] to-[#059669]',
+                qr: 'from-[#a855f7] to-[#7c3aed]',
+                ops: 'from-[#f59e0b] to-[#d97706]',
+                supply: 'from-[#ef4444] to-[#dc2626]',
+                report: 'from-[#06b6d4] to-[#0891b2]',
+                alert: 'from-[#f97316] to-[#ea580c]'
+            };
+            const grad = domainColors[cls.domain] || 'from-slate-600 to-slate-800';
+
+            const attrsHtml = cls.attributes.map(a => `
+                <div class="flex items-center justify-between py-1 border-b border-slate-800/60 font-mono text-xs">
+                    <div>
+                        <span class="text-amber-400 font-bold">${a.vis}</span>
+                        <span class="text-slate-200">${a.name}</span>
+                    </div>
+                    <span class="text-purple-300 text-[11px] italic">${a.type}</span>
+                </div>
+            `).join('');
+
+            const methsHtml = cls.methods.map(m => `
+                <div class="py-1 border-b border-slate-800/60 font-mono text-xs">
+                    <span class="text-amber-400 font-bold">${m.vis}</span>
+                    <span class="text-cyan-300 font-semibold">${m.name}</span><span class="text-slate-400">(${m.params})</span>
+                    <span class="text-purple-300 text-[11px] block mt-0.5">➔ ${m.ret}</span>
+                </div>
+            `).join('');
+
+            // Relaciones asociadas
+            const rels = relationships.filter(r => r.from === cls.id || r.to === cls.id);
+            const relsHtml = rels.map(r => {
+                const isOrigin = r.from === cls.id;
+                const other = isOrigin ? r.to : r.from;
+                const arrow = isOrigin ? '➔' : '🡐';
+                const mult = isOrigin ? `${r.fromMult} : ${r.toMult}` : `${r.toMult} : ${r.fromMult}`;
+                return `
+                    <div class="flex items-center justify-between text-[11px] bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-800">
+                        <span class="text-slate-300 font-medium">${arrow} <strong class="text-white">${other}</strong> (${r.type})</span>
+                        <span class="text-amber-400 font-bold font-mono">${mult}</span>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="bg-slate-900/90 rounded-2xl border border-slate-700/80 shadow-lg overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="bg-gradient-to-r ${grad} p-3.5 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded">${cls.stereotype}</span>
+                                <span class="text-[10px] font-mono text-white/80">${cls.domain.toUpperCase()}</span>
+                            </div>
+                            <h4 class="text-lg font-black tracking-tight mt-1">${cls.id}</h4>
+                        </div>
+                        <p class="text-xs text-slate-300 p-3 bg-slate-800/40 border-b border-slate-700/60">${cls.description}</p>
+                        
+                        <div class="p-3 space-y-3">
+                            <div>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Atributos (${cls.attributes.length})</h5>
+                                <div class="bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">${attrsHtml}</div>
+                            </div>
+                            <div>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Métodos (${cls.methods.length})</h5>
+                                <div class="bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">${methsHtml}</div>
+                            </div>
+                            ${rels.length > 0 ? `
+                            <div>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Relaciones (${rels.length})</h5>
+                                <div class="space-y-1">${relsHtml}</div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    <div class="p-3 pt-0">
+                        <button onclick='openModal(${JSON.stringify(cls).replace(/'/g, "&#39;")})' class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-xl transition border border-slate-700 flex items-center justify-center gap-1">
+                            <span>🔍 Ver Ficha Completa</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     // Initial render
     setTimeout(() => {
+        if (window.innerWidth < 768) {
+            autoFitMobile();
+        }
         drawRelationships();
     }, 100);
 

@@ -168,7 +168,13 @@
             .gantt-container { overflow-x: auto; }
             .gantt-grid { min-width: 900px; }
         }
-    </style>
+    
+  @media (max-width: 640px) {
+    .gantt-grid { min-width: 720px !important; }
+    .phase-title-text { white-space: normal !important; font-size: 11px !important; }
+  }
+
+</style>
 </head>
 <body class="min-h-screen flex flex-col">
 <!-- Unified Suite Navbar -->
@@ -280,11 +286,43 @@
         </div>
     </div>
 
+    <!-- View Mode Switcher & Quadrant Filters -->
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 my-3 flex items-center justify-between flex-wrap gap-2">
+        <div class="inline-flex p-1 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-md">
+            <button id="btnGanttGrid" onclick="switchGanttView('grid')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#E84A5F] text-white transition flex items-center gap-1.5 shadow-xs">
+                <span>📊</span> Cronograma Grid
+            </button>
+            <button id="btnGanttPhases" onclick="switchGanttView('phases')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                <span>📋</span> Vista Fases & Entregables (Móvil)
+            </button>
+        </div>
+        <div id="ganttQuadrantBar" class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs">
+            <button onclick="filterGanttWeeks('all', this)" class="gantt-quad-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#E84A5F] text-white transition">Todas (12)</button>
+            <button onclick="filterGanttWeeks('1-4', this)" class="gantt-quad-btn px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white transition">Sem 1–4</button>
+            <button onclick="filterGanttWeeks('5-8', this)" class="gantt-quad-btn px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white transition">Sem 5–8</button>
+            <button onclick="filterGanttWeeks('9-12', this)" class="gantt-quad-btn px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white transition">Sem 9–12</button>
+        </div>
+    </div>
+
     <!-- Main Content -->
-    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-6">
+    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-4">
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="statsCards">
+        </div>
+
+        <!-- Mobile Native View: Fases y Entregables en Tarjetas Desglosadas -->
+        <div id="mobilePhasesView" class="hidden space-y-4 mb-6 animate-fade-in">
+            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <span>📋</span> Desglose de Fases y Entregables del SDLC
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Lectura cómoda y sin desplazamientos horizontales en dispositivos móviles</p>
+                </div>
+                <span class="text-xs font-bold bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">100% Avance Global</span>
+            </div>
+            <div id="mobilePhasesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
         <!-- Gantt Chart -->

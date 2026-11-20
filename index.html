@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.0.0';
+    var APP_RELEASE = 'v3.1.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -146,7 +146,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.0</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.1</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -944,171 +944,92 @@ html.splash-active, body.splash-active {
 
     <!-- ========================================================
          VISTA 2: SECCIÓN DEDICADA DE DIAGRAMAS (EVALUACIÓN DOCENTE)
-         Categoría independiente, visible y ordenada.
+         Optimizada para móviles: Visor de acceso inmediato con pestañas
          ======================================================== -->
-    <div id="viewDiagrams" class="hidden w-full max-w-4xl space-y-6 animate-fade-in p-2 sm:p-0">
+    <div id="viewDiagrams" class="hidden w-full max-w-5xl space-y-4 animate-fade-in p-2 sm:p-0">
       
-      <!-- Banner de Evaluación y Justificación Metodológica -->
-      <div class="bg-gradient-to-br from-[#2A363B] to-[#1f282c] text-white p-6 rounded-3xl shadow-xl border border-slate-700/60">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <!-- VISOR EMBEBIDO INTERACTIVO DE DIAGRAMAS (PRIORIDAD SUPERIOR PARA MÓVILES) -->
+      <div id="diagramViewerCard" class="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+        <!-- Barra de Control del Visor con Pestañas de Alta Legibilidad -->
+        <div class="bg-[#2A363B] text-white p-3 sm:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 border-b border-slate-700/80">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">📐</span>
+              <div>
+                <h3 id="viewerDiagramTitle" class="text-xs sm:text-sm font-bold text-white tracking-tight">Diagrama de Gantt</h3>
+                <p class="text-[10px] text-[#FECEAB]">Suite de Ingeniería de Software · Evaluación 20 Puntos</p>
+              </div>
+            </div>
+            <a id="viewerExternalLink" href="diagrama-gantt.html" target="_blank" class="md:hidden px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[#E84A5F] hover:bg-[#d43f53] text-white transition flex items-center gap-1">
+              <span>↗ Pantalla Completa</span>
+            </a>
+          </div>
+
+          <!-- Selector rápido de Diagrama con indicador visual activo -->
+          <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+            <button id="btnDiagGantt" onclick="loadDiagramInViewer('diagrama-gantt.html', 'Diagrama de Gantt — Planificación', this)" class="diagram-tab-btn active px-3 py-1.5 text-xs font-bold rounded-xl bg-[#E84A5F] text-white transition shadow-sm flex items-center gap-1">
+              <span>📅</span> Gantt
+            </button>
+            <button id="btnDiagDfd" onclick="loadDiagramInViewer('diagrama-flujo-datos.html', 'Diagrama de Flujo de Datos (DFD)', this)" class="diagram-tab-btn px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center gap-1">
+              <span>🔄</span> DFD
+            </button>
+            <button id="btnDiagSec" onclick="loadDiagramInViewer('diagrama-secuencias.html', 'Diagrama de Secuencias UML', this)" class="diagram-tab-btn px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center gap-1">
+              <span>⏱️</span> Secuencias
+            </button>
+            <button id="btnDiagClases" onclick="loadDiagramInViewer('diagrama-clases.html', 'Diagrama de Clases UML', this)" class="diagram-tab-btn px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center gap-1">
+              <span>🏗️</span> Clases UML
+            </button>
+            <a id="viewerExternalLinkDesktop" href="diagrama-gantt.html" target="_blank" class="hidden md:inline-flex px-3 py-1.5 text-xs font-bold rounded-xl bg-[#E84A5F] hover:bg-[#d43f53] text-white transition items-center gap-1">
+              <span>↗ Pantalla Completa</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Marco Iframe de Altura Óptima para Móviles -->
+        <div class="w-full h-[calc(100dvh-170px)] min-h-[580px] sm:h-[720px] bg-slate-900 relative">
+          <iframe id="diagramIframe" src="diagrama-gantt.html" class="w-full h-full border-0" loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <!-- Banner de Resumen Metodológico (Compacto y Desplegable) -->
+      <div class="bg-gradient-to-br from-[#2A363B] to-[#1f282c] text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-slate-700/60">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E84A5F]/20 text-[#FF847C] text-xs font-bold mb-2">
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#E84A5F]/20 text-[#FF847C] text-[11px] font-bold mb-1">
               <span>🎓</span> Evaluación Segundo Corte II (20 Puntos / 10%)
             </div>
-            <h2 class="text-xl sm:text-2xl font-black tracking-tight">Suite de Diagramas de Ingeniería de Software</h2>
-            <p class="text-xs text-[#FECEAB] mt-1 max-w-2xl leading-relaxed">
-              Modelado riguroso del Ciclo de Vida del Software (SDLC) para la aplicación móvil de control de inventario con QR para ferretería. Desarrollado por <strong>Roger García</strong> (@rgamercm).
+            <h2 class="text-base sm:text-lg font-black tracking-tight">Suite de Ingeniería de Software — FerreInventario QR</h2>
+            <p class="text-xs text-[#FECEAB] mt-0.5">
+              Modelado riguroso del SDLC. Autor: <strong>Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="text-[#FF847C] hover:underline">@rgamercm</a>)
             </p>
           </div>
-          <button onclick="switchMainCategory('app')" class="px-4 py-2 bg-[#99B898] hover:bg-[#85a884] text-[#2A363B] font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">
-            <span>📱 Volver a la App Móvil</span>
+          <button onclick="switchMainCategory('app')" class="px-3.5 py-2 bg-[#99B898] hover:bg-[#85a884] text-[#2A363B] font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5 shrink-0">
+            <span>📱 Volver a App Móvil</span>
           </button>
         </div>
 
-        <!-- Explicación de por qué se solicitaron primero los diagramas -->
-        <div class="mt-4 pt-4 border-t border-slate-700/60 text-xs text-slate-300 grid sm:grid-cols-4 gap-3">
-          <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-            <span class="text-sm block mb-1">📅 1. Gantt</span>
-            <strong class="text-white block font-bold">Planificación</strong>
-            <p class="text-[11px] text-slate-400 mt-0.5">Cronograma WBS de 6 fases y 12 semanas de desarrollo.</p>
+        <!-- 4 Fichas Informativas Rápidas -->
+        <div class="mt-3 pt-3 border-t border-slate-700/60 text-xs text-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+            <span class="text-xs block mb-0.5">📅 1. Gantt</span>
+            <strong class="text-white text-xs block">6 Fases · 12 Semanas</strong>
+            <p class="text-[10px] text-slate-400">100% Avance WBS</p>
           </div>
-          <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-            <span class="text-sm block mb-1">🔄 2. DFD</span>
-            <strong class="text-white block font-bold">Flujo de Datos</strong>
-            <p class="text-[11px] text-slate-400 mt-0.5">Entidades externas, 6 procesos y 4 almacenes.</p>
+          <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+            <span class="text-xs block mb-0.5">🔄 2. DFD</span>
+            <strong class="text-white text-xs block">Nivel 0 y 1</strong>
+            <p class="text-[10px] text-slate-400">3 Entidades · 6 Procesos</p>
           </div>
-          <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-            <span class="text-sm block mb-1">⏱️ 3. Secuencias</span>
-            <strong class="text-white block font-bold">Comportamiento</strong>
-            <p class="text-[11px] text-slate-400 mt-0.5">Líneas de vida e interacción para los 5 casos de uso.</p>
+          <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+            <span class="text-xs block mb-0.5">⏱️ 3. Secuencias</span>
+            <strong class="text-white text-xs block">Dinámico UML</strong>
+            <p class="text-[10px] text-slate-400">5 Escenarios Paso a Paso</p>
           </div>
-          <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-            <span class="text-sm block mb-1">🏗️ 4. Clases UML</span>
-            <strong class="text-white block font-bold">Estructura POO</strong>
-            <p class="text-[11px] text-slate-400 mt-0.5">8 clases con atributos, métodos y multiplicidades.</p>
+          <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+            <span class="text-xs block mb-0.5">🏗️ 4. Clases</span>
+            <strong class="text-white text-xs block">Estructural POO</strong>
+            <p class="text-[10px] text-slate-400">8 Clases · 7 Relaciones</p>
           </div>
-        </div>
-      </div>
-
-      <!-- Tarjetas de Acceso a los 4 Diagramas -->
-      <div class="grid sm:grid-cols-2 gap-4">
-        
-        <!-- Tarjeta 1: Gantt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-10 h-10 rounded-xl bg-[#FECEAB]/40 text-xl flex items-center justify-center">📅</span>
-              <span class="text-[11px] font-bold text-[#E84A5F] bg-[#E84A5F]/10 px-2.5 py-0.5 rounded-full">Fase Planificación</span>
-            </div>
-            <h3 class="text-sm font-black text-[#2A363B]">Diagrama de Gantt Interactivo</h3>
-            <p class="text-xs text-slate-500 mt-1">
-              Desglose detallado de tareas por semanas, cálculo de avance global, filtros por fase e hitos críticos del proyecto.
-            </p>
-          </div>
-          <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
-            <button onclick="loadDiagramInViewer('diagrama-gantt.html', 'Diagrama de Gantt — Planificación')" class="flex-1 py-2 bg-[#2A363B] hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition">
-              🔍 Ver Aquí
-            </button>
-            <a href="diagrama-gantt.html" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center">
-              Pestaña ↗
-            </a>
-          </div>
-        </div>
-
-        <!-- Tarjeta 2: Flujo de Datos -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-10 h-10 rounded-xl bg-[#99B898]/30 text-xl flex items-center justify-center">🔄</span>
-              <span class="text-[11px] font-bold text-[#99B898] bg-[#99B898]/15 px-2.5 py-0.5 rounded-full">Nivel 0 y 1</span>
-            </div>
-            <h3 class="text-sm font-black text-[#2A363B]">Diagrama de Flujo de Datos (DFD)</h3>
-            <p class="text-xs text-slate-500 mt-1">
-              Arquitectura de flujo SVG interactivo: Administrador, Cliente, Proveedor, Sistema QR, procesos y almacenes de datos.
-            </p>
-          </div>
-          <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
-            <button onclick="loadDiagramInViewer('diagrama-flujo-datos.html', 'Diagrama de Flujo de Datos (DFD)')" class="flex-1 py-2 bg-[#2A363B] hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition">
-              🔍 Ver Aquí
-            </button>
-            <a href="diagrama-flujo-datos.html" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center">
-              Pestaña ↗
-            </a>
-          </div>
-        </div>
-
-        <!-- Tarjeta 3: Secuencias -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-10 h-10 rounded-xl bg-[#FF847C]/30 text-xl flex items-center justify-center">⏱️</span>
-              <span class="text-[11px] font-bold text-[#FF847C] bg-[#FF847C]/15 px-2.5 py-0.5 rounded-full">Dinámico UML</span>
-            </div>
-            <h3 class="text-sm font-black text-[#2A363B]">Diagrama de Secuencias Interactivo</h3>
-            <p class="text-xs text-slate-500 mt-1">
-              5 escenarios con reproducción interactiva paso a paso: Escaneo QR, Registro de Producto, Entrada de Stock, Reportes y Login.
-            </p>
-          </div>
-          <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
-            <button onclick="loadDiagramInViewer('diagrama-secuencias.html', 'Diagrama de Secuencias UML')" class="flex-1 py-2 bg-[#2A363B] hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition">
-              🔍 Ver Aquí
-            </button>
-            <a href="diagrama-secuencias.html" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center">
-              Pestaña ↗
-            </a>
-          </div>
-        </div>
-
-        <!-- Tarjeta 4: Clases -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-10 h-10 rounded-xl bg-blue-50 text-xl text-blue-600 flex items-center justify-center">🏗️</span>
-              <span class="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">Estructural UML</span>
-            </div>
-            <h3 class="text-sm font-black text-[#2A363B]">Diagrama de Clases UML</h3>
-            <p class="text-xs text-slate-500 mt-1">
-              8 clases del modelo de dominio: Producto, CodigoQR, Usuario, Categoria, Proveedor, MovimientoInventario, Reporte y Alerta.
-            </p>
-          </div>
-          <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
-            <button onclick="loadDiagramInViewer('diagrama-clases.html', 'Diagrama de Clases UML')" class="flex-1 py-2 bg-[#2A363B] hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition">
-              🔍 Ver Aquí
-            </button>
-            <a href="diagrama-clases.html" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center">
-              Pestaña ↗
-            </a>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- VISOR EMBEBIDO INTERACTIVO DE DIAGRAMAS EN LA MISMA PÁGINA -->
-      <div id="diagramViewerCard" class="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
-        <div class="bg-[#2A363B] text-white p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-700">
-          <div class="flex items-center gap-2.5">
-            <span class="text-lg">📐</span>
-            <div>
-              <h3 id="viewerDiagramTitle" class="text-sm font-bold">Visualizador Interactivo de Diagramas</h3>
-              <p class="text-[10px] text-slate-400">Interactúa con el modelo sin salir de la plataforma</p>
-            </div>
-          </div>
-
-          <!-- Selector rápido dentro del visor -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button onclick="loadDiagramInViewer('diagrama-gantt.html', 'Diagrama de Gantt')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-700 hover:bg-slate-600 transition">Gantt</button>
-            <button onclick="loadDiagramInViewer('diagrama-flujo-datos.html', 'Flujo de Datos (DFD)')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-700 hover:bg-slate-600 transition">DFD</button>
-            <button onclick="loadDiagramInViewer('diagrama-secuencias.html', 'Secuencias UML')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-700 hover:bg-slate-600 transition">Secuencias</button>
-            <button onclick="loadDiagramInViewer('diagrama-clases.html', 'Clases UML')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-700 hover:bg-slate-600 transition">Clases</button>
-            <a id="viewerExternalLink" href="diagrama-gantt.html" target="_blank" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#E84A5F] hover:bg-[#d43f53] transition">
-              Pantalla Completa ↗
-            </a>
-          </div>
-        </div>
-
-        <!-- Marco Iframe -->
-        <div class="w-full h-[620px] bg-slate-900 relative">
-          <iframe id="diagramIframe" src="diagrama-gantt.html" class="w-full h-full border-0"></iframe>
         </div>
       </div>
 
@@ -1376,7 +1297,7 @@ html.splash-active, body.splash-active {
         🔧
       </div>
       <div>
-        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v3.0</h3>
+        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v3.1</h3>
         <p class="text-xs text-[#E84A5F] font-bold">Simulador Digital & Suite de Ingeniería de Software</p>
       </div>
 
@@ -3746,18 +3667,33 @@ html.splash-active, body.splash-active {
   // ==========================================
   // VISOR DE DIAGRAMAS INTERACTIVOS
   // ==========================================
-  function loadDiagramInViewer(url, title) {
+  function loadDiagramInViewer(url, title, btnElement) {
     const iframe = document.getElementById('diagramIframe');
     const titleEl = document.getElementById('viewerDiagramTitle');
     const linkEl = document.getElementById('viewerExternalLink');
+    const linkElD = document.getElementById('viewerExternalLinkDesktop');
 
-    iframe.src = url;
-    titleEl.textContent = title;
-    linkEl.href = url;
+    if (iframe) iframe.src = url;
+    if (titleEl) titleEl.textContent = title;
+    if (linkEl) linkEl.href = url;
+    if (linkElD) linkElD.href = url;
+
+    // Resaltar botón activo
+    document.querySelectorAll('.diagram-tab-btn').forEach(b => {
+      b.classList.remove('bg-[#E84A5F]', 'text-white');
+      b.classList.add('bg-slate-700', 'text-slate-200');
+    });
+
+    if (btnElement) {
+      btnElement.classList.add('bg-[#E84A5F]', 'text-white');
+      btnElement.classList.remove('bg-slate-700', 'text-slate-200');
+    }
 
     const card = document.getElementById('diagramViewerCard');
-    card.scrollIntoView({ behavior: 'smooth' });
-    showToast(`📐 Cargando ${title}`);
+    if (card && window.innerWidth < 640) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    showToast(`📐 ${title}`);
   }
 
   // ==========================================
