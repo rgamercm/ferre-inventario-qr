@@ -162,6 +162,31 @@ body {
             <span class="text-base">☰</span>
           </button>
         </div>
+
+      <!-- Ticker de Tasas Oficiales BCV (Sincronización en Vivo) -->
+      <div class="bg-[#1a2327] text-white px-3 py-1.5 flex items-center justify-between text-[11px] border-b border-slate-700/60 sticky top-[49px] z-30 shadow-xs">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span class="flex items-center gap-1 font-bold text-[#FECEAB] shrink-0">
+            <span>🏛️ BCV:</span>
+          </span>
+          <span class="flex items-center gap-1 font-mono font-bold text-white shrink-0">
+            <span>💵 USD:</span> <span id="bcvRateUsdText" class="text-[#99B898]">Bs. 918.77</span>
+          </span>
+          <span class="text-slate-500">|</span>
+          <span class="flex items-center gap-1 font-mono font-bold text-slate-300 shrink-0">
+            <span>💶 EUR:</span> <span id="bcvRateEurText" class="text-[#FECEAB]">Bs. 1,009.07</span>
+          </span>
+        </div>
+        <div class="flex items-center gap-1 shrink-0 ml-1">
+          <button onclick="syncBcvRates()" class="px-2 py-0.5 rounded-lg bg-slate-700/80 hover:bg-[#E84A5F] text-[10px] font-bold text-white transition flex items-center gap-1 shadow-xs" title="Sincronizar en tiempo real con API oficial del BCV">
+            <span id="syncBcvSpinner">🔄</span>
+            <span class="hidden xs:inline">Sync</span>
+          </button>
+          <button onclick="openBcvRatesModal()" class="px-1.5 py-0.5 rounded-lg bg-slate-700/80 hover:bg-slate-600 text-[10px] font-bold text-slate-300 transition" title="Ajustar tasas manualmente">
+            ✏️
+          </button>
+        </div>
+      </div>
       </div>
 
       <!-- CUERPO DE PANTALLAS DE LA APP (SCROLLABLE) -->
@@ -510,6 +535,13 @@ body {
                 <span class="text-[10px] text-slate-400 block font-medium">Proveedor:</span>
                 <span id="detailProvider" class="font-bold text-slate-700">Stanley Tools</span>
               </div>
+            </div>
+
+            <!-- Botón Editar Producto -->
+            <div class="flex justify-end">
+              <button onclick="openEditProductModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#2A363B] font-bold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-2xs">
+                <span>✏️ Editar Información de Producto</span>
+              </button>
             </div>
 
             <!-- Acciones de Inventario: Entrada / Salida -->
@@ -1063,12 +1095,14 @@ body {
         <!-- Precios (Solo números positivos) -->
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Venta (Bs.) *</label>
-            <input type="text" id="addProdPrice" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold text-[#E84A5F]" placeholder="0.00" required oninput="filterDecimalInput(this)">
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Venta ($ USD) *</label>
+            <input type="text" id="addProdPrice" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold text-[#E84A5F]" placeholder="0.00" required oninput="filterDecimalInput(this); updateAddBsPriceCalc();">
+            <span id="addPriceBsEquiv" class="text-[10px] text-slate-500 font-semibold block mt-0.5">≈ Bs. 0.00</span>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Compra (Bs.) *</label>
-            <input type="text" id="addProdPriceBuy" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold" placeholder="0.00" required oninput="filterDecimalInput(this)">
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Compra ($ USD) *</label>
+            <input type="text" id="addProdPriceBuy" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold" placeholder="0.00" required oninput="filterDecimalInput(this); updateAddBsBuyPriceCalc();">
+            <span id="addPriceBuyBsEquiv" class="text-[10px] text-slate-500 font-semibold block mt-0.5">≈ Bs. 0.00</span>
           </div>
         </div>
 
@@ -1289,6 +1323,131 @@ body {
     </div>
   </div>
 
+  
+  <!-- MODAL: EDITAR PRODUCTO -->
+  <div id="modalEditProduct" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto animate-fade-in border border-slate-200">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">✏️</span>
+          <div>
+            <h3 class="text-sm font-bold text-[#2A363B]">Editar Producto</h3>
+            <p id="editProdCodeSubtitle" class="text-[10px] font-mono text-slate-400 font-bold">FER-001</p>
+          </div>
+        </div>
+        <button onclick="closeEditProductModal()" class="text-slate-400 hover:text-black text-sm p-1">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveEditedProduct(event)" class="space-y-3">
+        <!-- Nombre -->
+        <div>
+          <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Nombre del Producto *</label>
+          <input type="text" id="editProdName" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none" required oninput="filterTextInput(this)">
+        </div>
+
+        <!-- Categoría -->
+        <div>
+          <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Categoría *</label>
+          <select id="editProdCategory" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none bg-white" required>
+            <option value="Herramientas">🔧 Herramientas</option>
+            <option value="Pinturas">🎨 Pinturas</option>
+            <option value="Electricidad">⚡ Electricidad</option>
+            <option value="Plomería">🚿 Plomería</option>
+            <option value="Tornillería">🔩 Tornillería</option>
+            <option value="Construcción">🧱 Construcción</option>
+          </select>
+        </div>
+
+        <!-- Precios Duales (USD y Bs.) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Venta ($ USD) *</label>
+            <input type="text" id="editProdPriceUSD" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold text-[#E84A5F]" placeholder="45.00" required oninput="filterDecimalInput(this); updateEditBsPriceCalc();">
+            <span id="editPriceBsEquiv" class="text-[10px] text-slate-500 font-semibold block mt-0.5">≈ Bs. 41,344.65</span>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Precio Compra ($ USD) *</label>
+            <input type="text" id="editProdPriceBuyUSD" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold text-slate-700" placeholder="32.00" required oninput="filterDecimalInput(this); updateEditBsBuyPriceCalc();">
+            <span id="editPriceBuyBsEquiv" class="text-[10px] text-slate-500 font-semibold block mt-0.5">≈ Bs. 29,400.64</span>
+          </div>
+        </div>
+
+        <!-- Stock y Stock Mínimo -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Stock Actual *</label>
+            <input type="text" id="editProdStock" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold" required oninput="filterIntegerInput(this)">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Stock Mínimo *</label>
+            <input type="text" id="editProdMinStock" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] outline-none font-bold text-[#FF847C]" required oninput="filterIntegerInput(this)">
+          </div>
+        </div>
+
+        <!-- Ubicación y Proveedor -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Ubicación</label>
+            <input type="text" id="editProdLocation" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none" oninput="filterTextInput(this)">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Proveedor</label>
+            <input type="text" id="editProdProvider" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none" oninput="filterTextInput(this)">
+          </div>
+        </div>
+
+        <!-- Botones Modal -->
+        <div class="flex gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeEditProductModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 py-2 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow transition">
+            💾 Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AJUSTE MANUAL DE TASAS BCV -->
+  <div id="modalBcvRates" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="bg-white w-full max-w-xs rounded-3xl shadow-2xl p-5 space-y-4 animate-fade-in border border-slate-200">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🏛️</span>
+          <div>
+            <h3 class="text-sm font-bold text-[#2A363B]">Tasas de Cambio BCV</h3>
+            <p class="text-[10px] text-slate-400">Banco Central de Venezuela</p>
+          </div>
+        </div>
+        <button onclick="closeBcvRatesModal()" class="text-slate-400 hover:text-black text-sm p-1">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveManualBcvRates(event)" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Tasa Dólar Oficial (USD/Bs.)</label>
+          <input type="text" id="manualRateUsd" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#99B898] outline-none font-bold text-[#2A363B]" required oninput="filterDecimalInput(this)">
+          <p class="text-[10px] text-slate-400 mt-0.5">Ej: 918.77 Bolívares por Dólar</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Tasa Euro Oficial (EUR/Bs.)</label>
+          <input type="text" id="manualRateEur" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#FECEAB] outline-none font-bold text-[#2A363B]" required oninput="filterDecimalInput(this)">
+          <p class="text-[10px] text-slate-400 mt-0.5">Ej: 1009.07 Bolívares por Euro</p>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex gap-2">
+          <button type="button" onclick="syncBcvRates(); closeBcvRatesModal();" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+            🔄 Sincronizar API
+          </button>
+          <button type="submit" class="flex-1 py-2 bg-[#2A363B] hover:bg-black text-white font-bold text-xs rounded-xl transition">
+            Aplicar Tasas
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- SECCIÓN OCULTA PARA IMPRESIÓN OFICIAL DE REPORTES (window.print) -->
   <div id="printReportSection" class="hidden p-8 bg-white text-black font-sans">
     <div style="border-bottom: 2px solid #2A363B; padding-bottom: 12px; margin-bottom: 16px;">
@@ -1348,6 +1507,7 @@ body {
   // INICIALIZACIÓN
   // ==========================================
   function initApp() {
+    initBcvRates();
     // Cargar productos de localStorage o usar iniciales
     const saved = localStorage.getItem('ferre_products_v2');
     if (saved) {
@@ -1908,6 +2068,248 @@ body {
     showToast('✅ Movimientos de ' + selectedDayKey + ' exportados en CSV');
   }
 
+  
+  // ==========================================
+  // SINCRONIZACIÓN BCV (BANCO CENTRAL DE VENEZUELA)
+  // ==========================================
+  var bcvRates = {
+    usd: 918.77,
+    eur: 1009.07,
+    lastUpdate: '20/11/2026'
+  };
+
+  function initBcvRates() {
+    var saved = localStorage.getItem('ferre_bcv_rates_v1');
+    if (saved) {
+      try { bcvRates = Object.assign(bcvRates, JSON.parse(saved)); } catch(e) {}
+    }
+    updateBcvTickerDisplay();
+    // Intentar sincronización automática en segundo plano
+    syncBcvRates(true);
+  }
+
+  function updateBcvTickerDisplay() {
+    var usdEl = document.getElementById('bcvRateUsdText');
+    var eurEl = document.getElementById('bcvRateEurText');
+    if (usdEl) usdEl.textContent = 'Bs. ' + bcvRates.usd.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (eurEl) eurEl.textContent = 'Bs. ' + bcvRates.eur.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function syncBcvRates(silent) {
+    var spinner = document.getElementById('syncBcvSpinner');
+    if (spinner) spinner.classList.add('animate-spin');
+
+    // Consultar API oficial ve.dolarapi.com (pública y con CORS)
+    Promise.all([
+      fetch('https://ve.dolarapi.com/v1/dolares/oficial').then(function(r){ return r.json(); }),
+      fetch('https://ve.dolarapi.com/v1/euros/oficial').then(function(r){ return r.json(); })
+    ]).then(function(results) {
+      if (spinner) spinner.classList.remove('animate-spin');
+
+      if (results[0] && results[0].promedio) {
+        bcvRates.usd = parseFloat(results[0].promedio);
+      }
+      if (results[1] && results[1].promedio) {
+        bcvRates.eur = parseFloat(results[1].promedio);
+      }
+      bcvRates.lastUpdate = new Date().toLocaleDateString('es-VE');
+
+      localStorage.setItem('ferre_bcv_rates_v1', JSON.stringify(bcvRates));
+      updateBcvTickerDisplay();
+      updateKPIs();
+      renderProductsList();
+      if (currentDetailProduct) openProductDetail(currentDetailProduct.id);
+      renderReportTable();
+
+      if (!silent) {
+        showToast('✅ Tasas BCV sincronizadas: USD Bs. ' + bcvRates.usd.toFixed(2) + ' | EUR Bs. ' + bcvRates.eur.toFixed(2));
+      }
+    }).catch(function(err) {
+      if (spinner) spinner.classList.remove('animate-spin');
+      console.warn('Fallo consulta a API BCV en vivo:', err);
+      if (!silent) {
+        showToast('ℹ️ Tasas cargadas desde base de datos local (USD: Bs. ' + bcvRates.usd.toFixed(2) + ')');
+      }
+    });
+  }
+
+  function openBcvRatesModal() {
+    var usdInp = document.getElementById('manualRateUsd');
+    var eurInp = document.getElementById('manualRateEur');
+    if (usdInp) usdInp.value = bcvRates.usd.toFixed(2);
+    if (eurInp) eurInp.value = bcvRates.eur.toFixed(2);
+    document.getElementById('modalBcvRates').classList.remove('hidden');
+  }
+
+  function closeBcvRatesModal() {
+    document.getElementById('modalBcvRates').classList.add('hidden');
+  }
+
+  function handleSaveManualBcvRates(event) {
+    event.preventDefault();
+    var usd = parseFloat(document.getElementById('manualRateUsd').value);
+    var eur = parseFloat(document.getElementById('manualRateEur').value);
+
+    if (isNaN(usd) || usd <= 0 || isNaN(eur) || eur <= 0) {
+      showToast('❌ Ingrese tasas numéricas positivas válidas');
+      return;
+    }
+
+    bcvRates.usd = usd;
+    bcvRates.eur = eur;
+    bcvRates.lastUpdate = new Date().toLocaleDateString('es-VE');
+
+    localStorage.setItem('ferre_bcv_rates_v1', JSON.stringify(bcvRates));
+    updateBcvTickerDisplay();
+    updateKPIs();
+    renderProductsList();
+    if (currentDetailProduct) openProductDetail(currentDetailProduct.id);
+    renderReportTable();
+    closeBcvRatesModal();
+
+    showToast('✅ Nuevas tasas BCV aplicadas en todo el sistema');
+  }
+
+  function formatDualPrice(priceUSD) {
+    var priceBs = priceUSD * bcvRates.usd;
+    var priceEur = priceBs / bcvRates.eur;
+    return {
+      bsFormatted: 'Bs. ' + priceBs.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      usdFormatted: '$ ' + priceUSD.toFixed(2),
+      eurFormatted: '€ ' + priceEur.toFixed(2),
+      priceBsRaw: priceBs
+    };
+  }
+
+  // ==========================================
+  // EDICIÓN DE PRODUCTO
+  // ==========================================
+  
+  function updateAddBsPriceCalc() {
+    var usd = parseFloat(document.getElementById('addProdPrice').value);
+    var label = document.getElementById('addPriceBsEquiv');
+    if (label) {
+      if (!isNaN(usd) && usd > 0) {
+        label.textContent = '≈ Bs. ' + (usd * bcvRates.usd).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        label.textContent = '≈ Bs. 0.00';
+      }
+    }
+  }
+
+  function updateAddBsBuyPriceCalc() {
+    var usd = parseFloat(document.getElementById('addProdPriceBuy').value);
+    var label = document.getElementById('addPriceBuyBsEquiv');
+    if (label) {
+      if (!isNaN(usd) && usd > 0) {
+        label.textContent = '≈ Bs. ' + (usd * bcvRates.usd).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        label.textContent = '≈ Bs. 0.00';
+      }
+    }
+  }
+
+  function openEditProductModal() {
+    if (!currentDetailProduct) return;
+
+    document.getElementById('editProdCodeSubtitle').textContent = currentDetailProduct.code;
+    document.getElementById('editProdName').value = currentDetailProduct.name;
+    document.getElementById('editProdCategory').value = currentDetailProduct.category;
+    document.getElementById('editProdPriceUSD').value = currentDetailProduct.price.toFixed(2);
+    document.getElementById('editProdPriceBuyUSD').value = currentDetailProduct.priceBuy.toFixed(2);
+    document.getElementById('editProdStock').value = currentDetailProduct.stock;
+    document.getElementById('editProdMinStock').value = currentDetailProduct.minStock;
+    document.getElementById('editProdLocation').value = currentDetailProduct.location || '';
+    document.getElementById('editProdProvider').value = currentDetailProduct.provider || '';
+
+    updateEditBsPriceCalc();
+    updateEditBsBuyPriceCalc();
+
+    document.getElementById('modalEditProduct').classList.remove('hidden');
+  }
+
+  function closeEditProductModal() {
+    document.getElementById('modalEditProduct').classList.add('hidden');
+  }
+
+  function updateEditBsPriceCalc() {
+    var usd = parseFloat(document.getElementById('editProdPriceUSD').value);
+    var label = document.getElementById('editPriceBsEquiv');
+    if (!isNaN(usd) && usd > 0) {
+      label.textContent = '≈ Bs. ' + (usd * bcvRates.usd).toLocaleString('es-VE', { minimumFractionDigits: 2 });
+    } else {
+      label.textContent = '≈ Bs. 0.00';
+    }
+  }
+
+  function updateEditBsBuyPriceCalc() {
+    var usd = parseFloat(document.getElementById('editProdPriceBuyUSD').value);
+    var label = document.getElementById('editPriceBuyBsEquiv');
+    if (!isNaN(usd) && usd > 0) {
+      label.textContent = '≈ Bs. ' + (usd * bcvRates.usd).toLocaleString('es-VE', { minimumFractionDigits: 2 });
+    } else {
+      label.textContent = '≈ Bs. 0.00';
+    }
+  }
+
+  function handleSaveEditedProduct(event) {
+    event.preventDefault();
+    if (!currentDetailProduct) return;
+
+    var name = document.getElementById('editProdName').value.trim();
+    var category = document.getElementById('editProdCategory').value;
+    var priceUSD = parseFloat(document.getElementById('editProdPriceUSD').value);
+    var priceBuyUSD = parseFloat(document.getElementById('editProdPriceBuyUSD').value);
+    var stock = parseInt(document.getElementById('editProdStock').value, 10);
+    var minStock = parseInt(document.getElementById('editProdMinStock').value, 10);
+    var location = document.getElementById('editProdLocation').value.trim() || 'Pasillo General';
+    var provider = document.getElementById('editProdProvider').value.trim() || 'Proveedor Local';
+
+    // Validación anti-duplicados por nombre (excluyendo el producto actual)
+    var nameExists = products.some(function(p) {
+      return p.id !== currentDetailProduct.id && p.name.trim().toLowerCase() === name.toLowerCase();
+    });
+    if (nameExists) {
+      showToast('❌ Error: Ya existe otro producto con el nombre "' + name + '"');
+      return;
+    }
+
+    if (isNaN(priceUSD) || priceUSD <= 0) {
+      showToast('❌ El precio de venta debe ser positivo');
+      return;
+    }
+    if (isNaN(priceBuyUSD) || priceBuyUSD <= 0) {
+      showToast('❌ El precio de compra debe ser positivo');
+      return;
+    }
+    if (isNaN(stock) || stock < 0) {
+      showToast('❌ El stock debe ser un entero no negativo');
+      return;
+    }
+    if (isNaN(minStock) || minStock < 1) {
+      showToast('❌ El stock mínimo debe ser al menos 1');
+      return;
+    }
+
+    // Actualizar producto
+    currentDetailProduct.name = name;
+    currentDetailProduct.category = category;
+    currentDetailProduct.price = priceUSD;
+    currentDetailProduct.priceBuy = priceBuyUSD;
+    currentDetailProduct.stock = stock;
+    currentDetailProduct.minStock = minStock;
+    currentDetailProduct.location = location;
+    currentDetailProduct.provider = provider;
+
+    saveProducts();
+    populateQuickScanSelect();
+    renderProductsList();
+    openProductDetail(currentDetailProduct.id);
+    closeEditProductModal();
+
+    showToast('✅ Producto "' + name + '" actualizado correctamente');
+  }
+
   function updateKPIs() {
     const totalProdEl = document.getElementById('kpiTotalProducts');
     const lowStockEl = document.getElementById('kpiLowStock');
@@ -1932,7 +2334,8 @@ body {
     });
 
     totalMoveEl.textContent = totalMovements;
-    totalValEl.textContent = `${appConfig.currency} ${totalInventoryValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    var totalBs = totalInventoryValue * bcvRates.usd;
+    totalValEl.innerHTML = 'Bs. ' + totalBs.toLocaleString('es-VE', { maximumFractionDigits: 0 }) + ' <span class="text-[9px] text-slate-500 font-bold block">($ ' + totalInventoryValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD)</span>';
 
     if (lowStockProducts.length > 0) {
       alertBox.classList.remove('hidden');
@@ -2000,7 +2403,10 @@ body {
                 <span class="text-[10px] font-semibold text-slate-500 truncate">${p.category}</span>
               </div>
               <h4 class="text-xs font-bold text-[#2A363B] truncate">${p.name}</h4>
-              <p class="text-[11px] font-black text-[#E84A5F] mt-0.5">${appConfig.currency} ${p.price.toFixed(2)}</p>
+              <div class="flex items-baseline gap-1.5 mt-0.5 flex-wrap">
+                <span class="text-[11px] font-black text-[#E84A5F]">Bs. ${(p.price * bcvRates.usd).toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                <span class="text-[10px] font-bold text-slate-500">($ ${p.price.toFixed(2)})</span>
+              </div>
             </div>
           </div>
           <div class="text-right shrink-0">
@@ -2061,7 +2467,10 @@ body {
           <div class="min-w-0">
             <span class="text-[10px] font-mono font-bold text-[#E84A5F]">${p.code} (Stock Mín: ${p.minStock})</span>
             <h4 class="text-xs font-bold text-[#2A363B] truncate">${p.name}</h4>
-            <p class="text-[11px] font-black text-[#E84A5F] mt-0.5">${appConfig.currency} ${p.price.toFixed(2)}</p>
+            <div class="flex items-baseline gap-1.5 mt-0.5 flex-wrap">
+                <span class="text-[11px] font-black text-[#E84A5F]">Bs. ${(p.price * bcvRates.usd).toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                <span class="text-[10px] font-bold text-slate-500">($ ${p.price.toFixed(2)})</span>
+              </div>
           </div>
         </div>
         <div class="text-right shrink-0">
@@ -2083,8 +2492,10 @@ body {
     document.getElementById('detailCode').textContent = p.code;
     document.getElementById('detailIcon').textContent = p.icon || '📦';
     document.getElementById('detailCategoryBadge').textContent = p.category;
-    document.getElementById('detailPrice').textContent = `${appConfig.currency} ${p.price.toFixed(2)}`;
-    document.getElementById('detailPriceBuy').textContent = `${appConfig.currency} ${p.priceBuy.toFixed(2)}`;
+    var dual = formatDualPrice(p.price);
+    var dualBuy = formatDualPrice(p.priceBuy);
+    document.getElementById('detailPrice').innerHTML = dual.bsFormatted + ' <span class="text-[10px] text-slate-500 font-bold block">' + dual.usdFormatted + ' USD · ' + dual.eurFormatted + ' EUR</span>';
+    document.getElementById('detailPriceBuy').innerHTML = dualBuy.bsFormatted + ' <span class="text-[10px] text-slate-500 font-bold block">' + dualBuy.usdFormatted + ' USD</span>';
     document.getElementById('detailLocation').textContent = p.location || 'No asignada';
     document.getElementById('detailProvider').textContent = p.provider || 'Proveedor General';
 
@@ -2652,7 +3063,8 @@ body {
 
     mItems.textContent = dataset.length;
     mUnits.textContent = totalUnits;
-    mTotal.textContent = `${appConfig.currency} ${totalVal.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`;
+    var repTotalBs = totalVal * bcvRates.usd;
+    mTotal.innerHTML = 'Bs. ' + repTotalBs.toLocaleString('es-VE', { maximumFractionDigits: 0 }) + ' <span class="text-[9px] text-slate-400 block font-normal">($ ' + totalVal.toFixed(2) + ' USD)</span>';
 
     tbody.innerHTML = dataset.map(p => `
       <tr class="hover:bg-slate-50 transition">
@@ -2660,7 +3072,10 @@ body {
         <td class="p-2 font-bold text-[#2A363B]">${p.name}</td>
         <td class="p-2 text-slate-500">${p.category}</td>
         <td class="p-2 text-center font-bold ${p.stock <= p.minStock ? 'text-[#E84A5F]' : 'text-slate-800'}">${p.stock}</td>
-        <td class="p-2 text-right font-black text-slate-800">${appConfig.currency} ${p.price.toFixed(2)}</td>
+        <td class="p-2 text-right font-black text-slate-800 text-xs">
+          <span>Bs. ${(p.price * bcvRates.usd).toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+          <span class="text-[9px] text-slate-500 font-bold block">($ ${p.price.toFixed(2)})</span>
+        </td>
       </tr>
     `).join('');
   }
@@ -2674,14 +3089,17 @@ body {
 
     // Encabezado UTF-8 BOM para que Excel en español no dañe acentos
     let csvContent = '\uFEFF';
-    csvContent += 'Código,Nombre del Producto,Categoría,Stock Actual,Stock Mínimo,Precio Venta,Precio Compra,Valor Inventario,Ubicación,Proveedor\n';
+    csvContent += 'Código,Nombre del Producto,Categoría,Stock Actual,Stock Mínimo,Precio Venta ($ USD),Precio Venta (Bs. BCV),Precio Compra ($ USD),Precio Compra (Bs. BCV),Valor Total ($ USD),Valor Total (Bs.),Tasa BCV Aplicada,Ubicación,Proveedor\n';
 
     dataset.forEach(p => {
       const valorTotal = (p.stock * p.price).toFixed(2);
       const cleanName = '"' + p.name.replace(/"/g, '""') + '"';
       const cleanLoc = '"' + (p.location || '').replace(/"/g, '""') + '"';
       const cleanProv = '"' + (p.provider || '').replace(/"/g, '""') + '"';
-      csvContent += p.code + ',' + cleanName + ',' + p.category + ',' + p.stock + ',' + p.minStock + ',' + p.price.toFixed(2) + ',' + p.priceBuy.toFixed(2) + ',' + valorTotal + ',' + cleanLoc + ',' + cleanProv + '\n';
+      const pBs = (p.price * bcvRates.usd).toFixed(2);
+      const pBuyBs = (p.priceBuy * bcvRates.usd).toFixed(2);
+      const valBs = (p.stock * p.price * bcvRates.usd).toFixed(2);
+      csvContent += p.code + ',' + cleanName + ',' + p.category + ',' + p.stock + ',' + p.minStock + ',' + p.price.toFixed(2) + ',' + pBs + ',' + p.priceBuy.toFixed(2) + ',' + pBuyBs + ',' + valorTotal + ',' + valBs + ',' + bcvRates.usd.toFixed(2) + ',' + cleanLoc + ',' + cleanProv + '\n';
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
