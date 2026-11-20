@@ -118,11 +118,7 @@ body {
             </p>
           </div>
         </div>
-        <!-- Campana rápida móvil -->
-        <button onclick="openNotificationsModal()" class="sm:hidden relative p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-700/50 transition">
-          <span class="text-lg">🔔</span>
-          <span id="badgeCountMobile" class="hidden absolute top-1 right-1 w-4 h-4 bg-[#E84A5F] text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
-        </button>
+        
       </div>
 
       <!-- Conmutador de Categorías (Visible y Claro para el Docente) -->
@@ -206,22 +202,25 @@ body {
       <div id="appScreensContainer" class="flex-1 overflow-y-auto bg-slate-50 relative pb-20">
 
         <!-- ===== PANTALLA 1: SPLASH SCREEN ===== -->
-        <div id="screenSplash" class="screen flex-1 flex flex-col items-center justify-center min-h-[calc(100dvh-125px)] sm:min-h-[680px] p-6 text-center bg-gradient-to-br from-[#2A363B] via-[#242e32] to-[#1a2225] text-white">
-          <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-4xl shadow-2xl mb-4 animate-bounce">
-            🔧
-          </div>
-          <h2 class="text-2xl font-black tracking-tight">FerreInventario <span class="text-[#E84A5F]">QR</span></h2>
-          <p class="text-xs text-[#FECEAB] mt-1 font-medium">Control Inteligente de Stock & Movimientos</p>
-          <div class="w-16 h-1 bg-[#99B898] rounded-full my-4"></div>
-          <p class="text-[11px] text-slate-300">Desarrollado por: <strong class="text-white">Roger García</strong> (@rgamercm)</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Sistemas de Información — 8vo Semestre</p>
+        <div id="screenSplash" class="screen flex flex-col items-center justify-between h-[calc(100dvh-135px)] max-h-[660px] p-5 text-center bg-gradient-to-br from-[#2A363B] via-[#242e32] to-[#1a2225] text-white select-none overflow-hidden">
           
-          <div class="mt-8 flex flex-col sm:flex-row gap-2.5 w-full max-w-xs justify-center">
-            <button onclick="navigateTo('screenLogin')" class="flex-1 py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/40 transition flex items-center justify-center gap-2">
-              <span>🔐 Iniciar Sesión (admin)</span>
-            </button>
-            <button onclick="navigateTo('screenDashboard')" class="flex-1 py-2.5 px-4 bg-slate-700/80 hover:bg-slate-700 active:scale-95 text-[#FECEAB] font-bold text-xs rounded-xl border border-slate-600 transition flex items-center justify-center gap-1.5">
+          <div class="my-auto flex flex-col items-center">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-3xl shadow-xl mb-3 animate-bounce">
+              🔧
+            </div>
+            <h2 class="text-2xl font-black tracking-tight">FerreInventario <span class="text-[#E84A5F]">QR</span></h2>
+            <p class="text-xs text-[#FECEAB] mt-1 font-medium">Control Inteligente de Stock & Movimientos</p>
+            <div class="w-14 h-1 bg-[#99B898] rounded-full my-3"></div>
+            <p class="text-[11px] text-slate-300">Desarrollado por: <strong class="text-white">Roger García</strong> (@rgamercm)</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Sistemas de Información — 8vo Semestre</p>
+          </div>
+          
+          <div class="w-full max-w-xs space-y-2 mb-2 shrink-0">
+            <button onclick="navigateTo('screenDashboard')" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/40 transition flex items-center justify-center gap-2">
               <span>⚡ Modo Demo Directo</span>
+            </button>
+            <button onclick="navigateTo('screenLogin')" class="w-full py-2.5 px-4 bg-slate-700/80 hover:bg-slate-700 active:scale-95 text-[#FECEAB] font-bold text-xs rounded-xl border border-slate-600 transition flex items-center justify-center gap-1.5">
+              <span>🔐 Iniciar Sesión (admin)</span>
             </button>
           </div>
         </div>
@@ -1702,7 +1701,8 @@ body {
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
       if (container) {
-        container.classList.remove('pb-20');
+        container.classList.remove('pb-20', 'overflow-y-auto');
+        container.classList.add('overflow-hidden');
         container.style.backgroundColor = '#1a2225';
       }
       if (mobileApp) mobileApp.style.backgroundColor = '#1a2225';
@@ -1711,7 +1711,8 @@ body {
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
       if (container) {
-        container.classList.remove('pb-20');
+        container.classList.remove('pb-20', 'overflow-hidden');
+        container.classList.add('overflow-y-auto');
         container.style.backgroundColor = '#f8fafc';
       }
       if (mobileApp) mobileApp.style.backgroundColor = '#ffffff';
@@ -1720,7 +1721,8 @@ body {
       if (stickyHeader) stickyHeader.classList.remove('hidden');
       if (bottomNav) bottomNav.classList.remove('hidden');
       if (container) {
-        container.classList.add('pb-20');
+        container.classList.add('pb-20', 'overflow-y-auto');
+        container.classList.remove('overflow-hidden');
         container.style.backgroundColor = '#f8fafc';
       }
       if (mobileApp) mobileApp.style.backgroundColor = '#ffffff';
