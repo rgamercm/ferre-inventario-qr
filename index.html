@@ -3,6 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script>
+  // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
+  (function() {
+    var APP_RELEASE = 'v3.0.0';
+    try {
+      var localRel = localStorage.getItem('ferre_app_release');
+      if (localRel && localRel !== APP_RELEASE) {
+        localStorage.setItem('ferre_app_release', APP_RELEASE);
+        if (!window.location.search.includes('v=' + APP_RELEASE)) {
+          window.location.replace(window.location.pathname + '?v=' + APP_RELEASE + '&t=' + Date.now());
+        }
+      } else {
+        localStorage.setItem('ferre_app_release', APP_RELEASE);
+      }
+    } catch(e) {}
+  })();
+</script>
 <title>FerreInventario QR — Simulador Móvil & Suite de Diagramas</title>
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 <script src="js/qrcode.min.js"></script>
@@ -89,21 +109,9 @@ body {
 }
 
 
-/* Bloqueo estricto del viewport en Splash para iOS Safari y Android */
-html.splash-active, body.splash-active {
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden !important;
-  touch-action: none !important;
-  overscroll-behavior: none !important;
-  -webkit-overflow-scrolling: auto !important;
-}
-
-
 /* ========================================================
-   BLOQUEO TOTAL DEL VIEWPORT EN SPLASH SCREEN (MÓVILES)
-   Evita que Safari en iOS desplace la ventana o el fondo
+   BLOQUEO TOTAL DEL VIEWPORT EN SPLASH Y LOGIN (MÓVILES)
+   Fija el viewport en 100% impidiendo scroll y desplazamientos
    ======================================================== */
 html.splash-active, body.splash-active {
   position: fixed !important;
@@ -138,7 +146,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v2.5</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.0</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -265,11 +273,11 @@ html.splash-active, body.splash-active {
             <form onsubmit="handleLogin(event)" class="space-y-3.5 mt-5 text-left">
               <div>
                 <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Usuario</label>
-                <input type="text" id="loginUser" value="admin" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs" placeholder="Ingresa tu usuario" required>
+                <input type="text" id="loginUser" value="admin" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs select-text" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" required>
               </div>
               <div>
                 <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Contraseña</label>
-                <input type="password" id="loginPass" value="1234" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs" placeholder="Ingresa tu contraseña" required>
+                <input type="password" id="loginPass" value="1234" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs select-text" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
               </div>
               <div class="text-[11px] text-slate-400 flex justify-between items-center px-1">
                 <span>Credenciales demo: <strong class="text-slate-700 font-bold">admin / 1234</strong></span>
@@ -1368,7 +1376,7 @@ html.splash-active, body.splash-active {
         🔧
       </div>
       <div>
-        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v2.5</h3>
+        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v3.0</h3>
         <p class="text-xs text-[#E84A5F] font-bold">Simulador Digital & Suite de Ingeniería de Software</p>
       </div>
 
@@ -1707,9 +1715,14 @@ html.splash-active, body.splash-active {
     updateAppHeader(screenId);
     updateBottomNav(screenId);
 
-    // Scroll al inicio del contenedor
+    // Scroll al inicio del contenedor y reseteo estricto de viewport
     const container = document.getElementById('appScreensContainer');
     if (container) container.scrollTop = 0;
+    if (screenId === 'screenSplash' || screenId === 'screenLogin') {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    }
   }
 
   function navigateBack() {
