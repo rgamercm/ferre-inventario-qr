@@ -59,7 +59,7 @@
         .legend-item:nth-child(3) { animation-delay: 0.3s; }
         .legend-item:nth-child(4) { animation-delay: 0.4s; }
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #2A363B 0%, #1e293b 50%, #2A363B 100%);
             min-height: 100vh;
         }
         .glass {
@@ -81,21 +81,23 @@
 </head>
 <body class="text-slate-200 font-sans">
 <!-- Unified Suite Navbar -->
-<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
-      📱 Simulador Móvil
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#2A363B;border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#E84A5F,#FF847C);color:#fff;text-decoration:none;padding:6px 14px;border-radius:10px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 8px rgba(232,74,95,0.4);">
+      📱 Volver a App Móvil
     </a>
-    <span style="color:#475569;font-size:0.8rem;">|</span>
-    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+    <span style="color:#64748b;font-size:0.8rem;">|</span>
+    <span style="color:#FECEAB;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#99B898;text-decoration:none;">@rgamercm</a>)</span>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-    <a href="diagrama-gantt.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
-    <a href="diagrama-flujo-datos.html" style="color:#6ee7b7;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#064e3b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
-    <a href="diagrama-secuencias.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
-    <a href="diagrama-clases.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+    <a href="diagrama-gantt.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#ffffff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#E84A5F;font-weight:700;">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">🏗️ Clases UML</a>
   </div>
 </nav>
+<!-- End Suite Navbar -->
 
 
     <!-- Header -->
@@ -127,18 +129,18 @@
         <div class="glass rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-6 justify-center">
             <span class="text-sm font-semibold text-slate-300 mr-2">Leyenda:</span>
             <div class="legend-item flex items-center gap-2">
-                <svg width="36" height="28"><rect x="2" y="4" width="32" height="20" rx="4" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/></svg>
+                <svg width="36" height="28"><rect x="2" y="4" width="32" height="20" rx="4" fill="#1e3a5f" stroke="#E84A5F" stroke-width="2"/></svg>
                 <span class="text-sm text-blue-300">Entidad Externa</span>
             </div>
             <div class="legend-item flex items-center gap-2">
-                <svg width="36" height="28"><circle cx="18" cy="14" r="12" fill="#1a3a2a" stroke="#10b981" stroke-width="2"/></svg>
+                <svg width="36" height="28"><circle cx="18" cy="14" r="12" fill="#1a3a2a" stroke="#99B898" stroke-width="2"/></svg>
                 <span class="text-sm text-emerald-300">Proceso</span>
             </div>
             <div class="legend-item flex items-center gap-2">
                 <svg width="50" height="28">
-                    <line x1="2" y1="8" x2="48" y2="8" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="2" y1="8" x2="48" y2="8" stroke="#FF847C" stroke-width="2"/>
                     <rect x="2" y="8" width="46" height="16" fill="#3a2a0a" stroke="none"/>
-                    <line x1="2" y1="24" x2="48" y2="24" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="2" y1="24" x2="48" y2="24" stroke="#FF847C" stroke-width="2"/>
                 </svg>
                 <span class="text-sm text-amber-300">Almacén de Datos</span>
             </div>
@@ -182,207 +184,207 @@
                         <stop offset="100%" stop-color="#2d2206"/>
                     </linearGradient>
                     <!-- Glow filters -->
-                    <filter id="glowBlue"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3b82f6" flood-opacity="0.5"/></filter>
-                    <filter id="glowGreen"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#10b981" flood-opacity="0.5"/></filter>
-                    <filter id="glowAmber"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f59e0b" flood-opacity="0.5"/></filter>
+                    <filter id="glowBlue"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#E84A5F" flood-opacity="0.5"/></filter>
+                    <filter id="glowGreen"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#99B898" flood-opacity="0.5"/></filter>
+                    <filter id="glowAmber"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#FF847C" flood-opacity="0.5"/></filter>
                 </defs>
 
                 <!-- ================= FLOW LINES (drawn first, behind nodes) ================= -->
                 <g id="flows-layer">
                     <!-- F1: Administrador → Autenticación: Credenciales -->
                     <path d="M 200,370 Q 270,300 340,240" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover" data-flow="f1"/>
-                    <rect x="218" y="278" width="96" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="218" y="278" width="96" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="266" y="292" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Credenciales</text>
 
                     <!-- F2: Autenticación → Administrador: Acceso Concedido -->
                     <path d="M 330,250 Q 240,320 200,390" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover" data-flow="f2" stroke-dashoffset="10"/>
-                    <rect x="198" y="310" width="118" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="198" y="310" width="118" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="257" y="324" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Acceso Concedido</text>
 
                     <!-- F3: Autenticación → BD Usuarios: Verificación -->
                     <path d="M 400,260 L 400,415" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="345" y="330" width="90" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="345" y="330" width="90" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="390" y="344" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Verificación</text>
 
                     <!-- F4: BD Usuarios → Autenticación: Datos Usuario -->
                     <path d="M 430,415 L 430,260" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="436" y="330" width="98" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="436" y="330" width="98" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="486" y="344" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Datos Usuario</text>
 
                     <!-- F5: Administrador → Gestión Inventario: Datos Producto -->
                     <path d="M 200,350 Q 390,100 620,140" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover"/>
-                    <rect x="368" y="142" width="108" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="368" y="142" width="108" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="422" y="156" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Datos Producto</text>
 
                     <!-- F6: Gestión Inventario → BD Productos: Registro Producto -->
                     <path d="M 690,180 L 690,375" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="696" y="275" width="120" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="696" y="275" width="120" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="756" y="289" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Registro Producto</text>
 
                     <!-- F7: BD Productos → Gestión Inventario: Info Producto -->
                     <path d="M 660,375 L 660,180" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="572" y="275" width="90" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="572" y="275" width="90" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="617" y="289" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Info Producto</text>
 
                     <!-- F8: Administrador → Generación QR: Solicitud QR -->
                     <path d="M 200,360 Q 600,200 980,290" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover"/>
-                    <rect x="580" y="232" width="100" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="580" y="232" width="100" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="630" y="246" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Solicitud QR</text>
 
                     <!-- F9: Generación QR → Sistema QR: Código QR -->
                     <path d="M 1090,310 L 1260,540" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" class="flow-line flow-line-hover"/>
-                    <rect x="1140" y="400" width="86" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="1140" y="400" width="86" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="1183" y="414" text-anchor="middle" font-size="11" fill="#6ee7b7" class="flow-label">Código QR</text>
 
                     <!-- F10: Generación QR → BD Productos: QR Asignado -->
                     <path d="M 980,310 Q 860,360 780,390" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="838" y="338" width="94" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="838" y="338" width="94" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="885" y="352" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">QR Asignado</text>
 
                     <!-- F11: Sistema QR → Escaneo QR: Lectura QR -->
                     <path d="M 1260,580 Q 1000,590 760,600" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" class="flow-line flow-line-hover"/>
-                    <rect x="975" y="574" width="88" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="975" y="574" width="88" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="1019" y="588" text-anchor="middle" font-size="11" fill="#6ee7b7" class="flow-label">Lectura QR</text>
 
                     <!-- F12: Escaneo QR → Registro Escaneos: Log Escaneo -->
                     <path d="M 650,650 Q 530,740 480,770" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="520" y="706" width="98" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="520" y="706" width="98" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="569" y="720" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Log Escaneo</text>
 
                     <!-- F13: Escaneo QR → BD Productos: Consulta Producto -->
                     <path d="M 710,560 L 730,430" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="732" y="488" width="120" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="732" y="488" width="120" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="792" y="502" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Consulta Producto</text>
 
                     <!-- F14: BD Productos → Escaneo QR: Datos Producto -->
                     <path d="M 670,430 L 650,560" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="580" y="488" width="106" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="580" y="488" width="106" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="633" y="502" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Datos Producto</text>
 
                     <!-- F15: Proveedor → Control Stock: Entrada Mercancía -->
                     <path d="M 1280,180 Q 1180,350 1070,460" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover"/>
-                    <rect x="1120" y="298" width="130" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="1120" y="298" width="130" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="1185" y="312" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Entrada Mercancía</text>
 
                     <!-- F16: Control Stock → Proveedor: Orden Reposición -->
                     <path d="M 1080,460 Q 1210,310 1300,180" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" class="flow-line flow-line-hover"/>
-                    <rect x="1230" y="260" width="124" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="1230" y="260" width="124" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="1292" y="274" text-anchor="middle" font-size="11" fill="#6ee7b7" class="flow-label">Orden Reposición</text>
 
                     <!-- F17: Control Stock → BD Productos: Actualización Stock -->
                     <path d="M 990,480 Q 870,430 780,405" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="818" y="427" width="136" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="818" y="427" width="136" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="886" y="441" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Actualización Stock</text>
 
                     <!-- F18: BD Productos → Control Stock: Nivel Stock -->
                     <path d="M 780,410 Q 870,460 990,500" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="838" y="460" width="92" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="838" y="460" width="92" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="884" y="474" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Nivel Stock</text>
 
                     <!-- F19: Control Stock → BD Movimientos: Registro Movimiento -->
                     <path d="M 1040,540 Q 1010,660 970,730" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="985" y="638" width="140" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="985" y="638" width="140" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="1055" y="652" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Registro Movimiento</text>
 
                     <!-- F20: Cliente → Escaneo QR: Escaneo Producto -->
                     <path d="M 200,650 Q 400,640 610,610" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover"/>
-                    <rect x="350" y="618" width="124" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="350" y="618" width="124" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="412" y="632" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Escaneo Producto</text>
 
                     <!-- F21: Escaneo QR → Cliente: Info Producto/Precio -->
                     <path d="M 610,630 Q 400,680 200,680" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" class="flow-line flow-line-hover"/>
-                    <rect x="344" y="664" width="140" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="344" y="664" width="140" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="414" y="678" text-anchor="middle" font-size="11" fill="#6ee7b7" class="flow-label">Info Producto / Precio</text>
 
                     <!-- F22: Administrador → Reportes: Solicitud Reporte -->
                     <path d="M 170,420 Q 250,520 310,570" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowBlue)" class="flow-line flow-line-hover"/>
-                    <rect x="183" y="496" width="120" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="183" y="496" width="120" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="243" y="510" text-anchor="middle" font-size="11" fill="#93c5fd" class="flow-label">Solicitud Reporte</text>
 
                     <!-- F23: Reportes → Administrador: Reporte Generado -->
                     <path d="M 320,560 Q 240,480 180,420" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)" class="flow-line flow-line-hover"/>
-                    <rect x="183" y="458" width="128" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="183" y="458" width="128" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="247" y="472" text-anchor="middle" font-size="11" fill="#6ee7b7" class="flow-label">Reporte Generado</text>
 
                     <!-- F24: BD Movimientos → Reportes: Datos Movimientos -->
                     <path d="M 850,750 Q 580,700 430,630" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="596" y="670" width="130" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="596" y="670" width="130" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="661" y="684" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Datos Movimientos</text>
 
                     <!-- F25: Registro Escaneos → Reportes: Datos Escaneos -->
                     <path d="M 380,760 L 380,650" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="386" y="700" width="110" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="386" y="700" width="110" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="441" y="714" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Datos Escaneos</text>
 
                     <!-- F26: BD Productos → Reportes: Datos Inventario -->
                     <path d="M 620,415 Q 480,500 400,560" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)" class="flow-line flow-line-hover"/>
-                    <rect x="460" y="472" width="110" height="18" rx="4" fill="#0f172a" fill-opacity="0.85"/>
+                    <rect x="460" y="472" width="110" height="18" rx="4" fill="#2A363B" fill-opacity="0.85"/>
                     <text x="515" y="486" text-anchor="middle" font-size="11" fill="#fcd34d" class="flow-label">Datos Inventario</text>
                 </g>
 
                 <!-- ================= NODES ================= -->
                 <!-- ENTITIES -->
                 <g class="node-entity" data-node="administrador" onclick="openModal('administrador')">
-                    <rect x="80" y="340" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#3b82f6" stroke-width="2.5" filter="url(#glowBlue)"/>
+                    <rect x="80" y="340" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#E84A5F" stroke-width="2.5" filter="url(#glowBlue)"/>
                     <text x="160" y="368" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">ENTIDAD EXTERNA</text>
                     <text x="160" y="390" text-anchor="middle" fill="#dbeafe" font-size="14" font-weight="700">Administrador</text>
                 </g>
 
                 <g class="node-entity" data-node="proveedor" onclick="openModal('proveedor')">
-                    <rect x="1220" y="120" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#3b82f6" stroke-width="2.5" filter="url(#glowBlue)"/>
+                    <rect x="1220" y="120" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#E84A5F" stroke-width="2.5" filter="url(#glowBlue)"/>
                     <text x="1300" y="148" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">ENTIDAD EXTERNA</text>
                     <text x="1300" y="170" text-anchor="middle" fill="#dbeafe" font-size="14" font-weight="700">Proveedor</text>
                 </g>
 
                 <g class="node-entity" data-node="cliente" onclick="openModal('cliente')">
-                    <rect x="80" y="620" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#3b82f6" stroke-width="2.5" filter="url(#glowBlue)"/>
+                    <rect x="80" y="620" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#E84A5F" stroke-width="2.5" filter="url(#glowBlue)"/>
                     <text x="160" y="648" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">ENTIDAD EXTERNA</text>
                     <text x="160" y="670" text-anchor="middle" fill="#dbeafe" font-size="14" font-weight="700">Cliente</text>
                 </g>
 
                 <g class="node-entity" data-node="sistemaQR" onclick="openModal('sistemaQR')">
-                    <rect x="1220" y="530" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#3b82f6" stroke-width="2.5" filter="url(#glowBlue)"/>
+                    <rect x="1220" y="530" width="160" height="70" rx="10" fill="url(#entityGrad)" stroke="#E84A5F" stroke-width="2.5" filter="url(#glowBlue)"/>
                     <text x="1300" y="558" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="600">ENTIDAD EXTERNA</text>
                     <text x="1300" y="580" text-anchor="middle" fill="#dbeafe" font-size="14" font-weight="700">Sistema QR</text>
                 </g>
 
                 <!-- PROCESSES -->
                 <g class="node-process" data-node="autenticacion" onclick="openModal('autenticacion')">
-                    <circle cx="400" cy="200" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="400" cy="200" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="400" y="188" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">1.0</text>
                     <text x="400" y="208" text-anchor="middle" fill="#d1fae5" font-size="13" font-weight="700">Autenticación</text>
                 </g>
 
                 <g class="node-process" data-node="gestionInventario" onclick="openModal('gestionInventario')">
-                    <circle cx="680" cy="130" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="680" cy="130" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="680" y="115" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">2.0</text>
                     <text x="680" y="133" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Gestión</text>
                     <text x="680" y="149" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Inventario</text>
                 </g>
 
                 <g class="node-process" data-node="generacionQR" onclick="openModal('generacionQR')">
-                    <circle cx="1040" cy="300" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="1040" cy="300" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="1040" y="285" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">3.0</text>
                     <text x="1040" y="303" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Generación</text>
                     <text x="1040" y="319" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">QR</text>
                 </g>
 
                 <g class="node-process" data-node="escaneoQR" onclick="openModal('escaneoQR')">
-                    <circle cx="690" cy="600" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="690" cy="600" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="690" y="588" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">4.0</text>
                     <text x="690" y="606" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Escaneo</text>
                     <text x="690" y="622" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">QR</text>
                 </g>
 
                 <g class="node-process" data-node="controlStock" onclick="openModal('controlStock')">
-                    <circle cx="1040" cy="500" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="1040" cy="500" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="1040" y="488" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">5.0</text>
                     <text x="1040" y="506" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Control</text>
                     <text x="1040" y="522" text-anchor="middle" fill="#d1fae5" font-size="12" font-weight="700">Stock</text>
                 </g>
 
                 <g class="node-process" data-node="reportes" onclick="openModal('reportes')">
-                    <circle cx="380" cy="600" r="58" fill="url(#processGrad)" stroke="#10b981" stroke-width="2.5" filter="url(#glowGreen)"/>
+                    <circle cx="380" cy="600" r="58" fill="url(#processGrad)" stroke="#99B898" stroke-width="2.5" filter="url(#glowGreen)"/>
                     <text x="380" y="590" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">6.0</text>
                     <text x="380" y="610" text-anchor="middle" fill="#d1fae5" font-size="14" font-weight="700">Reportes</text>
                 </g>
@@ -390,37 +392,37 @@
                 <!-- DATA STORES -->
                 <g class="node-store" data-node="bdUsuarios" onclick="openModal('bdUsuarios')">
                     <rect x="310" y="420" width="180" height="40" fill="url(#storeGrad)" stroke="none"/>
-                    <line x1="310" y1="420" x2="490" y2="420" stroke="#f59e0b" stroke-width="2.5"/>
-                    <line x1="310" y1="460" x2="490" y2="460" stroke="#f59e0b" stroke-width="2.5"/>
+                    <line x1="310" y1="420" x2="490" y2="420" stroke="#FF847C" stroke-width="2.5"/>
+                    <line x1="310" y1="460" x2="490" y2="460" stroke="#FF847C" stroke-width="2.5"/>
                     <text x="330" y="445" fill="#fbbf24" font-size="11" font-weight="600">D1</text>
-                    <line x1="348" y1="420" x2="348" y2="460" stroke="#f59e0b" stroke-width="1.5"/>
+                    <line x1="348" y1="420" x2="348" y2="460" stroke="#FF847C" stroke-width="1.5"/>
                     <text x="420" y="446" text-anchor="middle" fill="#fef3c7" font-size="13" font-weight="700">BD Usuarios</text>
                 </g>
 
                 <g class="node-store" data-node="bdProductos" onclick="openModal('bdProductos')">
                     <rect x="590" y="380" width="190" height="40" fill="url(#storeGrad)" stroke="none"/>
-                    <line x1="590" y1="380" x2="780" y2="380" stroke="#f59e0b" stroke-width="2.5"/>
-                    <line x1="590" y1="420" x2="780" y2="420" stroke="#f59e0b" stroke-width="2.5"/>
+                    <line x1="590" y1="380" x2="780" y2="380" stroke="#FF847C" stroke-width="2.5"/>
+                    <line x1="590" y1="420" x2="780" y2="420" stroke="#FF847C" stroke-width="2.5"/>
                     <text x="610" y="405" fill="#fbbf24" font-size="11" font-weight="600">D2</text>
-                    <line x1="630" y1="380" x2="630" y2="420" stroke="#f59e0b" stroke-width="1.5"/>
+                    <line x1="630" y1="380" x2="630" y2="420" stroke="#FF847C" stroke-width="1.5"/>
                     <text x="706" y="406" text-anchor="middle" fill="#fef3c7" font-size="13" font-weight="700">BD Productos</text>
                 </g>
 
                 <g class="node-store" data-node="bdMovimientos" onclick="openModal('bdMovimientos')">
                     <rect x="850" y="730" width="200" height="40" fill="url(#storeGrad)" stroke="none"/>
-                    <line x1="850" y1="730" x2="1050" y2="730" stroke="#f59e0b" stroke-width="2.5"/>
-                    <line x1="850" y1="770" x2="1050" y2="770" stroke="#f59e0b" stroke-width="2.5"/>
+                    <line x1="850" y1="730" x2="1050" y2="730" stroke="#FF847C" stroke-width="2.5"/>
+                    <line x1="850" y1="770" x2="1050" y2="770" stroke="#FF847C" stroke-width="2.5"/>
                     <text x="870" y="755" fill="#fbbf24" font-size="11" font-weight="600">D3</text>
-                    <line x1="894" y1="730" x2="894" y2="770" stroke="#f59e0b" stroke-width="1.5"/>
+                    <line x1="894" y1="730" x2="894" y2="770" stroke="#FF847C" stroke-width="1.5"/>
                     <text x="972" y="756" text-anchor="middle" fill="#fef3c7" font-size="13" font-weight="700">BD Movimientos</text>
                 </g>
 
                 <g class="node-store" data-node="registroEscaneos" onclick="openModal('registroEscaneos')">
                     <rect x="280" y="760" width="210" height="40" fill="url(#storeGrad)" stroke="none"/>
-                    <line x1="280" y1="760" x2="490" y2="760" stroke="#f59e0b" stroke-width="2.5"/>
-                    <line x1="280" y1="800" x2="490" y2="800" stroke="#f59e0b" stroke-width="2.5"/>
+                    <line x1="280" y1="760" x2="490" y2="760" stroke="#FF847C" stroke-width="2.5"/>
+                    <line x1="280" y1="800" x2="490" y2="800" stroke="#FF847C" stroke-width="2.5"/>
                     <text x="300" y="785" fill="#fbbf24" font-size="11" font-weight="600">D4</text>
-                    <line x1="324" y1="760" x2="324" y2="800" stroke="#f59e0b" stroke-width="1.5"/>
+                    <line x1="324" y1="760" x2="324" y2="800" stroke="#FF847C" stroke-width="1.5"/>
                     <text x="407" y="786" text-anchor="middle" fill="#fef3c7" font-size="12" font-weight="700">Registro Escaneos</text>
                 </g>
 

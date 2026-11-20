@@ -12,7 +12,7 @@
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: #0f172a;
+            background: #2A363B;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -97,7 +97,7 @@
         .uml-section .visibility { color: #fbbf24; font-weight: 700; margin-right: 3px; }
 
         /* Domain Colors */
-        .domain-auth .uml-header { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .domain-auth .uml-header { background: linear-gradient(135deg, #FF847C, #E84A5F); color: #fff; }
         .domain-auth { background: #1e293b; }
 
         .domain-core .uml-header { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
@@ -172,7 +172,7 @@
         .modal-overlay.active { display: flex; }
 
         .modal-content {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
+            background: linear-gradient(145deg, #1e293b, #2A363B);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px;
             max-width: 560px;
@@ -224,7 +224,7 @@
         .zoom-btn:hover { background: rgba(51, 65, 85, 0.9); border-color: #64748b; }
 
         .canvas-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
-        .canvas-wrapper::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .canvas-wrapper::-webkit-scrollbar-track { background: #2A363B; border-radius: 4px; }
         .canvas-wrapper::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .canvas-wrapper::-webkit-scrollbar-thumb:hover { background: #475569; }
 
@@ -245,21 +245,23 @@
 </head>
 <body class="bg-grid">
 <!-- Unified Suite Navbar -->
-<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
-      📱 Simulador Móvil
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#2A363B;border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#E84A5F,#FF847C);color:#fff;text-decoration:none;padding:6px 14px;border-radius:10px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 8px rgba(232,74,95,0.4);">
+      📱 Volver a App Móvil
     </a>
-    <span style="color:#475569;font-size:0.8rem;">|</span>
-    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+    <span style="color:#64748b;font-size:0.8rem;">|</span>
+    <span style="color:#FECEAB;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#99B898;text-decoration:none;">@rgamercm</a>)</span>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-    <a href="diagrama-gantt.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
-    <a href="diagrama-flujo-datos.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
-    <a href="diagrama-secuencias.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
-    <a href="diagrama-clases.html" style="color:#93c5fd;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e3a8a;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+    <a href="diagrama-gantt.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#ffffff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#E84A5F;font-weight:700;">🏗️ Clases UML</a>
   </div>
 </nav>
+<!-- End Suite Navbar -->
 
 
     <!-- Header -->
@@ -286,7 +288,7 @@
     <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2">Dominios:</span>
-            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#3b82f6,#2563eb)"></span>Autenticación</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#FF847C,#E84A5F)"></span>Autenticación</span>
             <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#10b981,#059669)"></span>Núcleo (Producto)</span>
             <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#a855f7,#7c3aed)"></span>QR</span>
             <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#f59e0b,#d97706)"></span>Operaciones</span>
@@ -379,7 +381,7 @@
                 { vis: '+', name: 'getPermisos', params: '', ret: 'List<String>' },
             ],
             description: 'Representa a los usuarios del sistema (administradores, vendedores, almacenistas). Gestiona la autenticación y autorización de acceso a las funcionalidades de la app.',
-            color: '#3b82f6'
+            color: '#FF847C'
         },
         {
             id: 'Producto',

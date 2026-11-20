@@ -9,11 +9,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
         :root {
-            --phase1: #6366f1;
-            --phase2: #8b5cf6;
-            --phase3: #06b6d4;
-            --phase4: #f59e0b;
-            --phase5: #10b981;
+            --phase1: #E84A5F;
+            --phase2: #FF847C;
+            --phase3: #99B898;
+            --phase4: #2A363B;
+            --phase5: #FECEAB;
             --phase6: #ef4444;
         }
 
@@ -21,7 +21,7 @@
 
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: #0f172a;
+            background: #2A363B;
             color: #e2e8f0;
             min-height: 100vh;
         }
@@ -172,21 +172,23 @@
 </head>
 <body class="min-h-screen flex flex-col">
 <!-- Unified Suite Navbar -->
-<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
-      📱 Simulador Móvil
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#2A363B;border-bottom:1px solid rgba(255,255,255,0.1);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#E84A5F,#FF847C);color:#fff;text-decoration:none;padding:6px 14px;border-radius:10px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 8px rgba(232,74,95,0.4);">
+      📱 Volver a App Móvil
     </a>
-    <span style="color:#475569;font-size:0.8rem;">|</span>
-    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+    <span style="color:#64748b;font-size:0.8rem;">|</span>
+    <span style="color:#FECEAB;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#99B898;text-decoration:none;">@rgamercm</a>)</span>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-    <a href="diagrama-gantt.html" style="color:#a5b4fc;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#312e81;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
-    <a href="diagrama-flujo-datos.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
-    <a href="diagrama-secuencias.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
-    <a href="diagrama-clases.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+    <a href="diagrama-gantt.html" style="color:#ffffff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#E84A5F;font-weight:700;">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#FECEAB;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.72rem;background:#1f282c;font-weight:600;">🏗️ Clases UML</a>
   </div>
 </nav>
+<!-- End Suite Navbar -->
 
 
     <!-- Tooltip -->
@@ -221,7 +223,7 @@
                             <defs>
                                 <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#818cf8"/>
-                                    <stop offset="100%" stop-color="#06b6d4"/>
+                                    <stop offset="100%" stop-color="#99B898"/>
                                 </linearGradient>
                             </defs>
                             <text id="progressText" x="24" y="26" text-anchor="middle" dominant-baseline="middle" class="text-[11px] font-bold" fill="#e2e8f0">0%</text>
@@ -348,7 +350,7 @@
     const phases = [
         {
             id: 1, name: 'Análisis de Requisitos', icon: '📋',
-            color: '#6366f1', colorLight: 'rgba(99,102,241,0.15)', colorMid: 'rgba(99,102,241,0.3)',
+            color: '#E84A5F', colorLight: 'rgba(99,102,241,0.15)', colorMid: 'rgba(99,102,241,0.3)',
             startWeek: 1, endWeek: 2, progress: 100,
             tasks: [
                 { name: 'Levantamiento de requerimientos', start: 1, end: 1, progress: 100, desc: 'Entrevistas con usuarios y stakeholders de la ferretería para identificar necesidades.' },
@@ -360,7 +362,7 @@
         },
         {
             id: 2, name: 'Diseño del Sistema', icon: '🎨',
-            color: '#8b5cf6', colorLight: 'rgba(139,92,246,0.15)', colorMid: 'rgba(139,92,246,0.3)',
+            color: '#FF847C', colorLight: 'rgba(139,92,246,0.15)', colorMid: 'rgba(139,92,246,0.3)',
             startWeek: 2, endWeek: 4, progress: 100,
             tasks: [
                 { name: 'Diseño de Base de Datos', start: 2, end: 3, progress: 100, desc: 'Modelo entidad-relación y esquema relacional para productos, inventario, usuarios.' },
@@ -373,7 +375,7 @@
         },
         {
             id: 3, name: 'Desarrollo', icon: '💻',
-            color: '#06b6d4', colorLight: 'rgba(6,182,212,0.15)', colorMid: 'rgba(6,182,212,0.3)',
+            color: '#99B898', colorLight: 'rgba(6,182,212,0.15)', colorMid: 'rgba(6,182,212,0.3)',
             startWeek: 4, endWeek: 8, progress: 85,
             tasks: [
                 { name: 'Módulo de Inventario (CRUD)', start: 4, end: 6, progress: 100, desc: 'Crear, leer, actualizar y eliminar productos con categorías y ubicaciones.' },
@@ -387,7 +389,7 @@
         },
         {
             id: 4, name: 'Pruebas', icon: '🧪',
-            color: '#f59e0b', colorLight: 'rgba(245,158,11,0.15)', colorMid: 'rgba(245,158,11,0.3)',
+            color: '#2A363B', colorLight: 'rgba(245,158,11,0.15)', colorMid: 'rgba(245,158,11,0.3)',
             startWeek: 8, endWeek: 10, progress: 45,
             tasks: [
                 { name: 'Pruebas Unitarias', start: 8, end: 9, progress: 70, desc: 'Testing de cada función y método individual con Jest/JUnit.' },
@@ -400,7 +402,7 @@
         },
         {
             id: 5, name: 'Despliegue', icon: '🚀',
-            color: '#10b981', colorLight: 'rgba(16,185,129,0.15)', colorMid: 'rgba(16,185,129,0.3)',
+            color: '#FECEAB', colorLight: 'rgba(16,185,129,0.15)', colorMid: 'rgba(16,185,129,0.3)',
             startWeek: 10, endWeek: 11, progress: 10,
             tasks: [
                 { name: 'Configuración de servidor', start: 10, end: 10, progress: 20, desc: 'Setup de servidor cloud, dominio, SSL y base de datos en producción.' },
