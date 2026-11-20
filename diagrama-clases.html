@@ -35,7 +35,9 @@
         #diagram-canvas:active { cursor: grabbing; }
 
         .canvas-wrapper {
-            overflow: auto;
+            overflow: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            touch-action: pan-x pan-y !important;
             border: 1px solid rgba(51, 65, 85, 0.5);
             border-radius: 16px;
             background: rgba(15, 23, 42, 0.6);

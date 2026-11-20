@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.1.0';
+    var APP_RELEASE = 'v3.2.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -146,7 +146,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.1</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.2</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -987,7 +987,7 @@ html.splash-active, body.splash-active {
 
         <!-- Marco Iframe de Altura Óptima para Móviles -->
         <div class="w-full h-[calc(100dvh-170px)] min-h-[580px] sm:h-[720px] bg-slate-900 relative">
-          <iframe id="diagramIframe" src="diagrama-gantt.html" class="w-full h-full border-0" loading="lazy"></iframe>
+          <iframe id="diagramIframe" src="diagrama-gantt.html" class="w-full h-full border-0" loading="lazy" style="touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch;"></iframe>
         </div>
       </div>
 
@@ -1297,7 +1297,7 @@ html.splash-active, body.splash-active {
         🔧
       </div>
       <div>
-        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v3.1</h3>
+        <h3 class="text-base font-black text-[#2A363B]">FerreInventario QR v3.2</h3>
         <p class="text-xs text-[#E84A5F] font-bold">Simulador Digital & Suite de Ingeniería de Software</p>
       </div>
 
@@ -1776,7 +1776,18 @@ html.splash-active, body.splash-active {
       btnApp.classList.add('category-tab-active');
       btnDiag.classList.remove('category-tab-active');
       btnDiag.classList.add('text-slate-300');
+
+      // Si volvemos a la App y la pantalla activa era Splash o Login, restaurar bloqueo de viewport
+      if (currentScreen === 'screenSplash' || currentScreen === 'screenLogin') {
+        document.documentElement.classList.add('splash-active');
+        document.body.classList.add('splash-active');
+      }
     } else {
+      // Al cambiar a la Suite de Diagramas, LIBERAR INMEDIATAMENTE el bloqueo del viewport
+      // para que el usuario pueda deslizar, hacer scroll horizontal y vertical libremente en los diagramas
+      document.documentElement.classList.remove('splash-active');
+      document.body.classList.remove('splash-active');
+
       viewApp.classList.add('hidden');
       viewDiag.classList.remove('hidden');
       btnDiag.classList.add('category-tab-active');

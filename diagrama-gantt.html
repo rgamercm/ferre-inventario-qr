@@ -164,9 +164,19 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        @media (max-width: 768px) {
-            .gantt-container { overflow-x: auto; }
-            .gantt-grid { min-width: 900px; }
+        .gantt-container {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            touch-action: pan-x pan-y !important;
+            max-width: 100%;
+        }
+        .gantt-grid {
+            min-width: 860px !important;
+            touch-action: pan-x pan-y !important;
+        }
+        body {
+            touch-action: pan-x pan-y !important;
+            -webkit-overflow-scrolling: touch !important;
         }
     
   @media (max-width: 640px) {
@@ -326,7 +336,7 @@
         </div>
 
         <!-- Gantt Chart -->
-        <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden mb-6">
+        <div id="ganttGridCard" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden mb-6">
             <!-- Legend bar -->
             <div class="bg-slate-800/80 px-4 sm:px-6 py-3 border-b border-slate-700/50 flex flex-wrap items-center gap-4">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Leyenda:</span>
@@ -804,6 +814,142 @@
             text.textContent = overall + '%';
             label.textContent = overall >= 100 ? '¡Completado!' : overall >= 50 ? 'En buen progreso' : 'En desarrollo';
         }, 300);
+    }
+
+
+    // ==========================================
+    // DETECCIÓN DE IFRAME & OPTIMIZACIONES MÓVILES
+    // ==========================================
+    if (window.self !== window.top) {
+        const nav = document.getElementById('suite-navbar');
+        if (nav) nav.style.display = 'none';
+    }
+
+    let activeGanttView = 'grid';
+    let activeWeekRange = 'all';
+
+    function switchGanttView(view) {
+        activeGanttView = view;
+        const gridCard = document.getElementById('ganttGridCard');
+        const phasesView = document.getElementById('mobilePhasesView');
+        const quadBar = document.getElementById('ganttQuadrantBar');
+        const btnG = document.getElementById('btnGanttGrid');
+        const btnP = document.getElementById('btnGanttPhases');
+
+        if (view === 'phases') {
+            if (gridCard) gridCard.classList.add('hidden');
+            if (phasesView) phasesView.classList.remove('hidden');
+            if (quadBar) quadBar.classList.add('hidden');
+            if (btnP) {
+                btnP.classList.add('bg-[#E84A5F]', 'text-white');
+                btnP.classList.remove('text-slate-300');
+            }
+            if (btnG) {
+                btnG.classList.remove('bg-[#E84A5F]', 'text-white');
+                btnG.classList.add('text-slate-300');
+            }
+            renderMobilePhases();
+        } else {
+            if (phasesView) phasesView.classList.add('hidden');
+            if (gridCard) gridCard.classList.remove('hidden');
+            if (quadBar) quadBar.classList.remove('hidden');
+            if (btnG) {
+                btnG.classList.add('bg-[#E84A5F]', 'text-white');
+                btnG.classList.remove('text-slate-300');
+            }
+            if (btnP) {
+                btnP.classList.remove('bg-[#E84A5F]', 'text-white');
+                btnP.classList.add('text-slate-300');
+            }
+        }
+    }
+
+    function filterGanttWeeks(range, btn) {
+        activeWeekRange = range;
+        document.querySelectorAll('.gantt-quad-btn').forEach(b => {
+            b.classList.remove('bg-[#E84A5F]', 'text-white');
+            b.classList.add('text-slate-300');
+        });
+        if (btn) {
+            btn.classList.add('bg-[#E84A5F]', 'text-white');
+            btn.classList.remove('text-slate-300');
+        }
+
+        const cols = document.querySelectorAll('.week-col');
+        cols.forEach(col => {
+            const w = parseInt(col.dataset.week);
+            if (range === 'all') {
+                col.style.display = '';
+            } else if (range === '1-4') {
+                col.style.display = (w >= 1 && w <= 4) ? '' : 'none';
+            } else if (range === '5-8') {
+                col.style.display = (w >= 5 && w <= 8) ? '' : 'none';
+            } else if (range === '9-12') {
+                col.style.display = (w >= 9 && w <= 12) ? '' : 'none';
+            }
+        });
+    }
+
+    function renderMobilePhases() {
+        const list = document.getElementById('mobilePhasesList');
+        if (!list) return;
+        list.innerHTML = phases.map(phase => {
+            const tasksHtml = phase.tasks.map(t => `
+                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-white">${t.name}</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">${t.progress}%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">${t.desc}</p>
+                    <div class="flex items-center justify-between text-[10px] text-slate-500">
+                        <span>📅 Sem ${t.start}–${t.end}</span>
+                        <span class="text-emerald-400 font-semibold">✓ Completado</span>
+                    </div>
+                </div>
+            `).join('');
+
+            const delivHtml = phase.deliverables.map(d => `
+                <li class="flex items-center gap-1.5 text-xs text-slate-300">
+                    <span class="text-emerald-400 font-bold">✓</span>
+                    <span>${d}</span>
+                </li>
+            `).join('');
+
+            return `
+                <div class="bg-slate-900/90 rounded-2xl border border-slate-700/80 shadow-lg overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="p-3.5 text-white flex items-center justify-between border-b border-slate-700/60" style="background: linear-gradient(135deg, ${phase.color}dd, #1e293b)">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">${phase.icon}</span>
+                                <div>
+                                    <h4 class="text-sm font-bold">${phase.name}</h4>
+                                    <span class="text-[10px] text-white/80">Semanas ${phase.startWeek} a ${phase.endWeek}</span>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-black/40 font-bold px-2 py-0.5 rounded-full text-emerald-300">${phase.progress}%</span>
+                        </div>
+
+                        <div class="p-3.5 space-y-3">
+                            <div>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tareas (${phase.tasks.length})</h5>
+                                <div class="space-y-2">${tasksHtml}</div>
+                            </div>
+
+                            <div>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Entregables</h5>
+                                <ul class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800 space-y-1">${delivHtml}</ul>
+                            </div>
+
+                            ${phase.milestone ? `
+                            <div class="bg-amber-500/10 border border-amber-500/30 p-2 rounded-xl flex items-center gap-2 text-xs text-amber-300">
+                                <span>🎯</span>
+                                <span><strong>Hito Sem ${phase.milestone.week}:</strong> ${phase.milestone.label}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     // ============ INIT ============
