@@ -252,32 +252,40 @@ html.splash-active, body.splash-active {
           </div>
         </div>
 
-        <!-- ===== PANTALLA 2: LOGIN ===== -->
-        <div id="screenLogin" class="screen hidden p-6 flex-1 flex flex-col justify-center min-h-[calc(100dvh-125px)] sm:min-h-[680px] bg-slate-50">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 mx-auto rounded-2xl bg-[#2A363B] text-white flex items-center justify-center text-2xl shadow-lg mb-3">
+        <!-- ===== PANTALLA 2: LOGIN (BLOQUEADA Y AJUSTADA) ===== -->
+        <div id="screenLogin" class="screen hidden flex flex-col items-center justify-between h-[calc(100dvh-135px)] max-h-[660px] p-6 text-center bg-slate-50 select-none overflow-hidden touch-none overscroll-none">
+          
+          <div class="my-auto w-full max-w-xs mx-auto">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-[#2A363B] text-white flex items-center justify-center text-3xl shadow-xl mb-3">
               🔐
             </div>
-            <h3 class="text-lg font-black text-[#2A363B]">Iniciar Sesión</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Control de Inventario de Ferretería</p>
+            <h3 class="text-xl font-black text-[#2A363B] tracking-tight">Iniciar Sesión</h3>
+            <p class="text-xs text-slate-500 mt-1">Control de Inventario de Ferretería</p>
+
+            <form onsubmit="handleLogin(event)" class="space-y-3.5 mt-5 text-left">
+              <div>
+                <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Usuario</label>
+                <input type="text" id="loginUser" value="admin" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs" placeholder="Ingresa tu usuario" required>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Contraseña</label>
+                <input type="password" id="loginPass" value="1234" class="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none font-semibold bg-white shadow-2xs" placeholder="Ingresa tu contraseña" required>
+              </div>
+              <div class="text-[11px] text-slate-400 flex justify-between items-center px-1">
+                <span>Credenciales demo: <strong class="text-slate-700 font-bold">admin / 1234</strong></span>
+              </div>
+              <button type="submit" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/30 transition-all flex items-center justify-center gap-1.5 mt-1">
+                <span>Acceder al Panel</span>
+                <span>→</span>
+              </button>
+            </form>
           </div>
 
-          <form onsubmit="handleLogin(event)" class="space-y-4 max-w-xs mx-auto w-full">
-            <div>
-              <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Usuario</label>
-              <input type="text" id="loginUser" value="admin" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none" placeholder="Ingresa tu usuario" required>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-[#2A363B] mb-1">Contraseña</label>
-              <input type="password" id="loginPass" value="1234" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#E84A5F] focus:border-[#E84A5F] outline-none" placeholder="Ingresa tu contraseña" required>
-            </div>
-            <div class="text-[11px] text-slate-400 flex justify-between items-center">
-              <span>Usuario demo: <strong class="text-slate-600">admin / 1234</strong></span>
-            </div>
-            <button type="submit" class="w-full py-2.5 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow-md transition-all">
-              Acceder al Panel
+          <div class="w-full max-w-xs mt-2 shrink-0">
+            <button type="button" onclick="navigateTo('screenSplash')" class="w-full py-2 px-3 text-slate-500 hover:text-slate-800 active:scale-95 text-xs font-semibold rounded-xl hover:bg-slate-200/60 transition flex items-center justify-center gap-1">
+              <span>← Volver a Bienvenida</span>
             </button>
-          </form>
+          </div>
         </div>
 
         <!-- ===== PANTALLA 3: DASHBOARD PRINCIPAL ===== -->
@@ -1735,36 +1743,33 @@ html.splash-active, body.splash-active {
       }
     }
 
-    // En Splash bloqueamos TOTALMENTE el scroll de la ventana (body y html) para look de App Nativa fija
-    if (screenId === 'screenSplash') {
+    // En Splash y Login bloqueamos TOTALMENTE el scroll de la ventana (body y html) para look de App Nativa fija
+    if (screenId === 'screenSplash' || screenId === 'screenLogin') {
       document.documentElement.classList.add('splash-active');
       document.body.classList.add('splash-active');
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
-      if (container) {
-        container.classList.remove('pb-20', 'overflow-y-auto');
-        container.classList.add('overflow-hidden');
-        container.style.backgroundColor = '#1a2225';
+
+      if (screenId === 'screenSplash') {
+        if (container) {
+          container.classList.remove('pb-20', 'overflow-y-auto');
+          container.classList.add('overflow-hidden');
+          container.style.backgroundColor = '#1a2225';
+        }
+        if (mobileApp) mobileApp.style.backgroundColor = '#1a2225';
+      } else {
+        if (container) {
+          container.classList.remove('pb-20', 'overflow-y-auto');
+          container.classList.add('overflow-hidden');
+          container.style.backgroundColor = '#f8fafc';
+        }
+        if (mobileApp) mobileApp.style.backgroundColor = '#f8fafc';
       }
-      if (mobileApp) mobileApp.style.backgroundColor = '#1a2225';
       return;
     } else {
-      // Liberar scroll del viewport para el resto de pantallas
+      // Liberar scroll del viewport para el resto de pantallas operativas (Dashboard, Productos, etc.)
       document.documentElement.classList.remove('splash-active');
       document.body.classList.remove('splash-active');
-    }
-
-    if (screenId === 'screenLogin') {
-      if (stickyHeader) stickyHeader.classList.add('hidden');
-      if (bottomNav) bottomNav.classList.add('hidden');
-      if (container) {
-        container.classList.remove('pb-20', 'overflow-hidden');
-        container.classList.add('overflow-y-auto');
-        container.style.backgroundColor = '#f8fafc';
-      }
-      if (mobileApp) mobileApp.style.backgroundColor = '#ffffff';
-      return;
-    } else {
       if (stickyHeader) stickyHeader.classList.remove('hidden');
       if (bottomNav) bottomNav.classList.remove('hidden');
       if (container) {
