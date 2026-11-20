@@ -206,7 +206,7 @@ body {
       <div id="appScreensContainer" class="flex-1 overflow-y-auto bg-slate-50 relative pb-20">
 
         <!-- ===== PANTALLA 1: SPLASH SCREEN ===== -->
-        <div id="screenSplash" class="screen flex flex-col items-center justify-center min-h-[580px] p-6 text-center bg-gradient-to-br from-[#2A363B] via-[#242e32] to-[#1a2225] text-white">
+        <div id="screenSplash" class="screen flex-1 flex flex-col items-center justify-center min-h-[calc(100dvh-125px)] sm:min-h-[680px] p-6 text-center bg-gradient-to-br from-[#2A363B] via-[#242e32] to-[#1a2225] text-white">
           <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-4xl shadow-2xl mb-4 animate-bounce">
             🔧
           </div>
@@ -227,7 +227,7 @@ body {
         </div>
 
         <!-- ===== PANTALLA 2: LOGIN ===== -->
-        <div id="screenLogin" class="screen hidden p-6 flex flex-col justify-center min-h-[580px]">
+        <div id="screenLogin" class="screen hidden p-6 flex-1 flex flex-col justify-center min-h-[calc(100dvh-125px)] sm:min-h-[680px] bg-slate-50">
           <div class="text-center mb-6">
             <div class="w-14 h-14 mx-auto rounded-2xl bg-[#2A363B] text-white flex items-center justify-center text-2xl shadow-lg mb-3">
               🔐
@@ -1694,14 +1694,36 @@ body {
     const titleEl = document.getElementById('screenTitleHeader');
     const iconEl = document.getElementById('screenIconHeader');
 
+    var container = document.getElementById('appScreensContainer');
+    var mobileApp = document.getElementById('viewMobileApp');
+
     // En Splash y Login ocultamos encabezado y barra de navegación inferior para look nativo móvil
-    if (screenId === 'screenSplash' || screenId === 'screenLogin') {
+    if (screenId === 'screenSplash') {
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
+      if (container) {
+        container.classList.remove('pb-20');
+        container.style.backgroundColor = '#1a2225';
+      }
+      if (mobileApp) mobileApp.style.backgroundColor = '#1a2225';
+      return;
+    } else if (screenId === 'screenLogin') {
+      if (stickyHeader) stickyHeader.classList.add('hidden');
+      if (bottomNav) bottomNav.classList.add('hidden');
+      if (container) {
+        container.classList.remove('pb-20');
+        container.style.backgroundColor = '#f8fafc';
+      }
+      if (mobileApp) mobileApp.style.backgroundColor = '#ffffff';
       return;
     } else {
       if (stickyHeader) stickyHeader.classList.remove('hidden');
       if (bottomNav) bottomNav.classList.remove('hidden');
+      if (container) {
+        container.classList.add('pb-20');
+        container.style.backgroundColor = '#f8fafc';
+      }
+      if (mobileApp) mobileApp.style.backgroundColor = '#ffffff';
     }
 
     // El botón volver aparece en todas partes excepto en Dashboard
