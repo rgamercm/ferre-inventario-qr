@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="splash-active">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -100,6 +100,21 @@ html.splash-active, body.splash-active {
   -webkit-overflow-scrolling: auto !important;
 }
 
+
+/* ========================================================
+   BLOQUEO TOTAL DEL VIEWPORT EN SPLASH SCREEN (MÓVILES)
+   Evita que Safari en iOS desplace la ventana o el fondo
+   ======================================================== */
+html.splash-active, body.splash-active {
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: auto !important;
+}
+
 /* Print CSS for real reports */
 @media print {
   body * { visibility: hidden; }
@@ -109,7 +124,7 @@ html.splash-active, body.splash-active {
 }
 </style>
 </head>
-<body class="antialiased selection:bg-[#E84A5F] selection:text-white">
+<body class="antialiased selection:bg-[#E84A5F] selection:text-white splash-active">
 
   <!-- ==================== HEADER PRINCIPAL CONMUTADOR DE VISTAS ==================== -->
   <header class="bg-[#2A363B] text-white shadow-lg sticky top-0 z-50 border-b border-slate-700/60 no-print">
