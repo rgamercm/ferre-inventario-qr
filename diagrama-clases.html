@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Clases - App Inventario Ferretería QR</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-grid {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+        }
+
+        /* Canvas container */
+        #diagram-canvas {
+            position: relative;
+            width: 1600px;
+            height: 1100px;
+            margin: 0 auto;
+            cursor: grab;
+        }
+        #diagram-canvas:active { cursor: grabbing; }
+
+        .canvas-wrapper {
+            overflow: auto;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            margin: 0 24px;
+        }
+
+        /* UML Class Box */
+        .uml-class {
+            position: absolute;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, z-index 0s;
+            z-index: 10;
+            min-width: 220px;
+            user-select: none;
+        }
+        .uml-class:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.1);
+            z-index: 50;
+        }
+        .uml-class.highlight {
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.7), 0 8px 40px rgba(250, 204, 21, 0.2);
+            z-index: 40;
+        }
+
+        .uml-header {
+            padding: 10px 16px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        .uml-header .stereotype {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+
+        .uml-section {
+            padding: 8px 14px;
+            font-size: 11.5px;
+            line-height: 1.65;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-family: 'Courier New', monospace;
+        }
+        .uml-section:last-child { border-bottom: none; }
+
+        .uml-section .attr { color: #94a3b8; }
+        .uml-section .method { color: #67e8f9; }
+        .uml-section .type { color: #a78bfa; font-style: italic; }
+        .uml-section .visibility { color: #fbbf24; font-weight: 700; margin-right: 3px; }
+
+        /* Domain Colors */
+        .domain-auth .uml-header { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .domain-auth { background: #1e293b; }
+
+        .domain-core .uml-header { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .domain-core { background: #1e293b; }
+
+        .domain-qr .uml-header { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+        .domain-qr { background: #1e293b; }
+
+        .domain-ops .uml-header { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .domain-ops { background: #1e293b; }
+
+        .domain-supply .uml-header { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+        .domain-supply { background: #1e293b; }
+
+        .domain-report .uml-header { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; }
+        .domain-report { background: #1e293b; }
+
+        .domain-alert .uml-header { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; }
+        .domain-alert { background: #1e293b; }
+
+        /* SVG Relationships */
+        #svg-relationships {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .rel-line {
+            stroke: #475569;
+            stroke-width: 1.8;
+            fill: none;
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+        .rel-line.highlight {
+            stroke: #facc15;
+            stroke-width: 2.8;
+            filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.4));
+        }
+        .rel-label {
+            font-size: 10px;
+            fill: #94a3b8;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: fill 0.3s;
+        }
+        .rel-label.highlight { fill: #facc15; }
+        .rel-mult {
+            font-size: 11px;
+            fill: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Markers */
+        .marker-arrow { fill: #475569; transition: fill 0.3s; }
+        .marker-arrow.highlight { fill: #facc15; }
+        .marker-diamond { fill: #1e293b; stroke: #475569; stroke-width: 1.5; }
+        .marker-diamond-filled { fill: #475569; stroke: #475569; stroke-width: 1.5; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            max-width: 560px;
+            width: 92%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        /* Legend */
+        .legend-dot {
+            width: 14px; height: 14px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Zoom controls */
+        .zoom-controls {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 100;
+        }
+        .zoom-btn {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .zoom-btn:hover { background: rgba(51, 65, 85, 0.9); border-color: #64748b; }
+
+        .canvas-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+        .canvas-wrapper::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .canvas-wrapper::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .tooltip-rel {
+            position: absolute;
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #e2e8f0;
+            pointer-events: none;
+            z-index: 60;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-grid">
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
+      📱 Simulador Móvil
+    </a>
+    <span style="color:#475569;font-size:0.8rem;">|</span>
+    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    <a href="diagrama-gantt.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#93c5fd;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e3a8a;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+  </div>
+</nav>
+
+
+    <!-- Header -->
+    <header class="py-6 px-6 border-b border-slate-800/60">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">Diagrama de Clases — App Inventario Ferretería QR</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Modelo de dominio · UML 2.5 · 8 Clases · 7 Relaciones</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-500 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">Sistemas de Información 2026-2</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Legend -->
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2">Dominios:</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#3b82f6,#2563eb)"></span>Autenticación</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#10b981,#059669)"></span>Núcleo (Producto)</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#a855f7,#7c3aed)"></span>QR</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#f59e0b,#d97706)"></span>Operaciones</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#ef4444,#dc2626)"></span>Proveedores</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#06b6d4,#0891b2)"></span>Reportes</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300"><span class="legend-dot" style="background:linear-gradient(135deg,#f97316,#ea580c)"></span>Alertas</span>
+            <span class="border-l border-slate-700 h-4 mx-2"></span>
+            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2">Notación:</span>
+            <span class="flex items-center gap-2 text-xs text-slate-300">
+                <svg width="30" height="12"><line x1="0" y1="6" x2="30" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="30,6 24,2 24,10" fill="#94a3b8"/></svg>
+                Asociación
+            </span>
+            <span class="flex items-center gap-2 text-xs text-slate-300">
+                <svg width="30" height="12"><line x1="8" y1="6" x2="30" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="0,6 8,1 16,6 8,11" fill="#1e293b" stroke="#94a3b8" stroke-width="1.2"/></svg>
+                Composición
+            </span>
+            <span class="text-xs text-slate-500 italic ml-2">Haz clic en una clase para ver detalles</span>
+        </div>
+    </div>
+
+    <!-- Diagram Canvas -->
+    <div class="canvas-wrapper" id="canvasWrapper" style="max-height: calc(100vh - 260px);">
+        <div id="diagram-canvas">
+            <svg id="svg-relationships">
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+                        <polygon points="0,0 10,4 0,8" class="marker-arrow" />
+                    </marker>
+                    <marker id="arrow-hl" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+                        <polygon points="0,0 10,4 0,8" fill="#facc15" />
+                    </marker>
+                    <marker id="diamond" markerWidth="14" markerHeight="10" refX="0" refY="5" orient="auto" markerUnits="strokeWidth">
+                        <polygon points="0,5 7,0 14,5 7,10" class="marker-diamond-filled" />
+                    </marker>
+                    <marker id="diamond-hl" markerWidth="14" markerHeight="10" refX="0" refY="5" orient="auto" markerUnits="strokeWidth">
+                        <polygon points="0,5 7,0 14,5 7,10" fill="#facc15" stroke="#facc15" stroke-width="1.5" />
+                    </marker>
+                </defs>
+            </svg>
+
+            <!-- Classes will be rendered by JS -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-content" id="modalContent" onclick="event.stopPropagation()">
+        </div>
+    </div>
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()" title="Acercar">+</button>
+        <button class="zoom-btn" onclick="zoomReset()" title="Restablecer" style="font-size:12px;">⟳</button>
+        <button class="zoom-btn" onclick="zoomOut()" title="Alejar">−</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/60 py-4 mt-4">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2">
+            <p class="text-sm text-slate-400">
+                <span class="font-semibold text-white">Desarrollado por Roger García</span> 
+                <span class="text-slate-500">(@rgamercm)</span>
+            </p>
+            <p class="text-xs text-slate-600">Sistemas de Información · 8vo Semestre · 2026-2 · Segundo Corte</p>
+        </div>
+    </footer>
+
+    <script>
+    // ==================== DATA ====================
+    const classes = [
+        {
+            id: 'Usuario',
+            domain: 'auth',
+            stereotype: '«Entidad»',
+            x: 80, y: 60,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'nombre', type: 'String' },
+                { vis: '-', name: 'email', type: 'String' },
+                { vis: '-', name: 'password', type: 'String' },
+                { vis: '-', name: 'rol', type: 'Enum' },
+                { vis: '-', name: 'fechaCreacion', type: 'Date' },
+                { vis: '-', name: 'activo', type: 'boolean' },
+            ],
+            methods: [
+                { vis: '+', name: 'login', params: '', ret: 'boolean' },
+                { vis: '+', name: 'logout', params: '', ret: 'void' },
+                { vis: '+', name: 'cambiarPassword', params: 'newPass: String', ret: 'boolean' },
+                { vis: '+', name: 'getPermisos', params: '', ret: 'List<String>' },
+            ],
+            description: 'Representa a los usuarios del sistema (administradores, vendedores, almacenistas). Gestiona la autenticación y autorización de acceso a las funcionalidades de la app.',
+            color: '#3b82f6'
+        },
+        {
+            id: 'Producto',
+            domain: 'core',
+            stereotype: '«Entidad»',
+            x: 580, y: 30,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'nombre', type: 'String' },
+                { vis: '-', name: 'descripcion', type: 'String' },
+                { vis: '-', name: 'categoria', type: 'Categoria' },
+                { vis: '-', name: 'precio', type: 'double' },
+                { vis: '-', name: 'precioCompra', type: 'double' },
+                { vis: '-', name: 'stockActual', type: 'int' },
+                { vis: '-', name: 'stockMinimo', type: 'int' },
+                { vis: '-', name: 'codigoQR', type: 'CodigoQR' },
+                { vis: '-', name: 'imagen', type: 'String' },
+                { vis: '-', name: 'proveedor', type: 'Proveedor' },
+                { vis: '-', name: 'fechaRegistro', type: 'Date' },
+            ],
+            methods: [
+                { vis: '+', name: 'actualizarStock', params: 'cant: int', ret: 'void' },
+                { vis: '+', name: 'generarQR', params: '', ret: 'CodigoQR' },
+                { vis: '+', name: 'verificarStockBajo', params: '', ret: 'boolean' },
+                { vis: '+', name: 'calcularGanancia', params: '', ret: 'double' },
+            ],
+            description: 'Clase central del dominio. Modela cada artículo de la ferretería con su información comercial, stock y relación con códigos QR, categorías y proveedores.',
+            color: '#10b981'
+        },
+        {
+            id: 'Categoria',
+            domain: 'core',
+            stereotype: '«Entidad»',
+            x: 1100, y: 60,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'nombre', type: 'String' },
+                { vis: '-', name: 'descripcion', type: 'String' },
+                { vis: '-', name: 'icono', type: 'String' },
+            ],
+            methods: [
+                { vis: '+', name: 'getProductos', params: '', ret: 'List<Producto>' },
+                { vis: '+', name: 'contarProductos', params: '', ret: 'int' },
+            ],
+            description: 'Clasifica los productos de la ferretería en grupos lógicos (herramientas, materiales eléctricos, plomería, pinturas, etc.).',
+            color: '#10b981'
+        },
+        {
+            id: 'MovimientoInventario',
+            domain: 'ops',
+            stereotype: '«Entidad»',
+            x: 80, y: 520,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'producto', type: 'Producto' },
+                { vis: '-', name: 'tipo', type: 'Enum' },
+                { vis: '-', name: 'cantidad', type: 'int' },
+                { vis: '-', name: 'fecha', type: 'Date' },
+                { vis: '-', name: 'usuario', type: 'Usuario' },
+                { vis: '-', name: 'observaciones', type: 'String' },
+            ],
+            methods: [
+                { vis: '+', name: 'registrar', params: '', ret: 'boolean' },
+                { vis: '+', name: 'revertir', params: '', ret: 'boolean' },
+                { vis: '+', name: 'getDetalles', params: '', ret: 'String' },
+            ],
+            description: 'Registra cada entrada, salida o ajuste de inventario. Permite trazabilidad completa de quién movió qué producto, cuándo y por qué.',
+            color: '#f59e0b'
+        },
+        {
+            id: 'CodigoQR',
+            domain: 'qr',
+            stereotype: '«Entidad»',
+            x: 580, y: 530,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'producto', type: 'Producto' },
+                { vis: '-', name: 'codigoData', type: 'String' },
+                { vis: '-', name: 'fechaGeneracion', type: 'Date' },
+                { vis: '-', name: 'formato', type: 'String' },
+            ],
+            methods: [
+                { vis: '+', name: 'generar', params: '', ret: 'void' },
+                { vis: '+', name: 'escanear', params: '', ret: 'Producto' },
+                { vis: '+', name: 'decodificar', params: '', ret: 'String' },
+                { vis: '+', name: 'imprimir', params: '', ret: 'void' },
+            ],
+            description: 'Gestiona la generación, escaneo y decodificación de códigos QR asociados a cada producto. Facilita la identificación rápida y el control de inventario.',
+            color: '#a855f7'
+        },
+        {
+            id: 'Proveedor',
+            domain: 'supply',
+            stereotype: '«Entidad»',
+            x: 1100, y: 400,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'nombre', type: 'String' },
+                { vis: '-', name: 'telefono', type: 'String' },
+                { vis: '-', name: 'email', type: 'String' },
+                { vis: '-', name: 'direccion', type: 'String' },
+                { vis: '-', name: 'rif', type: 'String' },
+            ],
+            methods: [
+                { vis: '+', name: 'getProductos', params: '', ret: 'List<Producto>' },
+                { vis: '+', name: 'registrarPedido', params: '', ret: 'boolean' },
+            ],
+            description: 'Almacena la información de los proveedores de la ferretería. Permite gestionar pedidos y mantener registro de las empresas que suministran los productos.',
+            color: '#ef4444'
+        },
+        {
+            id: 'Reporte',
+            domain: 'report',
+            stereotype: '«Entidad»',
+            x: 1100, y: 720,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'tipo', type: 'Enum' },
+                { vis: '-', name: 'fechaInicio', type: 'Date' },
+                { vis: '-', name: 'fechaFin', type: 'Date' },
+                { vis: '-', name: 'datos', type: 'JSON' },
+                { vis: '-', name: 'usuario', type: 'Usuario' },
+            ],
+            methods: [
+                { vis: '+', name: 'generar', params: '', ret: 'void' },
+                { vis: '+', name: 'exportarPDF', params: '', ret: 'File' },
+                { vis: '+', name: 'exportarExcel', params: '', ret: 'File' },
+            ],
+            description: 'Genera reportes personalizados del inventario, ventas y movimientos. Soporta exportación en formatos PDF y Excel para análisis y toma de decisiones.',
+            color: '#06b6d4'
+        },
+        {
+            id: 'Alerta',
+            domain: 'alert',
+            stereotype: '«Entidad»',
+            x: 580, y: 830,
+            attributes: [
+                { vis: '-', name: 'id', type: 'int' },
+                { vis: '-', name: 'tipo', type: 'Enum' },
+                { vis: '-', name: 'mensaje', type: 'String' },
+                { vis: '-', name: 'producto', type: 'Producto' },
+                { vis: '-', name: 'fecha', type: 'Date' },
+                { vis: '-', name: 'leida', type: 'boolean' },
+            ],
+            methods: [
+                { vis: '+', name: 'crear', params: '', ret: 'void' },
+                { vis: '+', name: 'marcarLeida', params: '', ret: 'void' },
+                { vis: '+', name: 'notificar', params: '', ret: 'void' },
+            ],
+            description: 'Gestiona notificaciones automáticas del sistema: stock bajo, productos próximos a vencer, pedidos pendientes y más.',
+            color: '#f97316'
+        }
+    ];
+
+    const relationships = [
+        { from: 'Usuario', to: 'MovimientoInventario', fromMult: '1', toMult: '*', label: 'registra', type: 'association', fromSide: 'bottom', toSide: 'top' },
+        { from: 'Producto', to: 'CodigoQR', fromMult: '1', toMult: '1', label: 'tiene', type: 'composition', fromSide: 'bottom', toSide: 'top' },
+        { from: 'Producto', to: 'Categoria', fromMult: '*', toMult: '1', label: 'pertenece a', type: 'association', fromSide: 'right', toSide: 'left' },
+        { from: 'Producto', to: 'Proveedor', fromMult: '*', toMult: '1', label: 'suministrado por', type: 'association', fromSide: 'right', toSide: 'left' },
+        { from: 'Producto', to: 'MovimientoInventario', fromMult: '1', toMult: '*', label: 'afectado por', type: 'association', fromSide: 'left', toSide: 'right' },
+        { from: 'Usuario', to: 'Reporte', fromMult: '1', toMult: '*', label: 'genera', type: 'association', fromSide: 'bottom', toSide: 'left' },
+        { from: 'Producto', to: 'Alerta', fromMult: '1', toMult: '*', label: 'dispara', type: 'association', fromSide: 'bottom', toSide: 'top' },
+    ];
+
+    // ==================== RENDER ====================
+    const canvas = document.getElementById('diagram-canvas');
+    const svg = document.getElementById('svg-relationships');
+    const classElements = {};
+    const classBounds = {};
+
+    // Render UML class boxes
+    classes.forEach(cls => {
+        const div = document.createElement('div');
+        div.className = `uml-class domain-${cls.domain}`;
+        div.id = `class-${cls.id}`;
+        div.style.left = cls.x + 'px';
+        div.style.top = cls.y + 'px';
+        div.dataset.classId = cls.id;
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'uml-header';
+        header.innerHTML = `<span class="stereotype">${cls.stereotype}</span>${cls.id}`;
+        div.appendChild(header);
+
+        // Attributes section
+        const attrSection = document.createElement('div');
+        attrSection.className = 'uml-section';
+        cls.attributes.forEach(a => {
+            attrSection.innerHTML += `<div class="attr"><span class="visibility">${a.vis}</span>${a.name}: <span class="type">${a.type}</span></div>`;
+        });
+        div.appendChild(attrSection);
+
+        // Methods section
+        const methSection = document.createElement('div');
+        methSection.className = 'uml-section';
+        cls.methods.forEach(m => {
+            const params = m.params ? m.params : '';
+            methSection.innerHTML += `<div class="method"><span class="visibility">${m.vis}</span>${m.name}(${params}): <span class="type">${m.ret}</span></div>`;
+        });
+        div.appendChild(methSection);
+
+        // Events
+        div.addEventListener('click', () => openModal(cls));
+        div.addEventListener('mouseenter', () => highlightRelations(cls.id, true));
+        div.addEventListener('mouseleave', () => highlightRelations(cls.id, false));
+
+        canvas.appendChild(div);
+        classElements[cls.id] = div;
+    });
+
+    // Calculate bounds after render
+    function updateBounds() {
+        classes.forEach(cls => {
+            const el = classElements[cls.id];
+            classBounds[cls.id] = {
+                x: el.offsetLeft,
+                y: el.offsetTop,
+                w: el.offsetWidth,
+                h: el.offsetHeight
+            };
+        });
+    }
+
+    function getAnchor(classId, side) {
+        const b = classBounds[classId];
+        if (!b) return { x: 0, y: 0 };
+        switch (side) {
+            case 'top': return { x: b.x + b.w / 2, y: b.y };
+            case 'bottom': return { x: b.x + b.w / 2, y: b.y + b.h };
+            case 'left': return { x: b.x, y: b.y + b.h / 2 };
+            case 'right': return { x: b.x + b.w, y: b.y + b.h / 2 };
+            default: return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+        }
+    }
+
+    function drawRelationships() {
+        updateBounds();
+        // Clear existing lines
+        svg.querySelectorAll('.rel-group').forEach(g => g.remove());
+
+        relationships.forEach((rel, idx) => {
+            const from = getAnchor(rel.from, rel.fromSide);
+            const to = getAnchor(rel.to, rel.toSide);
+
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.className.baseVal = 'rel-group';
+            group.dataset.relIdx = idx;
+            group.dataset.from = rel.from;
+            group.dataset.to = rel.to;
+
+            // Calculate control points for a nicer curve
+            let path;
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+
+            if (rel.fromSide === 'bottom' && rel.toSide === 'top') {
+                const midY = from.y + (to.y - from.y) / 2;
+                path = `M ${from.x} ${from.y} C ${from.x} ${midY}, ${to.x} ${midY}, ${to.x} ${to.y}`;
+            } else if (rel.fromSide === 'right' && rel.toSide === 'left') {
+                const midX = from.x + (to.x - from.x) / 2;
+                path = `M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`;
+            } else if (rel.fromSide === 'left' && rel.toSide === 'right') {
+                const midX = from.x + (to.x - from.x) / 2;
+                path = `M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`;
+            } else if (rel.fromSide === 'bottom' && rel.toSide === 'left') {
+                // Special: go down then right
+                const midY = from.y + (to.y - from.y) * 0.6;
+                path = `M ${from.x} ${from.y} C ${from.x} ${midY}, ${from.x} ${to.y}, ${to.x} ${to.y}`;
+            } else {
+                path = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
+            }
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.setAttribute('d', path);
+            line.className.baseVal = 'rel-line';
+
+            if (rel.type === 'composition') {
+                line.setAttribute('marker-start', 'url(#diamond)');
+            }
+            line.setAttribute('marker-end', 'url(#arrow)');
+
+            group.appendChild(line);
+
+            // Label
+            const midX = (from.x + to.x) / 2;
+            const midY = (from.y + to.y) / 2;
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const labelOffsetX = rel.fromSide === 'right' || rel.fromSide === 'left' ? 0 : 12;
+            const labelOffsetY = rel.fromSide === 'bottom' || rel.fromSide === 'top' ? -8 : -10;
+            label.setAttribute('x', midX + labelOffsetX);
+            label.setAttribute('y', midY + labelOffsetY);
+            label.className.baseVal = 'rel-label';
+            label.setAttribute('text-anchor', 'middle');
+            label.textContent = rel.label;
+            group.appendChild(label);
+
+            // Multiplicities
+            const fromMult = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const fmOffset = getMultOffset(rel.fromSide);
+            fromMult.setAttribute('x', from.x + fmOffset.x);
+            fromMult.setAttribute('y', from.y + fmOffset.y);
+            fromMult.className.baseVal = 'rel-mult';
+            fromMult.setAttribute('text-anchor', 'middle');
+            fromMult.textContent = rel.fromMult;
+            group.appendChild(fromMult);
+
+            const toMult = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const tmOffset = getMultOffset(rel.toSide, true);
+            toMult.setAttribute('x', to.x + tmOffset.x);
+            toMult.setAttribute('y', to.y + tmOffset.y);
+            toMult.className.baseVal = 'rel-mult';
+            toMult.setAttribute('text-anchor', 'middle');
+            toMult.textContent = rel.toMult;
+            group.appendChild(toMult);
+
+            svg.appendChild(group);
+        });
+    }
+
+    function getMultOffset(side, isTarget = false) {
+        const d = isTarget ? -1 : 1;
+        switch (side) {
+            case 'top': return { x: 16, y: -8 };
+            case 'bottom': return { x: 16, y: 18 };
+            case 'left': return { x: -18, y: -8 };
+            case 'right': return { x: 18, y: -8 };
+            default: return { x: 0, y: 0 };
+        }
+    }
+
+    // ==================== INTERACTIONS ====================
+    function highlightRelations(classId, active) {
+        // Highlight the class box itself
+        document.querySelectorAll('.uml-class').forEach(el => el.classList.remove('highlight'));
+
+        svg.querySelectorAll('.rel-group').forEach(group => {
+            const from = group.dataset.from;
+            const to = group.dataset.to;
+            const isRelated = from === classId || to === classId;
+
+            const line = group.querySelector('.rel-line');
+            const label = group.querySelector('.rel-label');
+
+            if (active && isRelated) {
+                line.classList.add('highlight');
+                line.setAttribute('marker-end', 'url(#arrow-hl)');
+                if (line.getAttribute('marker-start')) line.setAttribute('marker-start', 'url(#diamond-hl)');
+                label.classList.add('highlight');
+                // Highlight connected class
+                const otherClass = from === classId ? to : from;
+                const otherEl = document.getElementById(`class-${otherClass}`);
+                if (otherEl) otherEl.classList.add('highlight');
+                document.getElementById(`class-${classId}`)?.classList.add('highlight');
+            } else {
+                line.classList.remove('highlight');
+                line.setAttribute('marker-end', 'url(#arrow)');
+                if (line.getAttribute('marker-start')?.includes('diamond')) line.setAttribute('marker-start', 'url(#diamond)');
+                label.classList.remove('highlight');
+            }
+        });
+    }
+
+    // Modal
+    function openModal(cls) {
+        const domainNames = {
+            auth: 'Autenticación', core: 'Núcleo', qr: 'Código QR',
+            ops: 'Operaciones', supply: 'Proveedores', report: 'Reportes', alert: 'Alertas'
+        };
+
+        const relatedRels = relationships.filter(r => r.from === cls.id || r.to === cls.id);
+
+        let relHtml = relatedRels.map(r => {
+            const other = r.from === cls.id ? r.to : r.from;
+            const mult = r.from === cls.id ? `${r.fromMult}..${r.toMult}` : `${r.toMult}..${r.fromMult}`;
+            return `<div class="flex items-center justify-between py-1.5 px-3 rounded-lg bg-slate-800/50">
+                <span class="text-slate-300 text-sm">${r.label}</span>
+                <span class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500 bg-slate-700/50 px-2 py-0.5 rounded">${mult}</span>
+                    <span class="text-sm font-semibold" style="color:${classes.find(c=>c.id===other)?.color || '#fff'}">${other}</span>
+                </span>
+            </div>`;
+        }).join('');
+
+        document.getElementById('modalContent').innerHTML = `
+            <div class="p-1" style="background: linear-gradient(135deg, ${cls.color}40, ${cls.color}10); border-radius: 16px 16px 0 0;">
+                <div class="flex items-center justify-between p-5">
+                    <div>
+                        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background:${cls.color}30; color:${cls.color}">${domainNames[cls.domain]}</span>
+                        <h2 class="text-2xl font-bold text-white mt-2">${cls.id}</h2>
+                        <p class="text-sm text-slate-400 mt-1">${cls.stereotype}</p>
+                    </div>
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center text-slate-400 hover:text-white transition-colors">✕</button>
+                </div>
+            </div>
+            <div class="p-5 space-y-5">
+                <div>
+                    <p class="text-sm text-slate-300 leading-relaxed">${cls.description}</p>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Atributos</h3>
+                    <div class="bg-slate-900/50 rounded-lg p-3 space-y-1 font-mono text-sm">
+                        ${cls.attributes.map(a => `<div class="text-slate-300"><span class="text-yellow-400 font-bold">${a.vis}</span> ${a.name}: <span class="text-purple-400 italic">${a.type}</span></div>`).join('')}
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Métodos</h3>
+                    <div class="bg-slate-900/50 rounded-lg p-3 space-y-1 font-mono text-sm">
+                        ${cls.methods.map(m => `<div class="text-cyan-300"><span class="text-yellow-400 font-bold">${m.vis}</span> ${m.name}(${m.params ? `<span class="text-slate-400">${m.params}</span>` : ''}): <span class="text-purple-400 italic">${m.ret}</span></div>`).join('')}
+                    </div>
+                </div>
+                ${relatedRels.length ? `
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Relaciones (${relatedRels.length})</h3>
+                    <div class="space-y-1.5">${relHtml}</div>
+                </div>` : ''}
+            </div>
+        `;
+
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal(e) {
+        if (e && e.target !== document.getElementById('modalOverlay')) return;
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('active'); });
+
+    // Zoom
+    let currentZoom = 1;
+    function applyZoom() {
+        canvas.style.transform = `scale(${currentZoom})`;
+        canvas.style.transformOrigin = 'top left';
+    }
+    function zoomIn() { currentZoom = Math.min(currentZoom + 0.15, 2); applyZoom(); }
+    function zoomOut() { currentZoom = Math.max(currentZoom - 0.15, 0.4); applyZoom(); }
+    function zoomReset() { currentZoom = 1; applyZoom(); }
+
+    // Initial render
+    setTimeout(() => {
+        drawRelationships();
+    }, 100);
+
+    // Redraw on resize
+    window.addEventListener('resize', drawRelationships);
+    </script>
+</body>
+</html>

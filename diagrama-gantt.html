@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Gantt - App Inventario Ferretería QR</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --phase1: #6366f1;
+            --phase2: #8b5cf6;
+            --phase3: #06b6d4;
+            --phase4: #f59e0b;
+            --phase5: #10b981;
+            --phase6: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .gantt-bar {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .gantt-bar:hover {
+            transform: scaleY(1.15) scaleX(1.01);
+            filter: brightness(1.25);
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255,255,255,0.15);
+        }
+
+        .gantt-bar.selected {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+            filter: brightness(1.3);
+            z-index: 11;
+        }
+
+        .gantt-bar .bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            border-radius: inherit;
+            transition: width 0.6s ease;
+        }
+
+        .phase-row {
+            transition: all 0.3s ease;
+        }
+
+        .phase-row.dimmed {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .tooltip-card {
+            position: fixed;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .tooltip-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .week-col {
+            transition: background 0.2s ease;
+        }
+
+        .week-col:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .filter-btn {
+            transition: all 0.25s ease;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .filter-btn.active {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .detail-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .detail-panel.open {
+            max-height: 600px;
+            opacity: 1;
+        }
+
+        .milestone-marker {
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 4px rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 0 12px rgba(255,255,255,0.6); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .animate-row {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .current-week-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            z-index: 5;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        .current-week-line::before {
+            content: 'HOY';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            font-weight: 700;
+            color: #ef4444;
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ef4444;
+        }
+
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        @media (max-width: 768px) {
+            .gantt-container { overflow-x: auto; }
+            .gantt-grid { min-width: 900px; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
+      📱 Simulador Móvil
+    </a>
+    <span style="color:#475569;font-size:0.8rem;">|</span>
+    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    <a href="diagrama-gantt.html" style="color:#a5b4fc;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#312e81;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+  </div>
+</nav>
+
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip-card">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 min-w-[280px] max-w-[340px]">
+            <div id="tooltip-content"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-slate-700/50">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 sm:py-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+                            Diagrama de Gantt
+                        </h1>
+                        <p class="text-xs sm:text-sm text-slate-400 font-medium">App Inventario Ferretería QR</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="progressContainer" class="flex items-center gap-3 bg-slate-800/60 backdrop-blur rounded-xl px-4 py-2.5 border border-slate-700/50">
+                        <svg class="w-12 h-12" viewBox="0 0 48 48">
+                            <circle cx="24" cy="24" r="19" fill="none" stroke="#334155" stroke-width="4"/>
+                            <circle id="progressRing" class="progress-ring" cx="24" cy="24" r="19" fill="none" stroke="url(#progressGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="119.38" stroke-dashoffset="119.38" transform="rotate(-90 24 24)"/>
+                            <defs>
+                                <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#818cf8"/>
+                                    <stop offset="100%" stop-color="#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <text id="progressText" x="24" y="26" text-anchor="middle" dominant-baseline="middle" class="text-[11px] font-bold" fill="#e2e8f0">0%</text>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-slate-400">Progreso General</p>
+                            <p id="progressLabel" class="text-sm font-semibold text-white">Calculando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="bg-slate-900/80 border-b border-slate-700/30 sticky top-0 z-30 backdrop-blur-lg">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Filtrar:</span>
+                    <button onclick="filterPhase('all')" data-filter="all" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white border border-slate-600 hover:border-slate-400">
+                        Todas
+                    </button>
+                    <button onclick="filterPhase(1)" data-filter="1" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-indigo-400/50" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">
+                        📋 Análisis
+                    </button>
+                    <button onclick="filterPhase(2)" data-filter="2" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-purple-400/50" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">
+                        🎨 Diseño
+                    </button>
+                    <button onclick="filterPhase(3)" data-filter="3" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-cyan-400/50" style="background:rgba(6,182,212,0.2);color:#67e8f9;">
+                        💻 Desarrollo
+                    </button>
+                    <button onclick="filterPhase(4)" data-filter="4" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-amber-400/50" style="background:rgba(245,158,11,0.2);color:#fcd34d;">
+                        🧪 Pruebas
+                    </button>
+                    <button onclick="filterPhase(5)" data-filter="5" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-emerald-400/50" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">
+                        🚀 Despliegue
+                    </button>
+                    <button onclick="filterPhase(6)" data-filter="6" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-transparent hover:border-red-400/50" style="background:rgba(239,68,68,0.2);color:#fca5a5;">
+                        🔧 Mantenimiento
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="showProgress" checked onchange="toggleProgress()" class="w-4 h-4 rounded bg-slate-700 border-slate-500 text-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                        <span class="text-xs text-slate-400">Mostrar progreso</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="showMilestones" checked onchange="toggleMilestones()" class="w-4 h-4 rounded bg-slate-700 border-slate-500 text-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                        <span class="text-xs text-slate-400">Hitos</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-6">
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="statsCards">
+        </div>
+
+        <!-- Gantt Chart -->
+        <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden mb-6">
+            <!-- Legend bar -->
+            <div class="bg-slate-800/80 px-4 sm:px-6 py-3 border-b border-slate-700/50 flex flex-wrap items-center gap-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Leyenda:</span>
+                <div class="flex flex-wrap gap-3" id="legendContainer"></div>
+            </div>
+
+            <div class="gantt-container p-2 sm:p-4">
+                <div class="gantt-grid" id="ganttChart">
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div id="detailPanel" class="detail-panel mb-6">
+            <div class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+                <div class="p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 id="detailTitle" class="text-lg font-bold text-white"></h3>
+                        <button onclick="closeDetail()" class="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div id="detailContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Milestones Timeline -->
+        <div id="milestonesSection" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+            <div class="px-4 sm:px-6 py-4 border-b border-slate-700/50">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    Hitos del Proyecto
+                </h3>
+            </div>
+            <div class="p-4 sm:p-6">
+                <div class="relative" id="milestonesTimeline"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-700/50 mt-auto">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
+                <p class="text-sm text-slate-400">
+                    Desarrollado por <span class="font-semibold text-indigo-400">Roger García</span> 
+                    <span class="text-slate-500">(@rgamercm)</span>
+                </p>
+                <p class="text-xs text-slate-500">Sistemas de Información 2026-2 C • 8vo Semestre</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // ============ DATA ============
+    const TOTAL_WEEKS = 12;
+
+    const phases = [
+        {
+            id: 1, name: 'Análisis de Requisitos', icon: '📋',
+            color: '#6366f1', colorLight: 'rgba(99,102,241,0.15)', colorMid: 'rgba(99,102,241,0.3)',
+            startWeek: 1, endWeek: 2, progress: 100,
+            tasks: [
+                { name: 'Levantamiento de requerimientos', start: 1, end: 1, progress: 100, desc: 'Entrevistas con usuarios y stakeholders de la ferretería para identificar necesidades.' },
+                { name: 'Estudio de viabilidad', start: 1, end: 2, progress: 100, desc: 'Análisis técnico, económico y operativo del proyecto.' },
+                { name: 'Definición de alcance', start: 2, end: 2, progress: 100, desc: 'Documento de alcance con funcionalidades incluidas y excluidas.' }
+            ],
+            deliverables: ['Documento de Requerimientos (SRS)', 'Informe de Viabilidad', 'Documento de Alcance'],
+            milestone: { week: 2, label: 'Requerimientos Aprobados' }
+        },
+        {
+            id: 2, name: 'Diseño del Sistema', icon: '🎨',
+            color: '#8b5cf6', colorLight: 'rgba(139,92,246,0.15)', colorMid: 'rgba(139,92,246,0.3)',
+            startWeek: 2, endWeek: 4, progress: 100,
+            tasks: [
+                { name: 'Diseño de Base de Datos', start: 2, end: 3, progress: 100, desc: 'Modelo entidad-relación y esquema relacional para productos, inventario, usuarios.' },
+                { name: 'Diseño de Interfaz (UI/UX)', start: 3, end: 4, progress: 100, desc: 'Wireframes y mockups de alta fidelidad en Figma.' },
+                { name: 'Arquitectura del sistema', start: 2, end: 3, progress: 100, desc: 'Definición de capas, tecnologías y patrones de diseño.' },
+                { name: 'Diagramas UML', start: 3, end: 4, progress: 100, desc: 'Casos de uso, clases, secuencia y componentes.' }
+            ],
+            deliverables: ['Modelo ER y Esquema BD', 'Mockups UI/UX', 'Documento de Arquitectura', 'Diagramas UML'],
+            milestone: { week: 4, label: 'Diseño Finalizado' }
+        },
+        {
+            id: 3, name: 'Desarrollo', icon: '💻',
+            color: '#06b6d4', colorLight: 'rgba(6,182,212,0.15)', colorMid: 'rgba(6,182,212,0.3)',
+            startWeek: 4, endWeek: 8, progress: 85,
+            tasks: [
+                { name: 'Módulo de Inventario (CRUD)', start: 4, end: 6, progress: 100, desc: 'Crear, leer, actualizar y eliminar productos con categorías y ubicaciones.' },
+                { name: 'Módulo de Escaneo QR', start: 5, end: 7, progress: 90, desc: 'Generación y lectura de códigos QR vinculados a productos.' },
+                { name: 'Módulo de Reportes', start: 6, end: 8, progress: 75, desc: 'Dashboard con gráficos, exportación PDF/Excel de inventario.' },
+                { name: 'Sistema de Autenticación', start: 4, end: 5, progress: 100, desc: 'Login, registro, roles (admin, empleado), JWT tokens.' },
+                { name: 'Integración de módulos', start: 7, end: 8, progress: 60, desc: 'Conexión entre todos los módulos y pruebas de integración tempranas.' }
+            ],
+            deliverables: ['Código fuente completo', 'API REST funcional', 'App móvil funcional', 'Documentación técnica'],
+            milestone: { week: 8, label: 'MVP Completado' }
+        },
+        {
+            id: 4, name: 'Pruebas', icon: '🧪',
+            color: '#f59e0b', colorLight: 'rgba(245,158,11,0.15)', colorMid: 'rgba(245,158,11,0.3)',
+            startWeek: 8, endWeek: 10, progress: 45,
+            tasks: [
+                { name: 'Pruebas Unitarias', start: 8, end: 9, progress: 70, desc: 'Testing de cada función y método individual con Jest/JUnit.' },
+                { name: 'Pruebas de Integración', start: 8, end: 9, progress: 50, desc: 'Verificación de comunicación entre módulos y API.' },
+                { name: 'Pruebas UAT (Usuario)', start: 9, end: 10, progress: 30, desc: 'Pruebas con empleados reales de la ferretería.' },
+                { name: 'Corrección de bugs', start: 9, end: 10, progress: 25, desc: 'Resolución de defectos encontrados en las pruebas.' }
+            ],
+            deliverables: ['Informe de Pruebas', 'Reporte de Bugs', 'Certificación UAT', 'Release Candidate'],
+            milestone: { week: 10, label: 'QA Aprobado' }
+        },
+        {
+            id: 5, name: 'Despliegue', icon: '🚀',
+            color: '#10b981', colorLight: 'rgba(16,185,129,0.15)', colorMid: 'rgba(16,185,129,0.3)',
+            startWeek: 10, endWeek: 11, progress: 10,
+            tasks: [
+                { name: 'Configuración de servidor', start: 10, end: 10, progress: 20, desc: 'Setup de servidor cloud, dominio, SSL y base de datos en producción.' },
+                { name: 'Despliegue a producción', start: 10, end: 11, progress: 5, desc: 'Deploy de la aplicación con CI/CD pipeline.' },
+                { name: 'Capacitación de usuarios', start: 11, end: 11, progress: 0, desc: 'Talleres prácticos para el personal de la ferretería.' }
+            ],
+            deliverables: ['App en producción', 'Manual de usuario', 'Guía de capacitación', 'Certificados SSL'],
+            milestone: { week: 11, label: 'Go-Live 🎉' }
+        },
+        {
+            id: 6, name: 'Mantenimiento', icon: '🔧',
+            color: '#ef4444', colorLight: 'rgba(239,68,68,0.15)', colorMid: 'rgba(239,68,68,0.3)',
+            startWeek: 11, endWeek: 12, progress: 0,
+            tasks: [
+                { name: 'Monitoreo del sistema', start: 11, end: 12, progress: 0, desc: 'Vigilancia de rendimiento, uptime y alertas automáticas.' },
+                { name: 'Soporte técnico', start: 11, end: 12, progress: 0, desc: 'Atención a incidencias y consultas de usuarios.' }
+            ],
+            deliverables: ['Plan de Mantenimiento', 'SLA definido', 'Dashboard de Monitoreo'],
+            milestone: { week: 12, label: 'Cierre del Proyecto' }
+        }
+    ];
+
+    let activeFilter = 'all';
+    let selectedTask = null;
+
+    // ============ RENDER ============
+
+    function init() {
+        renderStats();
+        renderLegend();
+        renderGantt();
+        renderMilestones();
+        updateOverallProgress();
+    }
+
+    function renderStats() {
+        const container = document.getElementById('statsCards');
+        const totalTasks = phases.reduce((s, p) => s + p.tasks.length, 0);
+        const completedTasks = phases.reduce((s, p) => s + p.tasks.filter(t => t.progress === 100).length, 0);
+        const inProgressTasks = phases.reduce((s, p) => s + p.tasks.filter(t => t.progress > 0 && t.progress < 100).length, 0);
+        const pendingTasks = totalTasks - completedTasks - inProgressTasks;
+
+        const stats = [
+            { label: 'Fases', value: phases.length, icon: '📂', color: 'indigo' },
+            { label: 'Tareas Totales', value: totalTasks, icon: '📝', color: 'purple' },
+            { label: 'Completadas', value: completedTasks, icon: '✅', color: 'emerald' },
+            { label: 'En Progreso', value: inProgressTasks, icon: '⏳', color: 'amber' },
+            { label: 'Pendientes', value: pendingTasks, icon: '📌', color: 'red' },
+            { label: 'Semanas', value: TOTAL_WEEKS, icon: '📅', color: 'cyan' }
+        ];
+
+        container.innerHTML = stats.map(s => `
+            <div class="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 sm:p-4 hover:border-${s.color}-500/30 transition-colors">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-lg">${s.icon}</span>
+                    <span class="text-xs text-slate-400 font-medium">${s.label}</span>
+                </div>
+                <p class="text-2xl font-bold text-white">${s.value}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderLegend() {
+        const container = document.getElementById('legendContainer');
+        container.innerHTML = phases.map(p => `
+            <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition" onclick="filterPhase(${p.id})">
+                <div class="w-3 h-3 rounded" style="background:${p.color}"></div>
+                <span class="text-xs text-slate-300 font-medium">${p.icon} ${p.name}</span>
+            </div>
+        `).join('');
+    }
+
+    function renderGantt() {
+        const chart = document.getElementById('ganttChart');
+
+        // Build header
+        let headerCells = '<div class="sticky left-0 z-20 bg-slate-800 border-b border-r border-slate-700/50 px-3 py-2 min-w-[200px] sm:min-w-[260px]"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fase / Tarea</span></div>';
+
+        for (let w = 1; w <= TOTAL_WEEKS; w++) {
+            headerCells += `<div class="week-col border-b border-r border-slate-700/30 px-1 py-2 text-center min-w-[60px] sm:min-w-[72px]">
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-400">Sem ${w}</span>
+            </div>`;
+        }
+
+        let html = `<div class="grid" style="grid-template-columns: minmax(200px,260px) repeat(${TOTAL_WEEKS}, minmax(60px,1fr));">`;
+        html += headerCells;
+
+        // Render phases and tasks
+        phases.forEach((phase, pIdx) => {
+            // Phase header row
+            html += `<div class="phase-row sticky left-0 z-20 bg-slate-800/90 border-b border-r border-slate-700/50 px-3 py-2.5 min-w-[200px] sm:min-w-[260px] flex items-center gap-2 cursor-pointer" data-phase="${phase.id}" onclick="togglePhaseDetail(${phase.id})" style="animation-delay:${pIdx * 80}ms">
+                <span class="text-base">${phase.icon}</span>
+                <div class="flex-1 min-w-0">
+                    <span class="text-xs sm:text-sm font-bold text-white block truncate">${phase.name}</span>
+                    <span class="text-[10px] text-slate-400">Sem ${phase.startWeek}–${phase.endWeek} • ${phase.progress}%</span>
+                </div>
+                <div class="w-10 bg-slate-700 rounded-full h-1.5 flex-shrink-0">
+                    <div class="h-1.5 rounded-full" style="width:${phase.progress}%;background:${phase.color}"></div>
+                </div>
+            </div>`;
+
+            // Phase bar cells
+            for (let w = 1; w <= TOTAL_WEEKS; w++) {
+                const isInRange = w >= phase.startWeek && w <= phase.endWeek;
+                const isStart = w === phase.startWeek;
+                const isEnd = w === phase.endWeek;
+
+                let barHtml = '';
+                if (isInRange) {
+                    const roundL = isStart ? 'rounded-l-md' : '';
+                    const roundR = isEnd ? 'rounded-r-md' : '';
+                    barHtml = `<div class="gantt-bar phase-row h-7 ${roundL} ${roundR} flex items-center justify-center relative" data-phase="${phase.id}" style="background:${phase.colorMid};"
+                        onmouseenter="showTooltip(event, ${phase.id}, -1)" onmouseleave="hideTooltip()" onclick="togglePhaseDetail(${phase.id})">
+                        <div class="bar-fill ${roundL} ${roundR}" style="width:${phase.progress}%"></div>
+                        ${isStart ? `<span class="relative z-10 text-[9px] font-bold text-white/80 whitespace-nowrap pl-1">${phase.name.split(' ')[0]}</span>` : ''}
+                    </div>`;
+                }
+
+                html += `<div class="phase-row border-b border-r border-slate-700/20 px-0.5 flex items-center" data-phase="${phase.id}">
+                    ${barHtml}
+                </div>`;
+            }
+
+            // Task rows
+            phase.tasks.forEach((task, tIdx) => {
+                html += `<div class="phase-row sticky left-0 z-20 bg-slate-900/50 border-b border-r border-slate-700/30 px-3 py-2 min-w-[200px] sm:min-w-[260px] pl-8 sm:pl-10 flex items-center gap-2" data-phase="${phase.id}" style="animation-delay:${(pIdx * 80) + (tIdx * 40)}ms">
+                    <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${phase.color}"></div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[11px] sm:text-xs text-slate-300 block truncate">${task.name}</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-500 flex-shrink-0">${task.progress}%</span>
+                </div>`;
+
+                for (let w = 1; w <= TOTAL_WEEKS; w++) {
+                    const isInRange = w >= task.start && w <= task.end;
+                    const isStart = w === task.start;
+                    const isEnd = w === task.end;
+
+                    let taskBar = '';
+                    if (isInRange) {
+                        const roundL = isStart ? 'rounded-l-md' : '';
+                        const roundR = isEnd ? 'rounded-r-md' : '';
+                        const taskId = `task-${phase.id}-${tIdx}`;
+                        taskBar = `<div id="${taskId}" class="gantt-bar phase-row h-5 ${roundL} ${roundR} relative" data-phase="${phase.id}" style="background:${phase.color}; opacity: 0.75;"
+                            onmouseenter="showTooltip(event, ${phase.id}, ${tIdx})" onmouseleave="hideTooltip()" onclick="selectTask(${phase.id}, ${tIdx})">
+                            <div class="bar-fill ${roundL} ${roundR}" style="width:${task.progress}%"></div>
+                        </div>`;
+                    }
+
+                    html += `<div class="phase-row border-b border-r border-slate-700/10 px-0.5 flex items-center" data-phase="${phase.id}">
+                        ${taskBar}
+                    </div>`;
+                }
+            });
+        });
+
+        html += '</div>';
+        chart.innerHTML = html;
+    }
+
+    function renderMilestones() {
+        const container = document.getElementById('milestonesTimeline');
+        const milestones = phases.map(p => ({ ...p.milestone, phase: p.name, color: p.color, icon: p.icon, progress: p.progress }));
+
+        container.innerHTML = `
+            <div class="flex items-center justify-between relative mb-2 overflow-x-auto pb-4">
+                <div class="absolute top-5 left-0 right-0 h-0.5 bg-slate-700 z-0"></div>
+                ${milestones.map((m, i) => `
+                    <div class="flex flex-col items-center relative z-10 min-w-[100px] px-2">
+                        <div class="milestone-marker w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm mb-2 ${m.progress === 100 ? 'bg-emerald-500/20 border-emerald-400' : m.progress > 0 ? 'bg-amber-500/20 border-amber-400' : 'bg-slate-700/50 border-slate-500'}" style="${m.progress === 100 ? '' : m.progress > 0 ? '' : 'animation:none'}">
+                            ${m.progress === 100 ? '✅' : m.icon}
+                        </div>
+                        <span class="text-[10px] font-bold text-center" style="color:${m.color}">${m.label}</span>
+                        <span class="text-[9px] text-slate-500 mt-0.5">Sem ${m.week}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // ============ INTERACTIONS ============
+
+    function showTooltip(event, phaseId, taskIdx) {
+        const phase = phases.find(p => p.id === phaseId);
+        const tooltip = document.getElementById('tooltip');
+        const content = document.getElementById('tooltip-content');
+
+        if (taskIdx === -1) {
+            content.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-3 h-3 rounded" style="background:${phase.color}"></div>
+                    <span class="font-bold text-white text-sm">${phase.icon} ${phase.name}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+                    <div class="bg-slate-700/50 rounded-lg p-2">
+                        <span class="text-slate-400 block">Duración</span>
+                        <span class="text-white font-semibold">Sem ${phase.startWeek} – ${phase.endWeek}</span>
+                    </div>
+                    <div class="bg-slate-700/50 rounded-lg p-2">
+                        <span class="text-slate-400 block">Progreso</span>
+                        <span class="text-white font-semibold">${phase.progress}%</span>
+                    </div>
+                </div>
+                <div class="text-[11px] text-slate-400">${phase.tasks.length} tareas • Clic para ver detalles</div>
+            `;
+        } else {
+            const task = phase.tasks[taskIdx];
+            content.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-2.5 h-2.5 rounded-full" style="background:${phase.color}"></div>
+                    <span class="font-bold text-white text-sm">${task.name}</span>
+                </div>
+                <p class="text-xs text-slate-300 mb-3 leading-relaxed">${task.desc}</p>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="text-slate-400">📅 Sem ${task.start}–${task.end}</span>
+                    <span class="text-slate-400">📊 ${task.progress}%</span>
+                </div>
+                <div class="mt-2 w-full bg-slate-700 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full transition-all" style="width:${task.progress}%;background:${phase.color}"></div>
+                </div>
+            `;
+        }
+
+        const rect = event.target.getBoundingClientRect();
+        let x = rect.left + rect.width / 2;
+        let y = rect.top - 8;
+
+        tooltip.style.left = Math.min(x, window.innerWidth - 350) + 'px';
+        tooltip.style.top = y + 'px';
+        tooltip.style.transform = 'translate(-50%, -100%)';
+        tooltip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+        document.getElementById('tooltip').classList.remove('visible');
+    }
+
+    function selectTask(phaseId, taskIdx) {
+        // Remove previous selection
+        document.querySelectorAll('.gantt-bar.selected').forEach(el => el.classList.remove('selected'));
+
+        const taskId = `task-${phaseId}-${taskIdx}`;
+        document.querySelectorAll(`#${taskId}`).forEach(el => el.classList.add('selected'));
+
+        togglePhaseDetail(phaseId, taskIdx);
+    }
+
+    function togglePhaseDetail(phaseId, highlightTask = -1) {
+        const phase = phases.find(p => p.id === phaseId);
+        const panel = document.getElementById('detailPanel');
+        const title = document.getElementById('detailTitle');
+        const content = document.getElementById('detailContent');
+
+        title.innerHTML = `${phase.icon} ${phase.name} <span class="text-sm font-normal text-slate-400 ml-2">Semana ${phase.startWeek}–${phase.endWeek}</span>`;
+
+        content.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Tareas</h4>
+                    <div class="space-y-2">
+                        ${phase.tasks.map((t, i) => `
+                            <div class="bg-slate-700/30 rounded-lg p-3 border border-slate-600/30 ${highlightTask === i ? 'ring-2' : ''}" style="${highlightTask === i ? `ring-color:${phase.color}` : ''}">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-xs font-semibold text-white">${t.name}</span>
+                                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full ${t.progress === 100 ? 'bg-emerald-500/20 text-emerald-300' : t.progress > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-600/50 text-slate-400'}">${t.progress}%</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mb-2">${t.desc}</p>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 bg-slate-600 rounded-full h-1.5">
+                                        <div class="h-1.5 rounded-full transition-all" style="width:${t.progress}%;background:${phase.color}"></div>
+                                    </div>
+                                    <span class="text-[10px] text-slate-500">Sem ${t.start}–${t.end}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Entregables</h4>
+                    <div class="space-y-2">
+                        ${phase.deliverables.map(d => `
+                            <div class="flex items-center gap-2 bg-slate-700/30 rounded-lg p-2.5 border border-slate-600/30">
+                                <svg class="w-4 h-4 flex-shrink-0" style="color:${phase.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span class="text-xs text-slate-300">${d}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 bg-slate-700/30 rounded-lg p-3 border border-slate-600/30">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Hito</h4>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background:${phase.colorLight};border:2px solid ${phase.color}">
+                                ${phase.progress === 100 ? '✅' : '🏁'}
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold text-white">${phase.milestone.label}</span>
+                                <span class="text-[10px] text-slate-500 block">Semana ${phase.milestone.week}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        panel.classList.add('open');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeDetail() {
+        document.getElementById('detailPanel').classList.remove('open');
+        document.querySelectorAll('.gantt-bar.selected').forEach(el => el.classList.remove('selected'));
+    }
+
+    function filterPhase(phaseId) {
+        activeFilter = phaseId;
+
+        // Update buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.filter == phaseId) btn.classList.add('active');
+        });
+
+        // Update rows
+        document.querySelectorAll('.phase-row').forEach(row => {
+            const rowPhase = row.dataset.phase;
+            if (phaseId === 'all' || rowPhase == phaseId) {
+                row.classList.remove('dimmed');
+            } else {
+                row.classList.add('dimmed');
+            }
+        });
+    }
+
+    function toggleProgress() {
+        const show = document.getElementById('showProgress').checked;
+        document.querySelectorAll('.bar-fill').forEach(el => {
+            el.style.display = show ? '' : 'none';
+        });
+    }
+
+    function toggleMilestones() {
+        const show = document.getElementById('showMilestones').checked;
+        document.getElementById('milestonesSection').style.display = show ? '' : 'none';
+    }
+
+    function updateOverallProgress() {
+        const totalWeight = phases.reduce((s, p) => s + (p.endWeek - p.startWeek + 1), 0);
+        const weightedProgress = phases.reduce((s, p) => s + p.progress * (p.endWeek - p.startWeek + 1), 0);
+        const overall = Math.round(weightedProgress / totalWeight);
+
+        const circumference = 2 * Math.PI * 19;
+        const offset = circumference - (overall / 100) * circumference;
+
+        const ring = document.getElementById('progressRing');
+        const text = document.getElementById('progressText');
+        const label = document.getElementById('progressLabel');
+
+        setTimeout(() => {
+            ring.style.strokeDashoffset = offset;
+            text.textContent = overall + '%';
+            label.textContent = overall >= 100 ? '¡Completado!' : overall >= 50 ? 'En buen progreso' : 'En desarrollo';
+        }, 300);
+    }
+
+    // ============ INIT ============
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

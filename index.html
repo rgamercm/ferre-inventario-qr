@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Digital - FerreInventario QR</title>
+<script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+<style>
+/* ===== FONTS & RESET ===== */
+@import url('data:text/css,');
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#e0e0e0;overflow-x:hidden}
+
+/* ===== CSS VARIABLES ===== */
+:root{
+  --primary:#FF6F00;--primary-dark:#E65100;--primary-light:#FFB74D;
+  --secondary:#1565C0;--secondary-light:#42A5F5;
+  --bg:#F5F5F5;--surface:#FFFFFF;--text:#212121;--text-secondary:#757575;
+  --error:#D32F2F;--success:#388E3C;--warning:#FFA000;
+  --shadow:0 2px 8px rgba(0,0,0,.15);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.2);
+}
+
+/* ===== GLOBAL HEADER ===== */
+.global-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;text-align:center;padding:18px 20px;
+  box-shadow:0 4px 12px rgba(255,111,0,.3);
+}
+.global-header h1{font-size:1.5rem;font-weight:700;letter-spacing:.5px}
+.global-header p{font-size:.85rem;opacity:.85;margin-top:2px}
+
+/* ===== GLOBAL FOOTER ===== */
+.global-footer{
+  background:#263238;color:rgba(255,255,255,.7);text-align:center;
+  padding:16px 20px;font-size:.78rem;line-height:1.6;
+}
+.global-footer strong{color:var(--primary-light)}
+
+/* ===== MAIN LAYOUT ===== */
+.main-container{
+  display:flex;justify-content:center;align-items:flex-start;gap:24px;
+  padding:30px 20px;min-height:calc(100vh - 150px);flex-wrap:wrap;
+  background:linear-gradient(135deg,#eceff1 0%,#cfd8dc 100%);
+}
+
+/* ===== PHONE FRAME ===== */
+.phone-frame{
+  width:375px;height:780px;background:#0a0a0a;border-radius:44px;
+  box-shadow:0 0 0 3px #1a1a1a,0 0 0 6px #333,var(--shadow-lg),0 20px 60px rgba(0,0,0,.35);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.phone-notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:150px;height:28px;background:#0a0a0a;border-radius:0 0 18px 18px;z-index:100;
+}
+.phone-notch::before{
+  content:'';position:absolute;width:10px;height:10px;background:#1a1a1a;
+  border-radius:50%;top:8px;left:50%;transform:translateX(-50%);
+  box-shadow:inset 0 0 3px rgba(255,255,255,.1);
+}
+.phone-status-bar{
+  height:28px;background:#0a0a0a;display:flex;justify-content:space-between;
+  align-items:center;padding:0 20px;color:#fff;font-size:11px;font-weight:500;z-index:99;
+  position:relative;
+}
+.phone-screen{
+  width:100%;height:calc(100% - 28px);background:var(--bg);overflow:hidden;
+  position:relative;border-radius:0 0 40px 40px;
+}
+.phone-home-indicator{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  width:120px;height:4px;background:rgba(255,255,255,.3);border-radius:3px;z-index:101;
+}
+
+/* ===== SCREENS ===== */
+.screen{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease;
+  overflow-y:auto;overflow-x:hidden;background:var(--bg);
+}
+.screen.active{transform:translateX(0);opacity:1;z-index:10}
+.screen.left{transform:translateX(-100%);opacity:0;z-index:5}
+.screen.right{transform:translateX(100%);opacity:0;z-index:5}
+.screen.hidden-screen{display:none}
+
+/* Scrollbar for screens */
+.screen::-webkit-scrollbar{width:3px}
+.screen::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:3px}
+
+/* ===== SPLASH SCREEN ===== */
+.splash-bg{
+  background:linear-gradient(135deg,var(--primary),#E65100,#BF360C);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;
+}
+.splash-logo{
+  width:100px;height:100px;background:rgba(255,255,255,.15);border-radius:24px;
+  display:flex;align-items:center;justify-content:center;font-size:50px;
+  animation:splashPulse 2s ease-in-out infinite;backdrop-filter:blur(10px);
+  border:2px solid rgba(255,255,255,.2);
+}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.splash-title{font-size:1.6rem;font-weight:800;margin-top:16px;letter-spacing:1px}
+.splash-sub{font-size:.85rem;opacity:.8;margin-top:4px}
+.splash-loader{
+  width:160px;height:4px;background:rgba(255,255,255,.2);border-radius:4px;
+  margin-top:40px;overflow:hidden;
+}
+.splash-loader-bar{
+  width:0%;height:100%;background:#fff;border-radius:4px;
+  animation:splashLoad 2.5s ease-in-out forwards;
+}
+@keyframes splashLoad{to{width:100%}}
+.splash-credit{position:absolute;bottom:40px;font-size:.75rem;opacity:.6}
+
+/* ===== LOGIN SCREEN ===== */
+.login-bg{background:linear-gradient(180deg,var(--primary) 0%,var(--primary) 40%,var(--bg) 40%)}
+.login-card{
+  background:#fff;border-radius:16px;padding:28px 24px;margin:0 20px;
+  box-shadow:var(--shadow-lg);margin-top:-20px;
+}
+.login-input{
+  width:100%;padding:14px 16px;border:2px solid #e0e0e0;border-radius:12px;
+  font-size:.9rem;outline:none;transition:border .3s;background:#fafafa;
+  margin-bottom:14px;color:var(--text);
+}
+.login-input:focus{border-color:var(--primary);background:#fff}
+.login-btn{
+  width:100%;padding:14px;background:var(--primary);color:#fff;border:none;
+  border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;
+  transition:all .3s;box-shadow:0 4px 12px rgba(255,111,0,.3);
+}
+.login-btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0)}
+
+/* ===== APP HEADER ===== */
+.app-header{
+  background:var(--primary);color:#fff;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(255,111,0,.2);position:sticky;top:0;z-index:50;
+}
+.app-header h2{font-size:1.05rem;font-weight:600}
+
+/* ===== DASHBOARD CARDS ===== */
+.dash-card{
+  background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;transition:transform .2s;
+}
+.dash-card:active{transform:scale(.97)}
+.dash-card-icon{
+  width:48px;height:48px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:1.4rem;flex-shrink:0;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:absolute;bottom:0;left:0;right:0;height:60px;background:#fff;
+  display:flex;justify-content:space-around;align-items:center;
+  box-shadow:0 -2px 10px rgba(0,0,0,.08);z-index:50;
+  border-top:1px solid #eee;
+}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  cursor:pointer;padding:6px 10px;border-radius:12px;transition:all .3s;
+  font-size:.65rem;color:var(--text-secondary);min-width:52px;
+}
+.bottom-nav-item.active-nav{color:var(--primary);font-weight:600}
+.bottom-nav-item span:first-child{font-size:1.3rem}
+
+/* ===== QR SCANNER ===== */
+.scanner-viewport{
+  width:240px;height:240px;background:#1a1a1a;border-radius:16px;
+  position:relative;overflow:hidden;margin:0 auto;
+}
+.scanner-corners{
+  position:absolute;inset:20px;
+  border:3px solid transparent;
+}
+.scanner-corners::before,.scanner-corners::after,
+.scanner-corner-bl,.scanner-corner-br{
+  content:'';position:absolute;width:30px;height:30px;
+}
+.scanner-corners::before{top:0;left:0;border-top:3px solid var(--primary);border-left:3px solid var(--primary);border-radius:4px 0 0 0}
+.scanner-corners::after{top:0;right:0;border-top:3px solid var(--primary);border-right:3px solid var(--primary);border-radius:0 4px 0 0}
+.scanner-corner-bl{bottom:0;left:0;border-bottom:3px solid var(--primary);border-left:3px solid var(--primary);border-radius:0 0 0 4px}
+.scanner-corner-br{bottom:0;right:0;border-bottom:3px solid var(--primary);border-right:3px solid var(--primary);border-radius:0 0 4px 0}
+
+.scanner-line{
+  position:absolute;left:20px;right:20px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  animation:scanLine 2s ease-in-out infinite;
+  box-shadow:0 0 10px var(--primary);
+}
+@keyframes scanLine{0%,100%{top:20px}50%{top:calc(100% - 22px)}}
+
+.scanner-grid{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(255,255,255,.03) 19px,rgba(255,255,255,.03) 20px),
+              repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(255,255,255,.03) 19px,rgba(255,255,255,.03) 20px);
+}
+
+/* ===== PRODUCT LIST ===== */
+.product-item{
+  background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;
+  display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);
+  cursor:pointer;transition:all .2s;
+}
+.product-item:active{transform:scale(.98);background:#f5f5f5}
+.product-icon{
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;flex-shrink:0;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-bar{
+  display:flex;align-items:center;background:#fff;border-radius:12px;
+  padding:0 14px;margin:12px 16px;box-shadow:var(--shadow);
+}
+.search-bar input{
+  flex:1;padding:12px 8px;border:none;outline:none;font-size:.88rem;
+  background:transparent;color:var(--text);
+}
+
+/* ===== FILTER CHIPS ===== */
+.filter-chip{
+  display:inline-block;padding:6px 14px;border-radius:20px;font-size:.75rem;
+  cursor:pointer;transition:all .3s;white-space:nowrap;font-weight:500;
+  border:1.5px solid #e0e0e0;color:var(--text-secondary);background:#fff;
+}
+.filter-chip.active-chip{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+}
+
+/* ===== FAB ===== */
+.fab{
+  position:absolute;bottom:72px;right:16px;width:52px;height:52px;
+  background:var(--primary);color:#fff;border:none;border-radius:16px;
+  font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(255,111,0,.35);
+  display:flex;align-items:center;justify-content:center;z-index:40;
+  transition:all .3s;
+}
+.fab:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(255,111,0,.45)}
+
+/* ===== QR CODE SVG ===== */
+.qr-container{
+  width:160px;height:160px;margin:0 auto;padding:10px;background:#fff;
+  border-radius:8px;box-shadow:var(--shadow);
+}
+
+/* ===== PRODUCT DETAIL ===== */
+.detail-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:20px;color:#fff;text-align:center;
+}
+.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px;margin-top:12px}
+.detail-btn{
+  padding:10px;border:none;border-radius:10px;font-size:.8rem;font-weight:600;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.detail-btn:active{transform:scale(.95)}
+
+/* ===== REPORTS ===== */
+.report-card{
+  background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:14px;
+}
+.report-card:active{background:#f5f5f5;transform:scale(.98)}
+
+/* ===== PROFILE ===== */
+.profile-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:30px 20px;text-align:center;color:#fff;
+}
+.profile-avatar{
+  width:80px;height:80px;background:rgba(255,255,255,.2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+  margin:0 auto;border:3px solid rgba(255,255,255,.3);
+}
+.profile-option{
+  display:flex;align-items:center;gap:14px;padding:14px 20px;
+  border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .2s;
+}
+.profile-option:hover{background:#fafafa}
+
+/* ===== SIDE PANEL ===== */
+.side-panel{
+  width:380px;min-height:600px;background:#fff;border-radius:20px;
+  box-shadow:var(--shadow-lg);overflow:hidden;flex-shrink:0;
+}
+.side-panel-header{
+  background:linear-gradient(135deg,var(--secondary),#0D47A1);
+  color:#fff;padding:20px;
+}
+.side-panel-tab{
+  display:flex;align-items:center;gap:12px;padding:14px 20px;
+  cursor:pointer;transition:all .3s;border-left:3px solid transparent;
+  color:var(--text);font-size:.9rem;
+}
+.side-panel-tab:hover{background:#f5f5f5;border-left-color:var(--secondary)}
+.side-panel-tab.active-tab{background:#E3F2FD;border-left-color:var(--secondary);color:var(--secondary);font-weight:600}
+.side-panel-iframe{
+  width:100%;height:420px;border:none;background:#fafafa;
+}
+
+/* ===== BAR CHART ===== */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;padding:0 4px}
+.bar-col{
+  flex:1;border-radius:6px 6px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1);
+  position:relative;min-width:0;
+}
+.bar-col span{
+  position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+  font-size:.55rem;color:var(--text-secondary);white-space:nowrap;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar{
+  height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;
+}
+.progress-fill{height:100%;border-radius:4px;transition:width .8s ease}
+
+/* ===== MODALS / TOASTS ===== */
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:#333;color:#fff;padding:12px 24px;border-radius:12px;
+  font-size:.85rem;opacity:0;transition:all .4s;z-index:9999;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:60;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-sheet{
+  background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);
+  max-height:80%;overflow-y:auto;
+}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-handle{
+  width:40px;height:4px;background:#ccc;border-radius:4px;
+  margin:0 auto 16px;
+}
+
+/* ===== NOTIFICATION BADGE ===== */
+.notif-badge{
+  position:absolute;top:-4px;right:-4px;width:16px;height:16px;
+  background:var(--error);border-radius:50%;font-size:.6rem;
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .main-container{flex-direction:column;align-items:center;padding:16px}
+  .side-panel{width:100%;max-width:400px}
+  .phone-frame{transform:scale(.9);transform-origin:top center}
+}
+@media(max-width:420px){
+  .phone-frame{width:100%;height:85vh;border-radius:0;box-shadow:none}
+  .phone-notch{display:none}
+  .phone-screen{border-radius:0}
+  .global-header h1{font-size:1.1rem}
+}
+
+/* ===== HAMBURGER MENU (slide-in drawer) ===== */
+.drawer-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:70;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer{
+  position:absolute;top:0;left:0;width:260px;height:100%;background:#fff;
+  z-index:71;transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  box-shadow:4px 0 20px rgba(0,0,0,.15);
+}
+.drawer-overlay.open .drawer{transform:translateX(0)}
+.drawer-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:28px 20px 20px;color:#fff;
+}
+
+/* ===== TABLE ===== */
+.report-table{
+  width:100%;border-collapse:collapse;font-size:.72rem;
+}
+.report-table th{
+  background:var(--primary);color:#fff;padding:8px 6px;text-align:left;font-weight:600;
+}
+.report-table td{
+  padding:7px 6px;border-bottom:1px solid #eee;
+}
+.report-table tr:nth-child(even){background:#fafafa}
+</style>
+</head>
+<body>
+
+<!-- ==================== GLOBAL HEADER ==================== -->
+<header class="global-header">
+  <div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.8rem;">🔧</span>
+      <div>
+        <h1 style="font-size:1.4rem;font-weight:700;line-height:1.2;">Simulador Digital - Control de Inventario Ferretería</h1>
+        <p style="font-size:0.82rem;opacity:0.9;">Aplicación Móvil Estilo Android con QR & Suite de Diagramas Interactivos</p>
+      </div>
+    </div>
+    <!-- Quick Nav Bar -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px;">
+      <button onclick="window.scrollTo({top:0,behavior:'smooth'});showToast('📱 Mostrando App Móvil')" style="background:rgba(255,255,255,0.25);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:4px 12px;border-radius:20px;font-size:0.75rem;cursor:pointer;font-weight:600;">📱 App Móvil</button>
+      <a href="diagrama-gantt.html" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.3);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;display:inline-flex;align-items:center;gap:4px;">📅 Diagrama de Gantt ↗</a>
+      <a href="diagrama-flujo-datos.html" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.3);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;display:inline-flex;align-items:center;gap:4px;">🔄 Flujo de Datos (DFD) ↗</a>
+      <a href="diagrama-secuencias.html" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.3);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;display:inline-flex;align-items:center;gap:4px;">⏱️ Secuencias UML ↗</a>
+      <a href="diagrama-clases.html" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.3);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500;display:inline-flex;align-items:center;gap:4px;">🏗️ Clases UML ↗</a>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="main-container">
+
+  <!-- ===== PHONE FRAME ===== -->
+  <div class="phone-frame" id="phoneFrame">
+    <!-- Notch -->
+    <div class="phone-notch"></div>
+    <!-- Status Bar -->
+    <div class="phone-status-bar">
+      <span id="statusTime">12:56</span>
+      <span>📶 🔋 92%</span>
+    </div>
+    <!-- Screen Container -->
+    <div class="phone-screen" id="phoneScreen">
+
+      <!-- ===== SCREEN: SPLASH ===== -->
+      <div class="screen splash-bg active" id="screenSplash">
+        <div class="splash-logo">🔧</div>
+        <div class="splash-title">FerreInventario</div>
+        <div class="splash-sub" style="font-size:1.1rem;font-weight:600;margin-top:2px">QR</div>
+        <div class="splash-sub" style="margin-top:8px">Control de Inventario Inteligente</div>
+        <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+        <div class="splash-credit">Desarrollado por Roger García (@rgamercm)</div>
+      </div>
+
+      <!-- ===== SCREEN: LOGIN ===== -->
+      <div class="screen right" id="screenLogin">
+        <div class="login-bg" style="height:100%">
+          <div style="text-align:center;padding-top:50px;color:#fff">
+            <div style="font-size:3rem;margin-bottom:4px">🔧</div>
+            <h2 style="font-size:1.3rem;font-weight:700">FerreInventario QR</h2>
+            <p style="font-size:.8rem;opacity:.8;margin-top:2px">Inicia sesión para continuar</p>
+          </div>
+          <div class="login-card" style="margin-top:30px">
+            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px">👤 Usuario</label>
+            <input class="login-input" type="text" id="loginUser" value="admin" placeholder="Nombre de usuario">
+            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px">🔒 Contraseña</label>
+            <input class="login-input" type="password" id="loginPass" value="1234" placeholder="Contraseña">
+            <button class="login-btn" onclick="doLogin()">Iniciar Sesión</button>
+            <p style="text-align:center;margin-top:14px;font-size:.8rem;color:var(--secondary);cursor:pointer">¿Olvidaste tu contraseña?</p>
+          </div>
+          <p style="text-align:center;margin-top:20px;font-size:.7rem;color:var(--text-secondary)">v2.0.1 — Noviembre 2026</p>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: DASHBOARD ===== -->
+      <div class="screen right" id="screenDashboard">
+        <!-- App Header -->
+        <div class="app-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.3rem;cursor:pointer" onclick="toggleDrawer()">☰</span>
+            <h2>FerreInventario</h2>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span style="position:relative;cursor:pointer;font-size:1.2rem" onclick="showToast('3 notificaciones nuevas')">
+              🔔<span class="notif-badge">3</span>
+            </span>
+          </div>
+        </div>
+        <!-- Dashboard Content -->
+        <div style="padding:14px 16px 70px;overflow-y:auto">
+          <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:12px">📅 Noviembre 2026 — Bienvenido, Roger</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:#FFF3E0;color:var(--primary)">📦</div>
+              <div><div style="font-size:1.3rem;font-weight:700;color:var(--text)">247</div><div style="font-size:.7rem;color:var(--text-secondary)">Total Productos</div></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:#FFEBEE;color:var(--error)">⚠️</div>
+              <div><div style="font-size:1.3rem;font-weight:700;color:var(--error)">12</div><div style="font-size:.7rem;color:var(--text-secondary)">Stock Bajo</div></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:#E3F2FD;color:var(--secondary)">📊</div>
+              <div><div style="font-size:1.3rem;font-weight:700;color:var(--text)">34</div><div style="font-size:.7rem;color:var(--text-secondary)">Movimientos Hoy</div></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-icon" style="background:#E8F5E9;color:var(--success)">💰</div>
+              <div><div style="font-size:1.1rem;font-weight:700;color:var(--text)">Bs. 125,430</div><div style="font-size:.7rem;color:var(--text-secondary)">Valor Inventario</div></div>
+            </div>
+          </div>
+          <!-- Bar Chart -->
+          <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow)">
+            <h3 style="font-size:.85rem;font-weight:600;margin-bottom:12px;color:var(--text)">📈 Movimientos — Última Semana</h3>
+            <div class="bar-chart" id="barChart">
+              <div class="bar-col" style="height:60%;background:var(--primary-light)"><span>Lun</span></div>
+              <div class="bar-col" style="height:80%;background:var(--primary)"><span>Mar</span></div>
+              <div class="bar-col" style="height:45%;background:var(--primary-light)"><span>Mié</span></div>
+              <div class="bar-col" style="height:90%;background:var(--primary)"><span>Jue</span></div>
+              <div class="bar-col" style="height:70%;background:var(--primary-light)"><span>Vie</span></div>
+              <div class="bar-col" style="height:40%;background:var(--primary-light)"><span>Sáb</span></div>
+              <div class="bar-col" style="height:20%;background:#FFE0B2"><span>Dom</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:22px;font-size:.65rem;color:var(--text-secondary)">
+              <span>Total: 238 movimientos</span><span>Promedio: 34/día</span>
+            </div>
+          </div>
+          <!-- Quick Actions -->
+          <div style="margin-top:14px">
+            <h3 style="font-size:.85rem;font-weight:600;margin-bottom:10px;color:var(--text)">⚡ Acciones Rápidas</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <button onclick="navigateTo('screenScanner')" style="background:#fff;border:none;border-radius:12px;padding:14px 8px;box-shadow:var(--shadow);cursor:pointer;text-align:center;transition:transform .2s"><span style="font-size:1.5rem">📸</span><br><span style="font-size:.7rem;color:var(--text-secondary)">Escanear QR</span></button>
+              <button onclick="navigateTo('screenProducts')" style="background:#fff;border:none;border-radius:12px;padding:14px 8px;box-shadow:var(--shadow);cursor:pointer;text-align:center;transition:transform .2s"><span style="font-size:1.5rem">📋</span><br><span style="font-size:.7rem;color:var(--text-secondary)">Productos</span></button>
+              <button onclick="navigateTo('screenReports')" style="background:#fff;border:none;border-radius:12px;padding:14px 8px;box-shadow:var(--shadow);cursor:pointer;text-align:center;transition:transform .2s"><span style="font-size:1.5rem">📊</span><br><span style="font-size:.7rem;color:var(--text-secondary)">Reportes</span></button>
+            </div>
+          </div>
+        </div>
+        <!-- Drawer Overlay -->
+        <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()">
+          <div class="drawer" onclick="event.stopPropagation()">
+            <div class="drawer-header">
+              <div style="font-size:2rem;margin-bottom:6px">🔧</div>
+              <div style="font-weight:700;font-size:1.1rem">FerreInventario QR</div>
+              <div style="font-size:.75rem;opacity:.8;margin-top:2px">Roger García — Admin</div>
+            </div>
+            <div style="padding:8px 0">
+              <div class="profile-option" onclick="toggleDrawer();navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+              <div class="profile-option" onclick="toggleDrawer();navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+              <div class="profile-option" onclick="toggleDrawer();navigateTo('screenScanner')"><span>📸</span><span>Escáner QR</span></div>
+              <div class="profile-option" onclick="toggleDrawer();navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+              <div class="profile-option" onclick="toggleDrawer();navigateTo('screenProfile')"><span>👤</span><span>Mi Perfil</span></div>
+              <div style="border-top:1px solid #eee;margin-top:8px;padding-top:8px">
+                <div class="profile-option" onclick="toggleDrawer();doLogout()"><span>🚪</span><span style="color:var(--error)">Cerrar Sesión</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: SCANNER ===== -->
+      <div class="screen right" id="screenScanner">
+        <div class="app-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="cursor:pointer;font-size:1.2rem" onclick="navigateTo('screenDashboard')">←</span>
+            <h2>Escáner QR</h2>
+          </div>
+          <span style="font-size:1.1rem">⚡</span>
+        </div>
+        <div style="padding:20px 16px 70px;text-align:center">
+          <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:16px">Apunta la cámara hacia el código QR del producto</p>
+          <!-- Scanner Viewport -->
+          <div class="scanner-viewport" id="scannerViewport">
+            <div class="scanner-grid"></div>
+            <div class="scanner-corners">
+              <div class="scanner-corner-bl" style="position:absolute"></div>
+              <div class="scanner-corner-br" style="position:absolute"></div>
+            </div>
+            <div class="scanner-line"></div>
+            <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:.7rem">
+              Escaneando...
+            </div>
+          </div>
+          <button onclick="simulateScan()" style="margin-top:20px;padding:14px 40px;background:var(--primary);color:#fff;border:none;border-radius:14px;font-size:.95rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(255,111,0,.3);transition:all .3s">
+            📸 Escanear Producto
+          </button>
+          <p style="font-size:.7rem;color:var(--text-secondary);margin-top:10px">O ingresa el código manualmente:</p>
+          <div style="display:flex;gap:8px;margin-top:8px;padding:0 20px">
+            <input type="text" placeholder="Ej: FER-001" style="flex:1;padding:10px 14px;border:2px solid #e0e0e0;border-radius:10px;outline:none;font-size:.85rem" id="manualCode">
+            <button onclick="manualScan()" style="padding:10px 16px;background:var(--secondary);color:#fff;border:none;border-radius:10px;font-size:.85rem;cursor:pointer">Buscar</button>
+          </div>
+          <!-- Scan Result (hidden initially) -->
+          <div id="scanResult" style="display:none;margin-top:20px;text-align:left">
+            <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--success)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <span style="font-size:1.5rem">✅</span>
+                <span style="font-weight:700;color:var(--success);font-size:.9rem">Producto Encontrado</span>
+              </div>
+              <div id="scanResultContent"></div>
+              <div style="display:flex;gap:8px;margin-top:14px">
+                <button onclick="document.getElementById('scanResult').style.display='none'" style="flex:1;padding:10px;background:#f5f5f5;border:none;border-radius:10px;font-size:.8rem;cursor:pointer;font-weight:600">Cerrar</button>
+                <button onclick="viewScannedProduct()" style="flex:1;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:.8rem;cursor:pointer;font-weight:600">Ver Detalle</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: PRODUCTS ===== -->
+      <div class="screen right" id="screenProducts">
+        <div class="app-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="cursor:pointer;font-size:1.2rem" onclick="navigateTo('screenDashboard')">←</span>
+            <h2>Productos</h2>
+          </div>
+          <span style="font-size:.8rem;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:8px" id="productCount">12 items</span>
+        </div>
+        <!-- Search -->
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar producto..." id="searchInput" oninput="filterProducts()">
+        </div>
+        <!-- Filter Chips -->
+        <div style="padding:0 16px;overflow-x:auto;white-space:nowrap;display:flex;gap:6px;padding-bottom:8px" id="filterChips">
+          <span class="filter-chip active-chip" onclick="filterByCategory('Todos')">Todos</span>
+          <span class="filter-chip" onclick="filterByCategory('Herramientas')">🔧 Herramientas</span>
+          <span class="filter-chip" onclick="filterByCategory('Pinturas')">🎨 Pinturas</span>
+          <span class="filter-chip" onclick="filterByCategory('Electricidad')">⚡ Electricidad</span>
+          <span class="filter-chip" onclick="filterByCategory('Plomería')">🔩 Plomería</span>
+          <span class="filter-chip" onclick="filterByCategory('Tornillería')">🔩 Tornillería</span>
+        </div>
+        <!-- Product List -->
+        <div style="padding:0 16px 80px" id="productList"></div>
+        <!-- FAB -->
+        <button class="fab" onclick="showAddProduct()">+</button>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+        <!-- Add Product Modal -->
+        <div class="modal-overlay" id="addProductModal">
+          <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:16px">➕ Agregar Producto</h3>
+            <input class="login-input" placeholder="Nombre del producto" id="newProdName">
+            <select class="login-input" id="newProdCat" style="cursor:pointer">
+              <option value="">Seleccionar categoría</option>
+              <option value="Herramientas">🔧 Herramientas</option>
+              <option value="Pinturas">🎨 Pinturas</option>
+              <option value="Electricidad">⚡ Electricidad</option>
+              <option value="Plomería">🔩 Plomería</option>
+              <option value="Tornillería">🔩 Tornillería</option>
+            </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <input class="login-input" type="number" placeholder="Precio (Bs.)" id="newProdPrice">
+              <input class="login-input" type="number" placeholder="Stock" id="newProdStock">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button onclick="hideAddProduct()" style="flex:1;padding:12px;background:#f5f5f5;border:none;border-radius:12px;font-size:.9rem;cursor:pointer;font-weight:600">Cancelar</button>
+              <button onclick="addNewProduct()" style="flex:1;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:.9rem;cursor:pointer;font-weight:600">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: PRODUCT DETAIL ===== -->
+      <div class="screen right" id="screenDetail">
+        <div id="detailContent"></div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: REPORTS ===== -->
+      <div class="screen right" id="screenReports">
+        <div class="app-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="cursor:pointer;font-size:1.2rem" onclick="navigateTo('screenDashboard')">←</span>
+            <h2>Reportes</h2>
+          </div>
+          <span style="font-size:1.1rem">📊</span>
+        </div>
+        <div style="padding:14px 16px 70px">
+          <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px">Selecciona un tipo de reporte</p>
+          <div id="reportOptions">
+            <div class="report-card" onclick="showReport('inventory')">
+              <div style="width:44px;height:44px;background:#FFF3E0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📦</div>
+              <div><div style="font-weight:600;font-size:.9rem">Inventario Completo</div><div style="font-size:.7rem;color:var(--text-secondary)">Listado de todos los productos</div></div>
+            </div>
+            <div class="report-card" onclick="showReport('lowstock')">
+              <div style="width:44px;height:44px;background:#FFEBEE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">⚠️</div>
+              <div><div style="font-weight:600;font-size:.9rem">Stock Bajo</div><div style="font-size:.7rem;color:var(--text-secondary)">Productos con stock crítico</div></div>
+            </div>
+            <div class="report-card" onclick="showReport('movements')">
+              <div style="width:44px;height:44px;background:#E3F2FD;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📋</div>
+              <div><div style="font-weight:600;font-size:.9rem">Movimientos del Día</div><div style="font-size:.7rem;color:var(--text-secondary)">Entradas y salidas de hoy</div></div>
+            </div>
+            <div class="report-card" onclick="showReport('valuation')">
+              <div style="width:44px;height:44px;background:#E8F5E9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">💰</div>
+              <div><div style="font-weight:600;font-size:.9rem">Valorización del Inventario</div><div style="font-size:.7rem;color:var(--text-secondary)">Valor monetario total</div></div>
+            </div>
+          </div>
+          <!-- Report View (hidden initially) -->
+          <div id="reportView" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <button onclick="hideReport()" style="padding:8px 16px;background:#f5f5f5;border:none;border-radius:8px;font-size:.8rem;cursor:pointer;font-weight:600">← Volver</button>
+              <button onclick="showToast('📄 Reporte exportado exitosamente')" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:8px;font-size:.8rem;cursor:pointer;font-weight:600">📥 Exportar</button>
+            </div>
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:10px" id="reportTitle"></h3>
+            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)" id="reportTableContainer"></div>
+          </div>
+        </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+      </div>
+
+      <!-- ===== SCREEN: PROFILE ===== -->
+      <div class="screen right" id="screenProfile">
+        <div class="profile-header">
+          <div class="profile-avatar">👤</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-top:12px">Roger García</h2>
+          <p style="font-size:.8rem;opacity:.8;margin-top:2px">Administrador</p>
+          <p style="font-size:.7rem;opacity:.6;margin-top:2px">roger@ferreinventario.com</p>
+        </div>
+        <div style="padding-bottom:70px">
+          <div style="padding:6px 0">
+            <div class="profile-option" onclick="showToast('🔑 Función de cambiar contraseña')">
+              <span style="font-size:1.2rem">🔑</span>
+              <div><div style="font-weight:600;font-size:.9rem">Cambiar Contraseña</div><div style="font-size:.7rem;color:var(--text-secondary)">Actualizar credenciales de acceso</div></div>
+            </div>
+            <div class="profile-option" onclick="showToast('⚙️ Configuración de la app')">
+              <span style="font-size:1.2rem">⚙️</span>
+              <div><div style="font-weight:600;font-size:.9rem">Configuración</div><div style="font-size:.7rem;color:var(--text-secondary)">Preferencias y ajustes</div></div>
+            </div>
+            <div class="profile-option" onclick="showToast('🔔 Notificaciones configuradas')">
+              <span style="font-size:1.2rem">🔔</span>
+              <div><div style="font-weight:600;font-size:.9rem">Notificaciones</div><div style="font-size:.7rem;color:var(--text-secondary)">Gestionar alertas</div></div>
+            </div>
+            <div class="profile-option" onclick="showToast('📱 Dispositivos vinculados')">
+              <span style="font-size:1.2rem">📱</span>
+              <div><div style="font-weight:600;font-size:.9rem">Dispositivos</div><div style="font-size:.7rem;color:var(--text-secondary)">2 dispositivos conectados</div></div>
+            </div>
+            <div class="profile-option" onclick="showToast('ℹ️ FerreInventario QR v2.0.1')">
+              <span style="font-size:1.2rem">ℹ️</span>
+              <div><div style="font-weight:600;font-size:.9rem">Acerca de</div><div style="font-size:.7rem;color:var(--text-secondary)">Versión 2.0.1 — Nov 2026</div></div>
+            </div>
+            <div style="border-top:1px solid #eee;margin-top:4px">
+              <div class="profile-option" onclick="doLogout()">
+                <span style="font-size:1.2rem">🚪</span>
+                <div><div style="font-weight:600;font-size:.9rem;color:var(--error)">Cerrar Sesión</div><div style="font-size:.7rem;color:var(--text-secondary)">Salir de la cuenta</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+          <div class="bottom-nav-item" onclick="navigateTo('screenDashboard')"><span>🏠</span><span>Inicio</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenScanner')"><span>📸</span><span>Escanear</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenProducts')"><span>📋</span><span>Productos</span></div>
+          <div class="bottom-nav-item" onclick="navigateTo('screenReports')"><span>📊</span><span>Reportes</span></div>
+          <div class="bottom-nav-item active-nav" onclick="navigateTo('screenProfile')"><span>👤</span><span>Perfil</span></div>
+        </div>
+      </div>
+
+    </div><!-- end phone-screen -->
+    <!-- Home Indicator -->
+    <div class="phone-home-indicator"></div>
+  </div><!-- end phone-frame -->
+
+  <!-- ===== SIDE PANEL ===== -->
+  <div class="side-panel" id="sidePanel">
+    <div class="side-panel-header">
+      <h3 style="font-size:1.1rem;font-weight:700">📐 Diagramas del Proyecto</h3>
+      <p style="font-size:.78rem;opacity:.8;margin-top:4px">Documentación técnica del sistema</p>
+    </div>
+    <div>
+      <div class="side-panel-tab active-tab" onclick="selectDiagramTab(this,'gantt')">
+        <span style="font-size:1.2rem">📅</span>
+        <div><div style="font-weight:600">Diagrama de Gantt</div><div style="font-size:.7rem;opacity:.7">Cronograma del proyecto</div></div>
+      </div>
+      <div class="side-panel-tab" onclick="selectDiagramTab(this,'flujo')">
+        <span style="font-size:1.2rem">🔄</span>
+        <div><div style="font-weight:600">Flujo de Datos</div><div style="font-size:.7rem;opacity:.7">DFD del sistema</div></div>
+      </div>
+      <div class="side-panel-tab" onclick="selectDiagramTab(this,'secuencia')">
+        <span style="font-size:1.2rem">📊</span>
+        <div><div style="font-weight:600">Diagrama de Secuencias</div><div style="font-size:.7rem;opacity:.7">Interacciones del sistema</div></div>
+      </div>
+      <div class="side-panel-tab" onclick="selectDiagramTab(this,'clases')">
+        <span style="font-size:1.2rem">🏗️</span>
+        <div><div style="font-weight:600">Diagrama de Clases</div><div style="font-size:.7rem;opacity:.7">Estructura del modelo</div></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #eee">
+      <div id="diagramPreview" style="padding:16px;min-height:420px;background:#fafafa">
+        <!-- Default: Gantt -->
+        <div id="diagramContent"></div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid #eee;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openDiagramModal()" style="padding:10px 14px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;border:none;border-radius:10px;font-size:.8rem;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(255,111,0,.25);transition:all .2s;display:inline-flex;align-items:center;gap:6px;">
+        🔍 Ver en Pantalla Completa
+      </button>
+      <button onclick="openDiagramExternal()" style="padding:10px 14px;background:var(--secondary);color:#fff;border:none;border-radius:10px;font-size:.8rem;cursor:pointer;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:6px;" id="openDiagramBtn">
+        🔗 Pestaña Nueva ↗
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ==================== GLOBAL FOOTER ==================== -->
+<footer class="global-footer">
+  <div>Desarrollado por <strong>Roger García</strong> | GitHub: <strong>@rgamercm</strong></div>
+  <div>Sistemas de Información — 8vo Semestre — 2026</div>
+  <div>📅 Noviembre 2026</div>
+</footer>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+const DEFAULT_PRODUCTS = [
+  {id:1, code:'FER-001', name:'Martillo Stanley 16oz', desc:'Martillo de acero forjado con mango de fibra de vidrio', category:'Herramientas', icon:'🔨', price:45, priceBuy:32, stock:15, maxStock:30, location:'Pasillo 3, Estante B', provider:'Stanley Tools', movements:[{type:'Entrada',qty:10,date:'18/11/2026'},{type:'Salida',qty:3,date:'19/11/2026'},{type:'Salida',qty:2,date:'20/11/2026'}]},
+  {id:2, code:'FER-002', name:'Destornillador Phillips #2', desc:'Destornillador Phillips punta magnética', category:'Herramientas', icon:'🪛', price:15, priceBuy:9, stock:30, maxStock:50, location:'Pasillo 2, Estante A', provider:'Stanley Tools', movements:[{type:'Entrada',qty:20,date:'15/11/2026'},{type:'Salida',qty:5,date:'19/11/2026'}]},
+  {id:3, code:'FER-003', name:'Pintura Blanca 1gal Montana', desc:'Pintura de interior/exterior acabado mate', category:'Pinturas', icon:'🎨', price:85, priceBuy:60, stock:8, maxStock:20, location:'Pasillo 5, Estante C', provider:'Montana Colors', movements:[{type:'Entrada',qty:10,date:'10/11/2026'},{type:'Salida',qty:2,date:'20/11/2026'}]},
+  {id:4, code:'FER-004', name:'Cable #12 AWG (metro)', desc:'Cable eléctrico calibre 12 AWG THHN', category:'Electricidad', icon:'⚡', price:12, priceBuy:7, stock:200, maxStock:500, location:'Pasillo 7, Estante A', provider:'Elecon', movements:[{type:'Entrada',qty:100,date:'12/11/2026'},{type:'Salida',qty:35,date:'19/11/2026'}]},
+  {id:5, code:'FER-005', name:'Llave Ajustable 10"', desc:'Llave ajustable cromada apertura máx. 30mm', category:'Herramientas', icon:'🔧', price:55, priceBuy:38, stock:10, maxStock:20, location:'Pasillo 3, Estante C', provider:'Truper', movements:[{type:'Entrada',qty:5,date:'14/11/2026'},{type:'Salida',qty:1,date:'20/11/2026'}]},
+  {id:6, code:'FER-006', name:'Cinta Teflón 3/4"', desc:'Cinta de teflón para roscas de plomería', category:'Plomería', icon:'🔩', price:5, priceBuy:2, stock:50, maxStock:100, location:'Pasillo 6, Estante B', provider:'Oatey', movements:[{type:'Entrada',qty:50,date:'08/11/2026'},{type:'Salida',qty:8,date:'19/11/2026'}]},
+  {id:7, code:'FER-007', name:'Tornillo Drywall 6x1" (100u)', desc:'Tornillos punta fina para tabiquería', category:'Tornillería', icon:'🔩', price:18, priceBuy:10, stock:3, maxStock:50, location:'Pasillo 1, Estante D', provider:'Segufix', movements:[{type:'Salida',qty:5,date:'18/11/2026'},{type:'Salida',qty:4,date:'20/11/2026'}]},
+  {id:8, code:'FER-008', name:'Broca para concreto 1/2"', desc:'Broca con punta de tungsteno para mampostería', category:'Herramientas', icon:'🔧', price:22, priceBuy:14, stock:25, maxStock:40, location:'Pasillo 2, Estante C', provider:'Dewalt', movements:[{type:'Entrada',qty:15,date:'16/11/2026'},{type:'Salida',qty:3,date:'19/11/2026'}]},
+  {id:9, code:'FER-009', name:'Interruptor Sencillo', desc:'Interruptor de pared 1 vía 10A/250V', category:'Electricidad', icon:'💡', price:8, priceBuy:4, stock:2, maxStock:40, location:'Pasillo 7, Estante C', provider:'Bticino', movements:[{type:'Salida',qty:6,date:'17/11/2026'},{type:'Salida',qty:3,date:'20/11/2026'}]},
+  {id:10, code:'FER-010', name:'Rodillo para pintura 9"', desc:'Rodillo de felpa anti-gotas con soporte', category:'Pinturas', icon:'🖌️', price:28, priceBuy:18, stock:18, maxStock:30, location:'Pasillo 5, Estante A', provider:'Truper', movements:[{type:'Entrada',qty:10,date:'13/11/2026'},{type:'Salida',qty:4,date:'19/11/2026'}]},
+  {id:11, code:'FER-011', name:'Tubo PVC 1/2" (3m)', desc:'Tubo de PVC presión para agua fría', category:'Plomería', icon:'🔧', price:15, priceBuy:9, stock:40, maxStock:60, location:'Pasillo 6, Estante A', provider:'Pavco', movements:[{type:'Entrada',qty:20,date:'11/11/2026'},{type:'Salida',qty:5,date:'18/11/2026'}]},
+  {id:12, code:'FER-012', name:'Clavos 2" (1kg)', desc:'Clavos de acero con cabeza para madera', category:'Tornillería', icon:'📌', price:10, priceBuy:6, stock:1, maxStock:50, location:'Pasillo 1, Estante A', provider:'Nacional', movements:[{type:'Salida',qty:8,date:'19/11/2026'},{type:'Salida',qty:3,date:'20/11/2026'}]}
+];
+
+let products = [];
+let currentScreen = 'screenSplash';
+let screenHistory = [];
+let currentCategory = 'Todos';
+let selectedProductId = null;
+let lastScannedId = null;
+let currentDiagram = 'gantt';
+
+// ===================== INIT =====================
+function init() {
+  // Load from localStorage or use defaults
+  const saved = localStorage.getItem('ferreInventarioProducts');
+  if (saved) {
+    products = JSON.parse(saved);
+  } else {
+    products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    saveProducts();
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+  renderProducts();
+  renderDiagram('gantt');
+
+  // Splash -> Login after 3s
+  setTimeout(() => { navigateTo('screenLogin'); }, 2800);
+}
+
+function saveProducts() {
+  localStorage.setItem('ferreInventarioProducts', JSON.stringify(products));
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('statusTime').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+
+// ===================== NAVIGATION =====================
+function navigateTo(screenId) {
+  if (screenId === currentScreen) return;
+  const allScreens = document.querySelectorAll('.screen');
+  const target = document.getElementById(screenId);
+  const current = document.getElementById(currentScreen);
+  if (!target || !current) return;
+
+  // Determine direction
+  const screenOrder = ['screenSplash','screenLogin','screenDashboard','screenScanner','screenProducts','screenDetail','screenReports','screenProfile'];
+  const ci = screenOrder.indexOf(currentScreen);
+  const ti = screenOrder.indexOf(screenId);
+  const goingForward = ti >= ci;
+
+  allScreens.forEach(s => {
+    if (s.id !== screenId && s.id !== currentScreen) {
+      s.classList.remove('active');
+      s.classList.add('hidden-screen');
+    }
+  });
+
+  current.classList.remove('hidden-screen');
+  target.classList.remove('hidden-screen','left','right');
+
+  // Set initial position of target
+  if (goingForward) {
+    target.classList.add('right');
+  } else {
+    target.classList.add('left');
+  }
+
+  // Force reflow
+  target.offsetHeight;
+
+  // Animate
+  requestAnimationFrame(() => {
+    current.classList.remove('active');
+    current.classList.add(goingForward ? 'left' : 'right');
+    target.classList.remove('left','right');
+    target.classList.add('active');
+  });
+
+  screenHistory.push(currentScreen);
+  currentScreen = screenId;
+}
+
+// ===================== AUTH =====================
+function doLogin() {
+  const user = document.getElementById('loginUser').value;
+  const pass = document.getElementById('loginPass').value;
+  if (user === 'admin' && pass === '1234') {
+    navigateTo('screenDashboard');
+    setTimeout(() => showToast('👋 ¡Bienvenido, Roger!'), 500);
+  } else {
+    showToast('❌ Credenciales incorrectas');
+  }
+}
+
+function doLogout() {
+  navigateTo('screenLogin');
+  showToast('👋 Sesión cerrada');
+}
+
+// ===================== DRAWER =====================
+function toggleDrawer() {
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+
+// ===================== TOAST =====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== PRODUCTS =====================
+function renderProducts() {
+  const list = document.getElementById('productList');
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  let filtered = products.filter(p => {
+    const matchCat = currentCategory === 'Todos' || p.category === currentCategory;
+    const matchSearch = p.name.toLowerCase().includes(search) || p.code.toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+
+  document.getElementById('productCount').textContent = filtered.length + ' items';
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)"><div style="font-size:2rem;margin-bottom:8px">🔍</div><p style="font-size:.85rem">No se encontraron productos</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    const lowStock = p.stock <= 5;
+    const catColors = {Herramientas:'#FFF3E0',Pinturas:'#FCE4EC',Electricidad:'#E3F2FD',Plomería:'#E0F2F1',Tornillería:'#F3E5F5'};
+    return `<div class="product-item" onclick="showProductDetail(${p.id})">
+      <div class="product-icon" style="background:${catColors[p.category]||'#f5f5f5'}">${p.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="font-size:.7rem;color:var(--text-secondary)">${p.code} • ${p.category}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-weight:700;font-size:.85rem;color:${lowStock?'var(--error)':'var(--text)'}">
+          ${lowStock?'⚠️ ':''}${p.stock}u
+        </div>
+        <div style="font-size:.7rem;color:var(--text-secondary)">Bs. ${p.price.toFixed(2)}</div>
+      </div>
+      <span style="font-size:.8rem;opacity:.4">▸</span>
+    </div>`;
+  }).join('');
+}
+
+function filterProducts() {
+  renderProducts();
+}
+
+function filterByCategory(cat) {
+  currentCategory = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active-chip'));
+  event.target.classList.add('active-chip');
+  renderProducts();
+}
+
+// ===================== ADD PRODUCT =====================
+function showAddProduct() {
+  document.getElementById('addProductModal').classList.add('show');
+}
+function hideAddProduct() {
+  document.getElementById('addProductModal').classList.remove('show');
+}
+function addNewProduct() {
+  const name = document.getElementById('newProdName').value.trim();
+  const cat = document.getElementById('newProdCat').value;
+  const price = parseFloat(document.getElementById('newProdPrice').value);
+  const stock = parseInt(document.getElementById('newProdStock').value);
+  if (!name || !cat || isNaN(price) || isNaN(stock)) {
+    showToast('❌ Completa todos los campos');
+    return;
+  }
+  const catIcons = {Herramientas:'🔧',Pinturas:'🎨',Electricidad:'⚡',Plomería:'🔩',Tornillería:'🔩'};
+  const newId = Math.max(...products.map(p=>p.id)) + 1;
+  const newCode = 'FER-' + String(newId).padStart(3,'0');
+  products.push({
+    id:newId, code:newCode, name, desc:'Producto agregado manualmente',
+    category:cat, icon:catIcons[cat]||'📦', price, priceBuy:price*0.65,
+    stock, maxStock:stock*3, location:'Sin asignar', provider:'Sin asignar',
+    movements:[{type:'Entrada',qty:stock,date:'20/11/2026'}]
+  });
+  saveProducts();
+  renderProducts();
+  hideAddProduct();
+  document.getElementById('newProdName').value='';
+  document.getElementById('newProdCat').value='';
+  document.getElementById('newProdPrice').value='';
+  document.getElementById('newProdStock').value='';
+  showToast('✅ Producto agregado exitosamente');
+}
+
+// ===================== PRODUCT DETAIL =====================
+function showProductDetail(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  selectedProductId = id;
+  const lowStock = p.stock <= 5;
+  const stockPct = Math.min(100, Math.round((p.stock / p.maxStock) * 100));
+  const stockColor = lowStock ? 'var(--error)' : stockPct > 50 ? 'var(--success)' : 'var(--warning)';
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-header" style="position:relative">
+      <span style="position:absolute;top:14px;left:14px;cursor:pointer;font-size:1.2rem" onclick="navigateTo('screenProducts')">←</span>
+      <span style="position:absolute;top:14px;right:14px;font-size:1rem;cursor:pointer" onclick="showToast('⚙️ Opciones del producto')">⋮</span>
+      <div style="font-size:3rem;margin-bottom:8px">${p.icon}</div>
+      <h2 style="font-size:1.1rem;font-weight:700">${p.name}</h2>
+      <p style="font-size:.8rem;opacity:.8">${p.code} • ${p.category}</p>
+    </div>
+    <div style="padding:16px 16px 80px">
+      <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px">${p.desc}</p>
+
+      <!-- QR Code -->
+      <div style="text-align:center;margin-bottom:16px">
+        <div class="qr-container">${generateQRSVG(p.code)}</div>
+        <p style="font-size:.7rem;color:var(--text-secondary);margin-top:6px">${p.code}</p>
+      </div>
+
+      <!-- Stock -->
+      <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:600;font-size:.85rem">📦 Stock Actual</span>
+          <span style="font-weight:700;font-size:1.1rem;color:${stockColor}">${p.stock} / ${p.maxStock}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${stockPct}%;background:${stockColor}"></div>
+        </div>
+        ${lowStock ? '<div style="margin-top:8px;padding:6px 10px;background:#FFEBEE;border-radius:8px;font-size:.75rem;color:var(--error);font-weight:600">⚠️ Stock bajo — Se recomienda reabastecer</div>' : ''}
+      </div>
+
+      <!-- Prices -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);text-align:center">
+          <div style="font-size:.7rem;color:var(--text-secondary)">Precio Compra</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--secondary)">Bs. ${p.priceBuy.toFixed(2)}</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);text-align:center">
+          <div style="font-size:.7rem;color:var(--text-secondary)">Precio Venta</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--success)">Bs. ${p.price.toFixed(2)}</div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0">
+          <span style="font-size:.8rem;color:var(--text-secondary)">📍 Ubicación</span>
+          <span style="font-size:.8rem;font-weight:600">${p.location}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0">
+          <span style="font-size:.8rem;color:var(--text-secondary)">🏭 Proveedor</span>
+          <span style="font-size:.8rem;font-weight:600">${p.provider}</span>
+        </div>
+      </div>
+
+      <!-- Movements -->
+      <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px">
+        <h4 style="font-size:.85rem;font-weight:600;margin-bottom:10px">📋 Últimos Movimientos</h4>
+        ${p.movements.map(m => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;background:${m.type==='Entrada'?'#E8F5E9':'#FFEBEE'}">${m.type==='Entrada'?'📥':'📤'}</span>
+              <span style="font-size:.8rem;font-weight:500">${m.type}</span>
+            </div>
+            <div style="text-align:right">
+              <span style="font-size:.8rem;font-weight:600;color:${m.type==='Entrada'?'var(--success)':'var(--error)'}">${m.type==='Entrada'?'+':'-'}${m.qty}</span>
+              <div style="font-size:.65rem;color:var(--text-secondary)">${m.date}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="detail-actions">
+        <button class="detail-btn" style="background:#E8F5E9;color:var(--success)" onclick="adjustStock(${p.id},'entrada')">📥 Entrada</button>
+        <button class="detail-btn" style="background:#FFEBEE;color:var(--error)" onclick="adjustStock(${p.id},'salida')">📤 Salida</button>
+        <button class="detail-btn" style="background:#E3F2FD;color:var(--secondary)" onclick="showToast('✏️ Edición del producto')">✏️ Editar</button>
+        <button class="detail-btn" style="background:#FFF3E0;color:var(--primary)" onclick="showToast('📱 QR generado y listo para imprimir')">📱 Generar QR</button>
+      </div>
+    </div>
+  `;
+  navigateTo('screenDetail');
+}
+
+function adjustStock(id, type) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  if (type === 'entrada') {
+    p.stock += 5;
+    p.movements.unshift({type:'Entrada', qty:5, date:'20/11/2026'});
+    showToast('📥 +5 unidades agregadas');
+  } else {
+    if (p.stock < 1) { showToast('❌ Sin stock disponible'); return; }
+    const qty = Math.min(3, p.stock);
+    p.stock -= qty;
+    p.movements.unshift({type:'Salida', qty, date:'20/11/2026'});
+    showToast(`📤 -${qty} unidades retiradas`);
+  }
+  saveProducts();
+  showProductDetail(id);
+}
+
+// ===================== QR CODE GENERATOR =====================
+function generateQRSVG(text) {
+  // Generate a deterministic pseudo-QR pattern based on the text
+  const size = 21; // 21x21 modules (like QR Version 1)
+  const cellSize = 6;
+  const svgSize = size * cellSize;
+  let seed = 0;
+  for (let i = 0; i < text.length; i++) seed = ((seed << 5) - seed + text.charCodeAt(i)) | 0;
+
+  function seededRandom() {
+    seed = (seed * 16807 + 0) % 2147483647;
+    return (seed & 0x7fffffff) / 2147483647;
+  }
+
+  let cells = '';
+
+  // Create the grid
+  const grid = Array.from({length: size}, () => Array(size).fill(false));
+
+  // Finder patterns (top-left, top-right, bottom-left)
+  function drawFinder(r, c) {
+    for (let dr = 0; dr < 7; dr++) {
+      for (let dc = 0; dc < 7; dc++) {
+        if (dr === 0 || dr === 6 || dc === 0 || dc === 6 ||
+            (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4)) {
+          grid[r+dr][c+dc] = true;
+        }
+      }
+    }
+  }
+  drawFinder(0, 0);
+  drawFinder(0, size - 7);
+  drawFinder(size - 7, 0);
+
+  // Timing patterns
+  for (let i = 8; i < size - 8; i++) {
+    grid[6][i] = i % 2 === 0;
+    grid[i][6] = i % 2 === 0;
+  }
+
+  // Fill rest with pseudo-random data based on text
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (!grid[r][c] && seededRandom() > 0.5) {
+        // Skip separator zones around finders
+        const inFinderZone =
+          (r < 9 && c < 9) || (r < 9 && c > size - 9) || (r > size - 9 && c < 9);
+        if (!inFinderZone || (r >= 8 && c >= 8)) {
+          grid[r][c] = true;
+        }
+      }
+    }
+  }
+
+  // Build SVG
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c]) {
+        cells += `<rect x="${c*cellSize}" y="${r*cellSize}" width="${cellSize}" height="${cellSize}" fill="#212121" rx="1"/>`;
+      }
+    }
+  }
+
+  return `<svg viewBox="0 0 ${svgSize} ${svgSize}" width="140" height="140" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${svgSize}" height="${svgSize}" fill="white"/>
+    ${cells}
+  </svg>`;
+}
+
+// ===================== SCANNER =====================
+function simulateScan() {
+  const viewport = document.getElementById('scannerViewport');
+  viewport.style.boxShadow = '0 0 20px var(--primary)';
+  setTimeout(() => { viewport.style.boxShadow = 'none'; }, 600);
+
+  // Pick a random product
+  const p = products[Math.floor(Math.random() * products.length)];
+  lastScannedId = p.id;
+
+  setTimeout(() => {
+    const result = document.getElementById('scanResult');
+    result.style.display = 'block';
+    document.getElementById('scanResultContent').innerHTML = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.82rem">
+        <span style="color:var(--text-secondary)">Nombre:</span><span style="font-weight:600">${p.name}</span>
+        <span style="color:var(--text-secondary)">Código:</span><span style="font-weight:600">${p.code}</span>
+        <span style="color:var(--text-secondary)">Stock:</span><span style="font-weight:600;color:${p.stock<=5?'var(--error)':'var(--text)'}">${p.stock} unidades</span>
+        <span style="color:var(--text-secondary)">Precio:</span><span style="font-weight:600">Bs. ${p.price.toFixed(2)}</span>
+        <span style="color:var(--text-secondary)">Ubicación:</span><span style="font-weight:600">${p.location}</span>
+      </div>
+    `;
+  }, 800);
+}
+
+function manualScan() {
+  const code = document.getElementById('manualCode').value.trim().toUpperCase();
+  if (!code) { showToast('❌ Ingresa un código'); return; }
+  const p = products.find(x => x.code.toUpperCase() === code);
+  if (!p) { showToast('❌ Producto no encontrado'); return; }
+  lastScannedId = p.id;
+  const result = document.getElementById('scanResult');
+  result.style.display = 'block';
+  document.getElementById('scanResultContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.82rem">
+      <span style="color:var(--text-secondary)">Nombre:</span><span style="font-weight:600">${p.name}</span>
+      <span style="color:var(--text-secondary)">Código:</span><span style="font-weight:600">${p.code}</span>
+      <span style="color:var(--text-secondary)">Stock:</span><span style="font-weight:600;color:${p.stock<=5?'var(--error)':'var(--text)'}">${p.stock} unidades</span>
+      <span style="color:var(--text-secondary)">Precio:</span><span style="font-weight:600">Bs. ${p.price.toFixed(2)}</span>
+      <span style="color:var(--text-secondary)">Ubicación:</span><span style="font-weight:600">${p.location}</span>
+    </div>
+  `;
+}
+
+function viewScannedProduct() {
+  if (lastScannedId) {
+    document.getElementById('scanResult').style.display = 'none';
+    showProductDetail(lastScannedId);
+  }
+}
+
+// ===================== REPORTS =====================
+function showReport(type) {
+  document.getElementById('reportOptions').style.display = 'none';
+  document.getElementById('reportView').style.display = 'block';
+  const title = document.getElementById('reportTitle');
+  const container = document.getElementById('reportTableContainer');
+
+  if (type === 'inventory') {
+    title.textContent = '📦 Inventario Completo';
+    container.innerHTML = `<table class="report-table">
+      <tr><th>Código</th><th>Producto</th><th>Cat.</th><th>Stock</th><th>Precio</th></tr>
+      ${products.map(p => `<tr><td>${p.code}</td><td style="font-weight:500">${p.name}</td><td>${p.category}</td><td style="color:${p.stock<=5?'var(--error)':'inherit'};font-weight:${p.stock<=5?'700':'400'}">${p.stock}</td><td>Bs.${p.price.toFixed(2)}</td></tr>`).join('')}
+    </table>`;
+  } else if (type === 'lowstock') {
+    title.textContent = '⚠️ Productos con Stock Bajo';
+    const low = products.filter(p => p.stock <= 5);
+    container.innerHTML = `<table class="report-table">
+      <tr><th>Código</th><th>Producto</th><th>Stock</th><th>Máx</th><th>Estado</th></tr>
+      ${low.map(p => `<tr><td>${p.code}</td><td style="font-weight:500">${p.name}</td><td style="color:var(--error);font-weight:700">${p.stock}</td><td>${p.maxStock}</td><td style="color:var(--error)">⚠️ Crítico</td></tr>`).join('')}
+    </table>`;
+  } else if (type === 'movements') {
+    title.textContent = '📋 Movimientos del Día';
+    const movs = [];
+    products.forEach(p => {
+      p.movements.forEach(m => {
+        if (m.date === '20/11/2026') movs.push({...m, product: p.name, code: p.code});
+      });
+    });
+    container.innerHTML = `<table class="report-table">
+      <tr><th>Código</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Fecha</th></tr>
+      ${movs.map(m => `<tr><td>${m.code}</td><td style="font-weight:500">${m.product}</td><td style="color:${m.type==='Entrada'?'var(--success)':'var(--error)'}">${m.type==='Entrada'?'📥':'📤'} ${m.type}</td><td style="font-weight:600">${m.qty}</td><td>${m.date}</td></tr>`).join('')}
+    </table>`;
+  } else if (type === 'valuation') {
+    title.textContent = '💰 Valorización del Inventario';
+    let total = 0;
+    container.innerHTML = `<table class="report-table">
+      <tr><th>Código</th><th>Producto</th><th>Stock</th><th>Precio</th><th>Valor</th></tr>
+      ${products.map(p => {
+        const val = p.stock * p.price;
+        total += val;
+        return `<tr><td>${p.code}</td><td style="font-weight:500">${p.name}</td><td>${p.stock}</td><td>Bs.${p.price.toFixed(2)}</td><td style="font-weight:600">Bs.${val.toFixed(2)}</td></tr>`;
+      }).join('')}
+      <tr style="background:var(--primary);color:#fff;font-weight:700"><td colspan="4">TOTAL INVENTARIO</td><td>Bs. ${total.toFixed(2)}</td></tr>
+    </table>`;
+  }
+}
+
+function hideReport() {
+  document.getElementById('reportOptions').style.display = 'block';
+  document.getElementById('reportView').style.display = 'none';
+}
+
+// ===================== DIAGRAMS =====================
+const diagramFiles = {
+  gantt: 'diagrama-gantt.html',
+  flujo: 'diagrama-flujo-datos.html',
+  secuencia: 'diagrama-secuencias.html',
+  clases: 'diagrama-clases.html'
+};
+
+const diagramTitles = {
+  gantt: '📅 Diagrama de Gantt',
+  flujo: '🔄 Diagrama de Flujo de Datos',
+  secuencia: '📊 Diagrama de Secuencias',
+  clases: '🏗️ Diagrama de Clases'
+};
+
+function selectDiagramTab(el, type) {
+  document.querySelectorAll('.side-panel-tab').forEach(t => t.classList.remove('active-tab'));
+  el.classList.add('active-tab');
+  currentDiagram = type;
+  renderDiagram(type);
+}
+
+function renderDiagram(type) {
+  const container = document.getElementById('diagramContent');
+
+  if (type === 'gantt') {
+    container.innerHTML = `
+      <h4 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--text)">${diagramTitles[type]}</h4>
+      <p style="font-size:.72rem;color:var(--text-secondary);margin-bottom:14px">Cronograma de desarrollo — Nov 2026</p>
+      <div style="font-size:.7rem">
+        ${ganttRow('Análisis de Requisitos','#4CAF50',90, 'Sem 1-2')}
+        ${ganttRow('Diseño de BD','#2196F3',75, 'Sem 2-3')}
+        ${ganttRow('Desarrollo Backend','#FF9800',60, 'Sem 3-5')}
+        ${ganttRow('Desarrollo Frontend','#9C27B0',45, 'Sem 4-6')}
+        ${ganttRow('Módulo QR','#F44336',35, 'Sem 5-7')}
+        ${ganttRow('Integración','#009688',25, 'Sem 6-8')}
+        ${ganttRow('Pruebas','#795548',15, 'Sem 7-9')}
+        ${ganttRow('Despliegue','#607D8B',5, 'Sem 9-10')}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:.6rem;color:var(--text-secondary);border-top:1px solid #eee;padding-top:8px">
+        <span>Nov 1</span><span>Nov 8</span><span>Nov 15</span><span>Nov 22</span><span>Nov 30</span>
+      </div>
+    `;
+  } else if (type === 'flujo') {
+    container.innerHTML = `
+      <h4 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--text)">${diagramTitles[type]}</h4>
+      <svg viewBox="0 0 340 400" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:sans-serif">
+        <!-- Usuario -->
+        <rect x="120" y="5" width="100" height="36" rx="18" fill="#FF6F00" stroke="#E65100" stroke-width="1.5"/>
+        <text x="170" y="28" text-anchor="middle" fill="white" font-size="11" font-weight="600">👤 Usuario</text>
+        <!-- Arrow -->
+        <line x1="170" y1="41" x2="170" y2="65" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- App -->
+        <rect x="100" y="65" width="140" height="36" rx="6" fill="#1565C0" stroke="#0D47A1" stroke-width="1.5"/>
+        <text x="170" y="88" text-anchor="middle" fill="white" font-size="10" font-weight="600">📱 App Móvil</text>
+        <!-- Branches -->
+        <line x1="170" y1="101" x2="170" y2="120" stroke="#999" stroke-width="1.5"/>
+        <line x1="60" y1="120" x2="280" y2="120" stroke="#999" stroke-width="1.5"/>
+        <line x1="60" y1="120" x2="60" y2="140" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="170" y1="120" x2="170" y2="140" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="280" y1="120" x2="280" y2="140" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- Processes -->
+        <rect x="10" y="140" width="100" height="34" rx="6" fill="#E8F5E9" stroke="#388E3C" stroke-width="1.5"/>
+        <text x="60" y="161" text-anchor="middle" fill="#2E7D32" font-size="9" font-weight="600">📸 Escaneo QR</text>
+        <rect x="120" y="140" width="100" height="34" rx="6" fill="#FFF3E0" stroke="#FF6F00" stroke-width="1.5"/>
+        <text x="170" y="161" text-anchor="middle" fill="#E65100" font-size="9" font-weight="600">📦 Inventario</text>
+        <rect x="230" y="140" width="100" height="34" rx="6" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+        <text x="280" y="161" text-anchor="middle" fill="#0D47A1" font-size="9" font-weight="600">📊 Reportes</text>
+        <!-- Down arrows -->
+        <line x1="60" y1="174" x2="60" y2="200" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="170" y1="174" x2="170" y2="200" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="280" y1="174" x2="280" y2="200" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- Sub-processes -->
+        <rect x="10" y="200" width="100" height="34" rx="6" fill="#FCE4EC" stroke="#C62828" stroke-width="1.5"/>
+        <text x="60" y="221" text-anchor="middle" fill="#B71C1C" font-size="8.5" font-weight="600">Decodificar QR</text>
+        <rect x="120" y="200" width="100" height="34" rx="6" fill="#FFF8E1" stroke="#FFA000" stroke-width="1.5"/>
+        <text x="170" y="221" text-anchor="middle" fill="#E65100" font-size="8.5" font-weight="600">CRUD Productos</text>
+        <rect x="230" y="200" width="100" height="34" rx="6" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+        <text x="280" y="221" text-anchor="middle" fill="#006064" font-size="8.5" font-weight="600">Generar Informe</text>
+        <!-- Converge -->
+        <line x1="60" y1="234" x2="60" y2="260" stroke="#999" stroke-width="1.5"/>
+        <line x1="170" y1="234" x2="170" y2="260" stroke="#999" stroke-width="1.5"/>
+        <line x1="280" y1="234" x2="280" y2="260" stroke="#999" stroke-width="1.5"/>
+        <line x1="60" y1="260" x2="280" y2="260" stroke="#999" stroke-width="1.5"/>
+        <line x1="170" y1="260" x2="170" y2="285" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- DB -->
+        <ellipse cx="170" cy="305" rx="70" ry="22" fill="#E8EAF6" stroke="#3F51B5" stroke-width="1.5"/>
+        <text x="170" y="310" text-anchor="middle" fill="#283593" font-size="10" font-weight="600">🗄️ Base de Datos</text>
+        <!-- Arrow marker -->
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#999"/>
+          </marker>
+        </defs>
+      </svg>
+    `;
+  } else if (type === 'secuencia') {
+    container.innerHTML = `
+      <h4 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--text)">${diagramTitles[type]}</h4>
+      <svg viewBox="0 0 340 420" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:sans-serif">
+        <!-- Actors -->
+        <rect x="20" y="5" width="60" height="28" rx="4" fill="#FF6F00"/>
+        <text x="50" y="24" text-anchor="middle" fill="white" font-size="9" font-weight="600">Usuario</text>
+        <rect x="120" y="5" width="60" height="28" rx="4" fill="#1565C0"/>
+        <text x="150" y="24" text-anchor="middle" fill="white" font-size="9" font-weight="600">App</text>
+        <rect x="220" y="5" width="60" height="28" rx="4" fill="#388E3C"/>
+        <text x="250" y="24" text-anchor="middle" fill="white" font-size="9" font-weight="600">Servidor</text>
+        <!-- Lifelines -->
+        <line x1="50" y1="33" x2="50" y2="400" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="150" y1="33" x2="150" y2="400" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="250" y1="33" x2="250" y2="400" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Messages -->
+        ${seqMsg(50,150,55,'1. Login(user,pass)','#FF6F00')}
+        ${seqMsg(150,250,85,'2. Validar credenciales','#1565C0')}
+        ${seqMsg(250,150,115,'3. Token JWT','#388E3C',true)}
+        ${seqMsg(150,50,145,'4. Dashboard','#1565C0',true)}
+        ${seqMsg(50,150,185,'5. Escanear QR','#FF6F00')}
+        ${seqMsg(150,150,215,'6. Decodificar código','#9C27B0')}
+        ${seqMsg(150,250,245,'7. Buscar producto(code)','#1565C0')}
+        ${seqMsg(250,150,275,'8. Datos del producto','#388E3C',true)}
+        ${seqMsg(150,50,305,'9. Mostrar detalle','#1565C0',true)}
+        ${seqMsg(50,150,345,'10. Actualizar stock','#FF6F00')}
+        ${seqMsg(150,250,375,'11. Guardar cambios','#1565C0')}
+      </svg>
+    `;
+  } else if (type === 'clases') {
+    container.innerHTML = `
+      <h4 style="font-size:.9rem;font-weight:700;margin-bottom:12px;color:var(--text)">${diagramTitles[type]}</h4>
+      <svg viewBox="0 0 340 440" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:sans-serif">
+        <!-- Producto -->
+        <rect x="10" y="10" width="150" height="140" rx="6" fill="white" stroke="#1565C0" stroke-width="2"/>
+        <rect x="10" y="10" width="150" height="26" rx="6" fill="#1565C0"/>
+        <rect x="10" y="30" width="150" height="6" fill="#1565C0"/>
+        <text x="85" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="700">📦 Producto</text>
+        <text x="18" y="52" fill="#333" font-size="7.5">- id: int</text>
+        <text x="18" y="63" fill="#333" font-size="7.5">- codigo: string</text>
+        <text x="18" y="74" fill="#333" font-size="7.5">- nombre: string</text>
+        <text x="18" y="85" fill="#333" font-size="7.5">- precio: float</text>
+        <text x="18" y="96" fill="#333" font-size="7.5">- stock: int</text>
+        <line x1="10" y1="100" x2="160" y2="100" stroke="#1565C0" stroke-width="1"/>
+        <text x="18" y="114" fill="#555" font-size="7.5">+ getStock(): int</text>
+        <text x="18" y="125" fill="#555" font-size="7.5">+ updateStock(qty)</text>
+        <text x="18" y="136" fill="#555" font-size="7.5">+ generateQR(): SVG</text>
+
+        <!-- Usuario -->
+        <rect x="180" y="10" width="150" height="130" rx="6" fill="white" stroke="#FF6F00" stroke-width="2"/>
+        <rect x="180" y="10" width="150" height="26" rx="6" fill="#FF6F00"/>
+        <rect x="180" y="30" width="150" height="6" fill="#FF6F00"/>
+        <text x="255" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="700">👤 Usuario</text>
+        <text x="188" y="52" fill="#333" font-size="7.5">- id: int</text>
+        <text x="188" y="63" fill="#333" font-size="7.5">- nombre: string</text>
+        <text x="188" y="74" fill="#333" font-size="7.5">- email: string</text>
+        <text x="188" y="85" fill="#333" font-size="7.5">- rol: string</text>
+        <line x1="180" y1="90" x2="330" y2="90" stroke="#FF6F00" stroke-width="1"/>
+        <text x="188" y="104" fill="#555" font-size="7.5">+ login(user,pass)</text>
+        <text x="188" y="115" fill="#555" font-size="7.5">+ logout()</text>
+        <text x="188" y="126" fill="#555" font-size="7.5">+ getProfile(): User</text>
+
+        <!-- Categoría -->
+        <rect x="10" y="175" width="150" height="110" rx="6" fill="white" stroke="#388E3C" stroke-width="2"/>
+        <rect x="10" y="175" width="150" height="26" rx="6" fill="#388E3C"/>
+        <rect x="10" y="195" width="150" height="6" fill="#388E3C"/>
+        <text x="85" y="193" text-anchor="middle" fill="white" font-size="10" font-weight="700">🏷️ Categoría</text>
+        <text x="18" y="218" fill="#333" font-size="7.5">- id: int</text>
+        <text x="18" y="229" fill="#333" font-size="7.5">- nombre: string</text>
+        <text x="18" y="240" fill="#333" font-size="7.5">- icono: string</text>
+        <line x1="10" y1="245" x2="160" y2="245" stroke="#388E3C" stroke-width="1"/>
+        <text x="18" y="260" fill="#555" font-size="7.5">+ getProductos(): List</text>
+        <text x="18" y="271" fill="#555" font-size="7.5">+ getCount(): int</text>
+
+        <!-- Movimiento -->
+        <rect x="180" y="175" width="150" height="120" rx="6" fill="white" stroke="#9C27B0" stroke-width="2"/>
+        <rect x="180" y="175" width="150" height="26" rx="6" fill="#9C27B0"/>
+        <rect x="180" y="195" width="150" height="6" fill="#9C27B0"/>
+        <text x="255" y="193" text-anchor="middle" fill="white" font-size="10" font-weight="700">📋 Movimiento</text>
+        <text x="188" y="218" fill="#333" font-size="7.5">- id: int</text>
+        <text x="188" y="229" fill="#333" font-size="7.5">- tipo: string</text>
+        <text x="188" y="240" fill="#333" font-size="7.5">- cantidad: int</text>
+        <text x="188" y="251" fill="#333" font-size="7.5">- fecha: Date</text>
+        <line x1="180" y1="256" x2="330" y2="256" stroke="#9C27B0" stroke-width="1"/>
+        <text x="188" y="270" fill="#555" font-size="7.5">+ registrar(): void</text>
+        <text x="188" y="281" fill="#555" font-size="7.5">+ getHistorial(): List</text>
+
+        <!-- CodigoQR -->
+        <rect x="95" y="320" width="150" height="110" rx="6" fill="white" stroke="#F44336" stroke-width="2"/>
+        <rect x="95" y="320" width="150" height="26" rx="6" fill="#F44336"/>
+        <rect x="95" y="340" width="150" height="6" fill="#F44336"/>
+        <text x="170" y="338" text-anchor="middle" fill="white" font-size="10" font-weight="700">📱 CodigoQR</text>
+        <text x="103" y="363" fill="#333" font-size="7.5">- id: int</text>
+        <text x="103" y="374" fill="#333" font-size="7.5">- productoId: int</text>
+        <text x="103" y="385" fill="#333" font-size="7.5">- datos: string</text>
+        <line x1="95" y1="390" x2="245" y2="390" stroke="#F44336" stroke-width="1"/>
+        <text x="103" y="405" fill="#555" font-size="7.5">+ generar(): SVG</text>
+        <text x="103" y="416" fill="#555" font-size="7.5">+ escanear(): Producto</text>
+
+        <!-- Relations -->
+        <line x1="85" y1="150" x2="85" y2="175" stroke="#666" stroke-width="1.5"/>
+        <text x="78" y="166" fill="#666" font-size="7">1..*</text>
+        <line x1="160" y1="80" x2="180" y2="80" stroke="#666" stroke-width="1.5"/>
+        <text x="162" y="77" fill="#666" font-size="7">*</text>
+        <line x1="160" y1="120" x2="180" y2="230" stroke="#666" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="165" y="170" fill="#666" font-size="7">registra</text>
+        <line x1="85" y1="150" x2="170" y2="320" stroke="#666" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="110" y="240" fill="#666" font-size="7">genera</text>
+      </svg>
+    `;
+  }
+}
+
+function ganttRow(label, color, pct, range) {
+  return `<div style="display:flex;align-items:center;margin-bottom:6px;gap:6px">
+    <span style="width:120px;flex-shrink:0;text-align:right;color:var(--text);font-weight:500;font-size:.68rem">${label}</span>
+    <div style="flex:1;background:#eee;border-radius:4px;height:16px;overflow:hidden;position:relative">
+      <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;display:flex;align-items:center;padding-left:4px">
+        <span style="color:#fff;font-size:.55rem;font-weight:600;white-space:nowrap">${range}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function seqMsg(x1, x2, y, label, color, isDashed) {
+  const isReturn = isDashed;
+  const dash = isReturn ? 'stroke-dasharray="5,3"' : '';
+  const arrowId = 'arr' + y;
+  return `
+    <defs><marker id="${arrowId}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${color}"/></marker></defs>
+    <line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="1.5" ${dash} marker-end="url(#${arrowId})"/>
+    <text x="${Math.min(x1,x2)+Math.abs(x2-x1)/2}" y="${y-5}" text-anchor="middle" fill="${color}" font-size="7" font-weight="600">${label}</text>
+  `;
+}
+
+
+function openDiagramModal() {
+  const file = diagramFiles[currentDiagram];
+  const title = diagramTitles[currentDiagram];
+  document.getElementById('diagramModalTitle').textContent = title;
+  document.getElementById('diagramModalIframe').src = file;
+  const modal = document.getElementById('diagramModal');
+  modal.style.display = 'flex';
+}
+
+function closeDiagramModal() {
+  const modal = document.getElementById('diagramModal');
+  modal.style.display = 'none';
+  document.getElementById('diagramModalIframe').src = '';
+}
+
+function openDiagramExternal() {
+  const file = diagramFiles[currentDiagram];
+  showToast('🔗 Abriendo ' + file);
+  // Try to open in new tab (the file should exist alongside index.html)
+  window.open(file, '_blank');
+}
+
+// ===================== START =====================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<!-- Fullscreen Diagram Modal -->
+<div id="diagramModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.92);z-index:9999;backdrop-filter:blur(6px);padding:16px;flex-direction:column;box-sizing:border-box;">
+  <div style="display:flex;justify-content:space-between;align-items:center;background:#1e293b;padding:12px 20px;border-radius:12px 12px 0 0;color:#fff;border:1px solid #334155;border-bottom:none;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="diagramModalTitle" style="font-weight:700;font-size:1.05rem;">Diagrama</span>
+      <span style="font-size:0.72rem;background:#FF6F00;color:#fff;padding:2px 8px;border-radius:12px;font-weight:600;">Modo Interactivo Completo</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="openDiagramExternal()" style="background:#2563eb;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:0.75rem;cursor:pointer;font-weight:600;">Abrir en Pestaña Nueva ↗</button>
+      <button onclick="closeDiagramModal()" style="background:#ef4444;color:#fff;border:none;width:30px;height:30px;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:bold;line-height:1;">✕</button>
+    </div>
+  </div>
+  <iframe id="diagramModalIframe" src="" style="width:100%;flex:1;border:1px solid #334155;border-top:none;border-radius:0 0 12px 12px;background:#0f172a;"></iframe>
+</div>
+
+</body>
+</html>

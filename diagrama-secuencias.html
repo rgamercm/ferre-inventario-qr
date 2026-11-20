@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama de Secuencias - App Inventario Ferretería QR</title>
+<script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+  }
+
+  /* Tab styling */
+  .tab-btn {
+    position: relative;
+    padding: 12px 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: #cbd5e1;
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
+    border-color: rgba(129,140,248,0.5);
+    color: #c7d2fe;
+    box-shadow: 0 0 20px rgba(99,102,241,0.15);
+  }
+  .tab-icon {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Sequence diagram canvas */
+  .seq-canvas {
+    position: relative;
+    overflow-x: auto;
+    padding: 30px 20px 40px;
+    min-height: 500px;
+  }
+
+  /* Actor boxes */
+  .actor-box {
+    position: absolute;
+    top: 0;
+    text-align: center;
+    z-index: 10;
+    transition: transform 0.2s ease;
+  }
+  .actor-box:hover { transform: scale(1.05); }
+  .actor-box .actor-head {
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border: 2px solid;
+    min-width: 90px;
+    position: relative;
+    cursor: pointer;
+  }
+  .actor-box .actor-head .actor-emoji {
+    font-size: 22px;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* Lifelines */
+  .lifeline {
+    position: absolute;
+    width: 2px;
+    top: 65px;
+    z-index: 1;
+    opacity: 0.4;
+  }
+  .lifeline-dashed {
+    background: repeating-linear-gradient(
+      to bottom,
+      currentColor 0px,
+      currentColor 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  }
+
+  /* Activation bars */
+  .activation-bar {
+    position: absolute;
+    width: 12px;
+    border-radius: 4px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Message arrows */
+  .msg-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 40px;
+    z-index: 5;
+    opacity: 0;
+  }
+  .msg-row.visible {
+    opacity: 1;
+  }
+
+  .msg-line {
+    position: absolute;
+    height: 2px;
+    top: 20px;
+    transform-origin: left center;
+  }
+  .msg-arrow-head {
+    position: absolute;
+    top: 12px;
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+  .msg-arrow-head.right {
+    border-left: 12px solid;
+  }
+  .msg-arrow-head.left {
+    border-right: 12px solid;
+  }
+
+  .msg-label {
+    position: absolute;
+    top: -2px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .msg-label:hover {
+    transform: scale(1.08);
+    z-index: 20;
+  }
+
+  /* Tooltip */
+  .tooltip-box {
+    display: none;
+    position: absolute;
+    background: #1e293b;
+    border: 1px solid rgba(129,140,248,0.4);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 12px;
+    color: #cbd5e1;
+    max-width: 280px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    pointer-events: none;
+    line-height: 1.6;
+  }
+  .msg-label:hover + .tooltip-box,
+  .actor-box:hover .tooltip-box {
+    display: block;
+  }
+
+  /* Step counter badge */
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+
+  /* Play button */
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+  }
+  .play-btn:active { transform: translateY(0); }
+
+  /* Animate arrow drawing */
+  @keyframes drawLine {
+    from { width: 0; }
+    to { width: var(--line-width); }
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 5px currentColor; }
+    50% { box-shadow: 0 0 20px currentColor; }
+  }
+
+  .msg-row.animating .msg-line {
+    animation: drawLine 0.4s ease forwards;
+  }
+  .msg-row.animating .msg-label {
+    animation: fadeSlideIn 0.3s ease 0.2s forwards;
+    opacity: 0;
+  }
+  .msg-row.animating .msg-arrow-head {
+    animation: fadeSlideIn 0.2s ease 0.35s forwards;
+    opacity: 0;
+  }
+
+  /* Speed control */
+  .speed-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+    transition: all 0.2s;
+  }
+  .speed-btn.active {
+    background: rgba(99,102,241,0.2);
+    border-color: rgba(129,140,248,0.5);
+    color: #c7d2fe;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a78bfa);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: rgba(129,140,248,0.3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(129,140,248,0.5); }
+
+  /* Legend */
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+<!-- Unified Suite Navbar -->
+<nav id="suite-navbar" style="background:#0b1120;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:system-ui,-apple-system,sans-serif;z-index:9999;position:sticky;top:0;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#FF6F00,#E65100);color:#fff;text-decoration:none;padding:5px 12px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 2px 6px rgba(255,111,0,0.3);">
+      📱 Simulador Móvil
+    </a>
+    <span style="color:#475569;font-size:0.8rem;">|</span>
+    <span style="color:#94a3b8;font-size:0.75rem;font-weight:600;">Autor: Roger García (<a href="https://github.com/rgamercm" target="_blank" style="color:#38bdf8;text-decoration:none;">@rgamercm</a>)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    <a href="diagrama-gantt.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">📅 Gantt</a>
+    <a href="diagrama-flujo-datos.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🔄 Flujo DFD</a>
+    <a href="diagrama-secuencias.html" style="color:#c4b5fd;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#4c1d95;font-weight:600;border:1px solid rgba(255,255,255,0.1);">⏱️ Secuencias</a>
+    <a href="diagrama-clases.html" style="color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;background:#1e293b;font-weight:600;border:1px solid rgba(255,255,255,0.1);">🏗️ Clases UML</a>
+  </div>
+</nav>
+
+
+<!-- Header -->
+<header class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-indigo-900/40"></div>
+  <div class="relative max-w-7xl mx-auto px-6 py-8">
+    <div class="flex items-center gap-4 mb-2">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/20">🔧</div>
+      <div>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+          Diagrama de Secuencias - App Inventario Ferretería QR
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">Visualización interactiva de los flujos principales del sistema</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="max-w-7xl mx-auto px-6 py-6">
+
+  <!-- Tabs -->
+  <div class="flex gap-3 overflow-x-auto pb-4 mb-6" id="tabsContainer">
+    <button class="tab-btn active" data-tab="0" onclick="switchTab(0)">
+      <span class="tab-icon">📷</span>Escanear QR
+    </button>
+    <button class="tab-btn" data-tab="1" onclick="switchTab(1)">
+      <span class="tab-icon">📦</span>Registrar Producto
+    </button>
+    <button class="tab-btn" data-tab="2" onclick="switchTab(2)">
+      <span class="tab-icon">🚚</span>Entrada Mercancía
+    </button>
+    <button class="tab-btn" data-tab="3" onclick="switchTab(3)">
+      <span class="tab-icon">📊</span>Reporte
+    </button>
+    <button class="tab-btn" data-tab="4" onclick="switchTab(4)">
+      <span class="tab-icon">🔐</span>Login
+    </button>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex flex-wrap items-center gap-4 mb-5">
+    <button class="play-btn bg-gradient-to-r from-indigo-600 to-purple-600 text-white" id="playBtn" onclick="playAnimation()">
+      <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      <svg id="pauseIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span id="playLabel">Reproducir</span>
+    </button>
+    <button class="play-btn bg-slate-700/60 text-slate-300 border border-slate-600" onclick="resetAnimation()">
+      ↺ Reiniciar
+    </button>
+    <div class="flex items-center gap-2 ml-auto">
+      <span class="text-xs text-slate-500 font-medium">Velocidad:</span>
+      <button class="speed-btn active" data-speed="1" onclick="setSpeed(1, this)">1x</button>
+      <button class="speed-btn" data-speed="1.5" onclick="setSpeed(1.5, this)">1.5x</button>
+      <button class="speed-btn" data-speed="2" onclick="setSpeed(2, this)">2x</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-track mb-6">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <!-- Diagram container -->
+  <div class="bg-slate-800/40 rounded-2xl border border-slate-700/50 backdrop-blur-sm shadow-2xl overflow-hidden">
+    <!-- Scenario title bar -->
+    <div class="px-6 py-4 border-b border-slate-700/50 flex items-center gap-3" id="scenarioHeader">
+      <span class="text-xl" id="scenarioEmoji">📷</span>
+      <div>
+        <h2 class="font-bold text-base text-white" id="scenarioTitle">Escenario 1: Escanear Código QR</h2>
+        <p class="text-xs text-slate-400 mt-0.5" id="scenarioDesc">El usuario escanea un código QR para consultar la información del producto.</p>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-xs text-slate-500" id="stepIndicator">Paso 0 / 0</span>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="seq-canvas" id="seqCanvas" style="height: 560px;">
+      <!-- Dynamic content rendered here -->
+    </div>
+
+    <!-- Legend -->
+    <div class="px-6 py-3 border-t border-slate-700/50 flex flex-wrap gap-5" id="legendBar">
+    </div>
+  </div>
+
+  <!-- Description cards -->
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="infoCards">
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="mt-12 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
+    <p class="text-sm text-slate-500">Desarrollado por <span class="text-indigo-400 font-semibold">Roger García</span> <span class="text-slate-600">(@rgamercm)</span></p>
+    <p class="text-xs text-slate-600">Sistemas de Información · 8vo Semestre · 2026</p>
+  </div>
+</footer>
+
+<script>
+// ===================== DATA =====================
+const ACTOR_COLORS = {
+  'Usuario':        { bg: '#1e3a5f', border: '#3b82f6', text: '#93c5fd', glow: 'rgba(59,130,246,0.3)', emoji: '👤' },
+  'Admin':          { bg: '#3b1f54', border: '#a855f7', text: '#d8b4fe', glow: 'rgba(168,85,247,0.3)', emoji: '👨‍💼' },
+  'App':            { bg: '#1a3340', border: '#06b6d4', text: '#67e8f9', glow: 'rgba(6,182,212,0.3)', emoji: '📱' },
+  'Cámara':         { bg: '#2d3a1a', border: '#84cc16', text: '#bef264', glow: 'rgba(132,204,22,0.3)', emoji: '📸' },
+  'DecodificadorQR':{ bg: '#3a2f1a', border: '#f59e0b', text: '#fcd34d', glow: 'rgba(245,158,11,0.3)', emoji: '🔍' },
+  'BD':             { bg: '#1a2a2a', border: '#14b8a6', text: '#5eead4', glow: 'rgba(20,184,166,0.3)', emoji: '🗄️' },
+  'Formulario':     { bg: '#2a1a2a', border: '#ec4899', text: '#f9a8d4', glow: 'rgba(236,72,153,0.3)', emoji: '📝' },
+  'Validación':     { bg: '#2a2a1a', border: '#eab308', text: '#fde047', glow: 'rgba(234,179,8,0.3)', emoji: '✅' },
+  'GeneradorQR':    { bg: '#1a2a1a', border: '#22c55e', text: '#86efac', glow: 'rgba(34,197,94,0.3)', emoji: '🏷️' },
+  'ScanQR':         { bg: '#3a2f1a', border: '#f59e0b', text: '#fcd34d', glow: 'rgba(245,158,11,0.3)', emoji: '📷' },
+  'Reportes':       { bg: '#2a1a3a', border: '#8b5cf6', text: '#c4b5fd', glow: 'rgba(139,92,246,0.3)', emoji: '📈' },
+  'ProcesoDatos':   { bg: '#2a2a1a', border: '#eab308', text: '#fde047', glow: 'rgba(234,179,8,0.3)', emoji: '⚙️' },
+  'PDF':            { bg: '#3a1a1a', border: '#ef4444', text: '#fca5a5', glow: 'rgba(239,68,68,0.3)', emoji: '📄' },
+  'User':           { bg: '#1e3a5f', border: '#3b82f6', text: '#93c5fd', glow: 'rgba(59,130,246,0.3)', emoji: '👤' },
+  'Login':          { bg: '#2a1a2a', border: '#ec4899', text: '#f9a8d4', glow: 'rgba(236,72,153,0.3)', emoji: '🔑' },
+  'Auth':           { bg: '#2a2a1a', border: '#eab308', text: '#fde047', glow: 'rgba(234,179,8,0.3)', emoji: '🛡️' },
+  'BDUsers':        { bg: '#1a2a2a', border: '#14b8a6', text: '#5eead4', glow: 'rgba(20,184,166,0.3)', emoji: '🗃️' },
+  'Token':          { bg: '#1a3a1a', border: '#22c55e', text: '#86efac', glow: 'rgba(34,197,94,0.3)', emoji: '🎟️' },
+  'Dashboard':      { bg: '#1a2a3a', border: '#6366f1', text: '#a5b4fc', glow: 'rgba(99,102,241,0.3)', emoji: '📊' },
+};
+
+const SCENARIOS = [
+  {
+    id: 'scan-qr',
+    title: 'Escenario 1: Escanear Código QR',
+    emoji: '📷',
+    desc: 'El usuario escanea un código QR para consultar la información del producto en inventario.',
+    actors: ['Usuario', 'App', 'Cámara', 'DecodificadorQR', 'BD'],
+    messages: [
+      { from: 0, to: 1, label: 'Abrir escáner QR', detail: 'El usuario pulsa el botón "Escanear" en la pantalla principal de la aplicación.', type: 'request' },
+      { from: 1, to: 2, label: 'Activar cámara', detail: 'La app solicita permisos y activa la cámara trasera del dispositivo.', type: 'request' },
+      { from: 2, to: 1, label: 'Stream de video', detail: 'La cámara envía frames en tiempo real para detectar códigos QR.', type: 'response' },
+      { from: 1, to: 3, label: 'Enviar frame', detail: 'Se envía cada frame capturado al módulo decodificador para análisis.', type: 'request' },
+      { from: 3, to: 1, label: 'Código decodificado', detail: 'El decodificador retorna el contenido del QR (ID de producto).', type: 'response' },
+      { from: 1, to: 4, label: 'Consultar producto(id)', detail: 'La app busca el producto en la base de datos usando el ID extraído del QR.', type: 'request' },
+      { from: 4, to: 1, label: 'Datos del producto', detail: 'La BD retorna nombre, precio, stock, ubicación y descripción del producto.', type: 'response' },
+      { from: 1, to: 0, label: 'Mostrar información', detail: 'La app muestra la ficha completa del producto con imagen, stock y precio.', type: 'response' },
+    ],
+    cards: [
+      { icon: '📸', title: 'Captura en tiempo real', text: 'La cámara procesa hasta 30 frames por segundo buscando patrones QR.' },
+      { icon: '⚡', title: 'Decodificación rápida', text: 'El algoritmo detecta y decodifica códigos en menos de 200ms.' },
+      { icon: '📋', title: 'Ficha completa', text: 'Se muestra nombre, precio, stock actual, ubicación en bodega y foto.' },
+    ]
+  },
+  {
+    id: 'register',
+    title: 'Escenario 2: Registrar Producto Nuevo',
+    emoji: '📦',
+    desc: 'El administrador registra un nuevo producto en el sistema con generación automática de código QR.',
+    actors: ['Admin', 'App', 'Formulario', 'Validación', 'GeneradorQR', 'BD'],
+    messages: [
+      { from: 0, to: 1, label: 'Nuevo producto', detail: 'El administrador selecciona "Registrar producto" desde el menú.', type: 'request' },
+      { from: 1, to: 2, label: 'Mostrar formulario', detail: 'La app presenta el formulario con campos: nombre, categoría, precio, stock inicial, proveedor.', type: 'request' },
+      { from: 2, to: 1, label: 'Datos ingresados', detail: 'El admin completa todos los campos requeridos y envía el formulario.', type: 'response' },
+      { from: 1, to: 3, label: 'Validar datos', detail: 'El sistema verifica campos obligatorios, formatos numéricos y duplicados.', type: 'request' },
+      { from: 3, to: 1, label: 'Datos válidos ✓', detail: 'La validación confirma que todos los datos cumplen las reglas de negocio.', type: 'response' },
+      { from: 1, to: 4, label: 'Generar código QR', detail: 'Se genera un código QR único conteniendo el ID del producto.', type: 'request' },
+      { from: 4, to: 1, label: 'QR generado (img)', detail: 'El generador retorna la imagen QR lista para imprimir y pegar al producto.', type: 'response' },
+      { from: 1, to: 5, label: 'INSERT producto', detail: 'Se inserta el nuevo registro con todos sus datos y referencia al QR.', type: 'request' },
+      { from: 5, to: 1, label: 'Producto guardado ✓', detail: 'La BD confirma el registro exitoso y retorna el ID asignado.', type: 'response' },
+      { from: 1, to: 0, label: 'Confirmación + QR', detail: 'Se muestra confirmación con opción de imprimir la etiqueta QR.', type: 'response' },
+    ],
+    cards: [
+      { icon: '📝', title: 'Formulario inteligente', text: 'Auto-completado de categorías y proveedores existentes.' },
+      { icon: '🏷️', title: 'QR automático', text: 'Se genera un QR único por cada producto registrado, listo para imprimir.' },
+      { icon: '🔒', title: 'Validación robusta', text: 'Validación de datos, detección de duplicados y verificación de formatos.' },
+    ]
+  },
+  {
+    id: 'entry',
+    title: 'Escenario 3: Entrada de Mercancía',
+    emoji: '🚚',
+    desc: 'El administrador registra la entrada de nueva mercancía escaneando los productos recibidos.',
+    actors: ['Admin', 'App', 'ScanQR', 'BD'],
+    messages: [
+      { from: 0, to: 1, label: 'Entrada de mercancía', detail: 'El admin selecciona el módulo "Entrada de Mercancía" desde el menú principal.', type: 'request' },
+      { from: 1, to: 2, label: 'Iniciar escaneo', detail: 'La app activa el escáner QR para identificar los productos recibidos.', type: 'request' },
+      { from: 2, to: 1, label: 'Producto identificado', detail: 'Se lee el QR y se obtiene el ID del producto escaneado.', type: 'response' },
+      { from: 1, to: 3, label: 'Consultar producto(id)', detail: 'Se busca el producto en la BD para verificar existencia y stock actual.', type: 'request' },
+      { from: 3, to: 1, label: 'Info producto (stock)', detail: 'La BD retorna datos del producto incluyendo stock actual: 15 unidades.', type: 'response' },
+      { from: 1, to: 0, label: 'Solicitar cantidad', detail: 'La app muestra el producto encontrado y pide ingresar la cantidad recibida.', type: 'response' },
+      { from: 0, to: 1, label: 'Cantidad: 50 uds', detail: 'El admin ingresa la cantidad de unidades recibidas del proveedor.', type: 'request' },
+      { from: 1, to: 3, label: 'UPDATE stock (+50)', detail: 'Se actualiza el stock del producto: 15 + 50 = 65 unidades.', type: 'request' },
+      { from: 3, to: 1, label: 'Stock actualizado ✓', detail: 'La BD confirma la actualización. Nuevo stock: 65 unidades.', type: 'response' },
+      { from: 1, to: 0, label: 'Confirmación entrada', detail: 'Se muestra resumen: producto, cantidad agregada, nuevo stock total.', type: 'response' },
+    ],
+    cards: [
+      { icon: '📦', title: 'Escaneo múltiple', text: 'Se pueden escanear varios productos consecutivamente en la misma sesión.' },
+      { icon: '📊', title: 'Stock en tiempo real', text: 'El inventario se actualiza instantáneamente tras cada entrada.' },
+      { icon: '📋', title: 'Historial de entradas', text: 'Cada entrada queda registrada con fecha, hora y usuario responsable.' },
+    ]
+  },
+  {
+    id: 'report',
+    title: 'Escenario 4: Generación de Reporte',
+    emoji: '📊',
+    desc: 'El administrador solicita un reporte del inventario que se genera en formato PDF.',
+    actors: ['Admin', 'App', 'Reportes', 'BD', 'ProcesoDatos', 'PDF'],
+    messages: [
+      { from: 0, to: 1, label: 'Solicitar reporte', detail: 'El admin accede al módulo de reportes y selecciona el tipo de reporte deseado.', type: 'request' },
+      { from: 1, to: 2, label: 'Configurar reporte', detail: 'Se selecciona: tipo (inventario general), rango de fechas y categorías.', type: 'request' },
+      { from: 2, to: 3, label: 'Query datos', detail: 'El módulo de reportes ejecuta las consultas SQL necesarias en la BD.', type: 'request' },
+      { from: 3, to: 2, label: 'Datos crudos', detail: 'La BD retorna todos los registros que cumplen los filtros seleccionados.', type: 'response' },
+      { from: 2, to: 4, label: 'Procesar datos', detail: 'Los datos se envían al procesador para cálculos: totales, promedios, alertas.', type: 'request' },
+      { from: 4, to: 2, label: 'Datos procesados', detail: 'Se retornan estadísticas, gráficos y alertas de stock bajo.', type: 'response' },
+      { from: 2, to: 5, label: 'Generar PDF', detail: 'Se crea el documento PDF con tablas, gráficos y el logo de la empresa.', type: 'request' },
+      { from: 5, to: 2, label: 'PDF listo', detail: 'El archivo PDF se genera exitosamente con 12 páginas.', type: 'response' },
+      { from: 2, to: 1, label: 'Reporte generado', detail: 'El módulo notifica que el reporte está listo para descarga.', type: 'response' },
+      { from: 1, to: 0, label: 'Descargar PDF', detail: 'Se ofrece al admin descargar o compartir el reporte generado.', type: 'response' },
+    ],
+    cards: [
+      { icon: '📈', title: 'Múltiples tipos', text: 'Reportes de inventario, ventas, productos con bajo stock, movimientos.' },
+      { icon: '⚙️', title: 'Procesamiento', text: 'Cálculos automáticos de totales, promedios y detección de alertas.' },
+      { icon: '📄', title: 'Exportación PDF', text: 'Reportes profesionales con tablas, gráficos y logotipo corporativo.' },
+    ]
+  },
+  {
+    id: 'login',
+    title: 'Escenario 5: Inicio de Sesión',
+    emoji: '🔐',
+    desc: 'El usuario se autentica en la aplicación para acceder al sistema de inventario.',
+    actors: ['User', 'App', 'Login', 'Auth', 'BDUsers', 'Token', 'Dashboard'],
+    messages: [
+      { from: 0, to: 1, label: 'Abrir app', detail: 'El usuario abre la aplicación de inventario en su dispositivo.', type: 'request' },
+      { from: 1, to: 2, label: 'Mostrar login', detail: 'La app presenta la pantalla de inicio de sesión con campos usuario y contraseña.', type: 'request' },
+      { from: 2, to: 1, label: 'Credenciales', detail: 'El usuario ingresa su correo electrónico y contraseña.', type: 'response' },
+      { from: 1, to: 3, label: 'Autenticar', detail: 'Las credenciales se envían al módulo de autenticación para verificación.', type: 'request' },
+      { from: 3, to: 4, label: 'Verificar usuario', detail: 'Se busca el usuario en la BD y se compara el hash de la contraseña.', type: 'request' },
+      { from: 4, to: 3, label: 'Usuario válido ✓', detail: 'Se confirma que las credenciales son correctas y el usuario está activo.', type: 'response' },
+      { from: 3, to: 5, label: 'Generar JWT', detail: 'Se crea un token JWT con los datos del usuario, rol y tiempo de expiración.', type: 'request' },
+      { from: 5, to: 3, label: 'Token generado', detail: 'Se retorna el token JWT firmado con validez de 24 horas.', type: 'response' },
+      { from: 3, to: 1, label: 'Sesión activa', detail: 'Se confirma la autenticación y se envía el token a la app.', type: 'response' },
+      { from: 1, to: 6, label: 'Cargar dashboard', detail: 'Se redirige al dashboard principal mostrando resumen del inventario.', type: 'request' },
+      { from: 6, to: 0, label: 'Vista principal', detail: 'El usuario ve el panel con métricas: productos, stock bajo, últimos movimientos.', type: 'response' },
+    ],
+    cards: [
+      { icon: '🔑', title: 'Autenticación segura', text: 'Contraseñas hasheadas con bcrypt, protección contra fuerza bruta.' },
+      { icon: '🎟️', title: 'JWT Token', text: 'Sesiones basadas en tokens JWT con expiración configurable.' },
+      { icon: '📊', title: 'Dashboard intuitivo', text: 'Panel principal con métricas clave del inventario en tiempo real.' },
+    ]
+  }
+];
+
+// ===================== STATE =====================
+let currentTab = 0;
+let isPlaying = false;
+let currentStep = 0;
+let animationTimer = null;
+let speed = 1;
+
+// ===================== RENDERING =====================
+function switchTab(idx) {
+  currentTab = idx;
+  currentStep = 0;
+  isPlaying = false;
+  clearTimeout(animationTimer);
+  updatePlayBtn();
+
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+
+  renderScenario();
+}
+
+function renderScenario() {
+  const sc = SCENARIOS[currentTab];
+  document.getElementById('scenarioEmoji').textContent = sc.emoji;
+  document.getElementById('scenarioTitle').textContent = sc.title;
+  document.getElementById('scenarioDesc').textContent = sc.desc;
+  document.getElementById('stepIndicator').textContent = `Paso ${currentStep} / ${sc.messages.length}`;
+  document.getElementById('progressBar').style.width = '0%';
+
+  const canvas = document.getElementById('seqCanvas');
+  const numActors = sc.actors.length;
+  const actorSpacing = Math.max(140, Math.min(180, (canvas.clientWidth - 40) / numActors));
+  const canvasWidth = Math.max(actorSpacing * numActors + 40, canvas.clientWidth);
+  const canvasHeight = 70 + sc.messages.length * 48 + 60;
+  canvas.style.height = Math.max(500, canvasHeight) + 'px';
+  canvas.style.minWidth = canvasWidth + 'px';
+  canvas.innerHTML = '';
+
+  const actorPositions = [];
+
+  // Draw actors & lifelines
+  sc.actors.forEach((name, i) => {
+    const col = ACTOR_COLORS[name] || ACTOR_COLORS['Usuario'];
+    const x = 30 + i * actorSpacing;
+    actorPositions.push(x);
+
+    // Lifeline
+    const ll = document.createElement('div');
+    ll.className = 'lifeline lifeline-dashed';
+    ll.style.left = (x + 45) + 'px';
+    ll.style.height = (canvasHeight - 70) + 'px';
+    ll.style.color = col.border;
+    canvas.appendChild(ll);
+
+    // Activation bar
+    const ab = document.createElement('div');
+    ab.className = 'activation-bar';
+    ab.style.left = (x + 40) + 'px';
+    ab.style.top = '65px';
+    ab.style.height = (canvasHeight - 100) + 'px';
+    ab.style.background = `linear-gradient(180deg, ${col.border}33, ${col.border}11)`;
+    ab.style.border = `1px solid ${col.border}44`;
+    ab.dataset.actor = i;
+    canvas.appendChild(ab);
+
+    // Actor box
+    const box = document.createElement('div');
+    box.className = 'actor-box';
+    box.style.left = x + 'px';
+    box.style.width = '90px';
+
+    box.innerHTML = `
+      <div class="actor-head" style="background:${col.bg}; border-color:${col.border}; color:${col.text}; box-shadow: 0 4px 15px ${col.glow}">
+        <span class="actor-emoji">${col.emoji}</span>
+        ${name}
+      </div>
+      <div class="tooltip-box" style="top:70px; left:50%; transform:translateX(-50%);">
+        <strong style="color:${col.text}">${name}</strong><br>
+        Actor del sistema con rol específico en este flujo de secuencia.
+      </div>
+    `;
+    canvas.appendChild(box);
+  });
+
+  // Draw messages
+  sc.messages.forEach((msg, idx) => {
+    const fromX = actorPositions[msg.from] + 45;
+    const toX = actorPositions[msg.to] + 45;
+    const y = 85 + idx * 48;
+    const isRight = toX > fromX;
+    const lineLeft = Math.min(fromX, toX);
+    const lineWidth = Math.abs(toX - fromX);
+    const fromCol = ACTOR_COLORS[sc.actors[msg.from]] || ACTOR_COLORS['Usuario'];
+    const toCol = ACTOR_COLORS[sc.actors[msg.to]] || ACTOR_COLORS['Usuario'];
+    const lineColor = msg.type === 'request' ? fromCol.border : toCol.border;
+    const labelBg = msg.type === 'request' ? fromCol.bg : toCol.bg;
+
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    row.style.top = y + 'px';
+    row.dataset.step = idx;
+
+    // Line
+    const line = document.createElement('div');
+    line.className = 'msg-line';
+    line.style.left = lineLeft + 'px';
+    line.style.width = lineWidth + 'px';
+    line.style.setProperty('--line-width', lineWidth + 'px');
+    if (msg.type === 'response') {
+      line.style.background = `repeating-linear-gradient(90deg, ${lineColor} 0px, ${lineColor} 6px, transparent 6px, transparent 12px)`;
+    } else {
+      line.style.background = lineColor;
+    }
+
+    // Arrow head
+    const arrow = document.createElement('div');
+    arrow.className = 'msg-arrow-head ' + (isRight ? 'right' : 'left');
+    arrow.style.left = (isRight ? toX - 12 : toX) + 'px';
+    arrow.style.borderLeftColor = lineColor;
+    arrow.style.borderRightColor = lineColor;
+
+    // Label
+    const label = document.createElement('div');
+    label.className = 'msg-label';
+    label.style.left = (lineLeft + lineWidth / 2) + 'px';
+    label.style.transform = 'translateX(-50%)';
+    label.style.background = labelBg;
+    label.style.color = msg.type === 'request' ? fromCol.text : toCol.text;
+    label.style.border = `1px solid ${lineColor}66`;
+    label.innerHTML = `<span class="step-num" style="background:${lineColor}; color:#fff;">${idx + 1}</span>${msg.label}`;
+
+    // Tooltip
+    const tip = document.createElement('div');
+    tip.className = 'tooltip-box';
+    tip.style.left = (lineLeft + lineWidth / 2) + 'px';
+    tip.style.transform = 'translateX(-50%)';
+    tip.style.top = '-50px';
+    tip.innerHTML = `<strong style="color:${lineColor}">Paso ${idx + 1}</strong>: ${msg.detail}<br><span style="color:#64748b; font-size:11px;">${sc.actors[msg.from]} → ${sc.actors[msg.to]}</span>`;
+
+    row.appendChild(line);
+    row.appendChild(arrow);
+    row.appendChild(label);
+    row.appendChild(tip);
+    canvas.appendChild(row);
+  });
+
+  // Legend
+  const legend = document.getElementById('legendBar');
+  legend.innerHTML = '';
+  sc.actors.forEach(name => {
+    const col = ACTOR_COLORS[name];
+    const item = document.createElement('div');
+    item.className = 'flex items-center gap-2 text-xs';
+    item.innerHTML = `<span class="legend-dot" style="background:${col.border}"></span><span style="color:${col.text}">${name}</span>`;
+    legend.appendChild(item);
+  });
+
+  // Info cards
+  const cards = document.getElementById('infoCards');
+  cards.innerHTML = '';
+  sc.cards.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'bg-slate-800/50 rounded-xl border border-slate-700/40 p-5 hover:border-indigo-500/30 transition-all duration-300';
+    card.innerHTML = `
+      <div class="text-2xl mb-2">${c.icon}</div>
+      <h3 class="font-semibold text-sm text-white mb-1">${c.title}</h3>
+      <p class="text-xs text-slate-400 leading-relaxed">${c.text}</p>
+    `;
+    cards.appendChild(card);
+  });
+
+  // Show all steps up to currentStep
+  showStepsUpTo(currentStep);
+}
+
+function showStepsUpTo(step) {
+  const rows = document.querySelectorAll('.msg-row');
+  const sc = SCENARIOS[currentTab];
+  rows.forEach((r, i) => {
+    if (i < step) {
+      r.classList.add('visible');
+      r.classList.remove('animating');
+    } else {
+      r.classList.remove('visible', 'animating');
+    }
+  });
+
+  // Show activation bars for actors involved
+  const activeBars = document.querySelectorAll('.activation-bar');
+  activeBars.forEach(b => b.style.opacity = '0');
+  if (step > 0) {
+    const involved = new Set();
+    for (let i = 0; i < step; i++) {
+      involved.add(sc.messages[i].from);
+      involved.add(sc.messages[i].to);
+    }
+    activeBars.forEach(b => {
+      if (involved.has(parseInt(b.dataset.actor))) {
+        b.style.opacity = '0.5';
+      }
+    });
+  }
+
+  document.getElementById('stepIndicator').textContent = `Paso ${step} / ${sc.messages.length}`;
+  document.getElementById('progressBar').style.width = (step / sc.messages.length * 100) + '%';
+}
+
+function animateStep(step) {
+  const rows = document.querySelectorAll('.msg-row');
+  const sc = SCENARIOS[currentTab];
+  if (step >= sc.messages.length) {
+    isPlaying = false;
+    updatePlayBtn();
+    return;
+  }
+
+  currentStep = step + 1;
+  showStepsUpTo(step);
+
+  const row = rows[step];
+  row.classList.add('visible', 'animating');
+  row.style.opacity = '1';
+
+  // Update activation bars
+  const activeBars = document.querySelectorAll('.activation-bar');
+  const involved = new Set();
+  for (let i = 0; i <= step; i++) {
+    involved.add(sc.messages[i].from);
+    involved.add(sc.messages[i].to);
+  }
+  activeBars.forEach(b => {
+    if (involved.has(parseInt(b.dataset.actor))) {
+      b.style.opacity = '0.5';
+    }
+  });
+
+  document.getElementById('stepIndicator').textContent = `Paso ${step + 1} / ${sc.messages.length}`;
+  document.getElementById('progressBar').style.width = ((step + 1) / sc.messages.length * 100) + '%';
+
+  if (isPlaying) {
+    animationTimer = setTimeout(() => {
+      animateStep(step + 1);
+    }, 800 / speed);
+  }
+}
+
+// ===================== CONTROLS =====================
+function playAnimation() {
+  if (isPlaying) {
+    isPlaying = false;
+    clearTimeout(animationTimer);
+    updatePlayBtn();
+    return;
+  }
+
+  const sc = SCENARIOS[currentTab];
+  if (currentStep >= sc.messages.length) {
+    currentStep = 0;
+    showStepsUpTo(0);
+  }
+
+  isPlaying = true;
+  updatePlayBtn();
+  animateStep(currentStep);
+}
+
+function resetAnimation() {
+  isPlaying = false;
+  clearTimeout(animationTimer);
+  currentStep = 0;
+  updatePlayBtn();
+  renderScenario();
+}
+
+function updatePlayBtn() {
+  document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'block';
+  document.getElementById('pauseIcon').style.display = isPlaying ? 'block' : 'none';
+  document.getElementById('playLabel').textContent = isPlaying ? 'Pausar' : 'Reproducir';
+}
+
+function setSpeed(s, btn) {
+  speed = s;
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ===================== INIT =====================
+window.addEventListener('DOMContentLoaded', () => {
+  renderScenario();
+});
+window.addEventListener('resize', () => {
+  renderScenario();
+});
+</script>
+</body>
+</html>
