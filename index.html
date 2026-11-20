@@ -88,6 +88,18 @@ body {
   border-radius: 2px;
 }
 
+
+/* Bloqueo estricto del viewport en Splash para iOS Safari y Android */
+html.splash-active, body.splash-active {
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: auto !important;
+}
+
 /* Print CSS for real reports */
 @media print {
   body * { visibility: hidden; }
@@ -163,7 +175,7 @@ body {
 
           <div class="flex items-center gap-1.5 shrink-0">
             <!-- Campana de Notificaciones -->
-            <button onclick="openNotificationsModal()" class="relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Centro de Notificaciones">
+            <button id="appTopBellBtn" onclick="openNotificationsModal()" class="hidden relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Centro de Notificaciones">
               <span class="text-base">🔔</span>
               <span id="badgeCount" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-[#E84A5F] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">0</span>
             </button>
@@ -1695,9 +1707,23 @@ body {
 
     var container = document.getElementById('appScreensContainer');
     var mobileApp = document.getElementById('viewMobileApp');
+    var bellBtn = document.getElementById('appTopBellBtn');
 
-    // En Splash y Login ocultamos encabezado y barra de navegación inferior para look nativo móvil
+    // Regla estricta: La campana de notificaciones solo existe adentro del sistema (Dashboard / Catálogo)
+    if (bellBtn) {
+      if (screenId === 'screenSplash' || screenId === 'screenLogin') {
+        bellBtn.classList.add('hidden');
+        bellBtn.style.display = 'none';
+      } else {
+        bellBtn.classList.remove('hidden');
+        bellBtn.style.display = '';
+      }
+    }
+
+    // En Splash bloqueamos TOTALMENTE el scroll de la ventana (body y html) para look de App Nativa fija
     if (screenId === 'screenSplash') {
+      document.documentElement.classList.add('splash-active');
+      document.body.classList.add('splash-active');
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
       if (container) {
@@ -1707,7 +1733,13 @@ body {
       }
       if (mobileApp) mobileApp.style.backgroundColor = '#1a2225';
       return;
-    } else if (screenId === 'screenLogin') {
+    } else {
+      // Liberar scroll del viewport para el resto de pantallas
+      document.documentElement.classList.remove('splash-active');
+      document.body.classList.remove('splash-active');
+    }
+
+    if (screenId === 'screenLogin') {
       if (stickyHeader) stickyHeader.classList.add('hidden');
       if (bottomNav) bottomNav.classList.add('hidden');
       if (container) {
