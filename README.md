@@ -4,7 +4,8 @@
 > **Evaluación:** Segundo Corte II — Simulador Digital (Ponderación: 20 Puntos / 10%)  
 > **Autor / Desarrollador:** Roger García  
 > **GitHub:** [@rgamercm](https://github.com/rgamercm)  
-> **Versión:** 3.0.0 Production Ready (100% Alineada con Diagramas y Secuencias)  
+> **URL Pública en Vivo:** [https://rgamercm.github.io/ferre-inventario-qr/](https://rgamercm.github.io/ferre-inventario-qr/)  
+> **Versión:** v3.11.0 Production Ready (PWA Instalable Universal + Suite Unificada)  
 > **Fecha:** Noviembre 2026  
 
 ---
