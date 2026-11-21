@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.6.0';
+    var APP_RELEASE = 'v3.7.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -175,7 +175,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.6</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.7</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -1090,7 +1090,47 @@ html.splash-active, body.splash-active {
 
   <!-- ==================== MODALES DEL SISTEMA ==================== -->
 
-    <!-- ==================== BANNER FLOTANTE DE INSTALACIÓN AL INICIAR ==================== -->
+      <!-- INDICADOR FLOTANTE VISUAL PARA CHROME / SAFARI EN iPHONE -->
+  <div id="pwaToolbarPointer" class="hidden fixed inset-0 z-50 pointer-events-none select-none animate-fade-in no-print">
+    <!-- Fondo semi-oscuro para enfocar la barra -->
+    <div class="absolute inset-0 bg-black/60 pointer-events-auto" onclick="hideToolbarPointer()"></div>
+    
+    <!-- Flecha e indicación hacia la barra superior derecha de Chrome -->
+    <div id="pointerChromeTop" class="absolute top-3 right-4 flex flex-col items-end text-white z-10 max-w-[260px] text-right pointer-events-none">
+      <div class="text-3xl animate-bounce">👆</div>
+      <div class="bg-[#2A363B] border-2 border-[#99B898] p-3 rounded-2xl shadow-2xl text-xs mt-1">
+        <strong class="text-[#FECEAB] block text-xs font-bold mb-1">¡Toca aquí arriba!</strong>
+        <p class="text-[11px] text-slate-200 leading-snug">
+          Pulsa el botón <strong>Compartir (icono [↑])</strong> de Chrome junto a la barra de dirección, y elige:
+        </p>
+        <div class="mt-1.5 inline-block bg-white text-[#2A363B] font-extrabold px-2 py-0.5 rounded-lg text-[10px]">
+          ➕ Añadir a pantalla de inicio
+        </div>
+      </div>
+      <button onclick="hideToolbarPointer()" class="mt-2 pointer-events-auto px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-xl text-[10px] font-bold">
+        Cerrar indicación ✕
+      </button>
+    </div>
+
+    <!-- Indicación alternativa hacia la barra inferior si Chrome tiene la barra abajo -->
+    <div id="pointerChromeBottom" class="hidden absolute bottom-3 right-4 flex flex-col items-end text-white z-10 max-w-[260px] text-right pointer-events-none">
+      <div class="bg-[#2A363B] border-2 border-[#99B898] p-3 rounded-2xl shadow-2xl text-xs mb-1">
+        <strong class="text-[#FECEAB] block text-xs font-bold mb-1">O en el menú de Chrome abajo:</strong>
+        <p class="text-[11px] text-slate-200 leading-snug">
+          Toca los tres puntos <strong class="text-white">...</strong> abajo a la derecha y selecciona:
+        </p>
+        <div class="mt-1.5 inline-block bg-white text-[#2A363B] font-extrabold px-2 py-0.5 rounded-lg text-[10px]">
+          ➕ Añadir a pantalla de inicio
+        </div>
+      </div>
+      <div class="text-3xl animate-bounce mb-1">👇</div>
+      <button onclick="hideToolbarPointer()" class="pointer-events-auto px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-xl text-[10px] font-bold">
+        Cerrar indicación ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== BANNER FLOTANTE DE INSTALACIÓN AL INICIAR ==================== -->
   <div id="pwaInstallBanner" class="hidden fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:w-96 bg-[#2A363B] text-white p-4 rounded-3xl shadow-2xl z-50 border border-slate-700/80 animate-fade-in no-print">
     <div class="flex items-start gap-3">
       <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-xl shrink-0 shadow-md">
@@ -3856,7 +3896,7 @@ html.splash-active, body.splash-active {
   // ==========================================
   
   // ==========================================
-  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN (v3.6.0)
+  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN (v3.7.0)
   // ==========================================
   let deferredInstallPrompt = window.__deferredInstallPrompt || null;
   let activePwaTab = 'android';
@@ -3875,6 +3915,7 @@ html.splash-active, body.splash-active {
     localStorage.setItem('ferre_app_installed', 'true');
     hideAllInstallUI();
     closePwaModal();
+    hideToolbarPointer();
     showToast('🎉 ¡FerreInventario instalado exitosamente en tu pantalla de inicio!');
   });
 
@@ -3921,7 +3962,6 @@ html.splash-active, body.splash-active {
       return;
     }
 
-    // Mostrar botones universales de instalación (visibles para Android y iPhone)
     if (splashBtn) splashBtn.classList.remove('hidden');
     if (drawerBtn) drawerBtn.classList.remove('hidden');
 
@@ -3956,7 +3996,7 @@ html.splash-active, body.splash-active {
     sessionStorage.setItem('ferre_install_banner_dismissed', 'true');
   }
 
-  // Acción principal al pulsar el botón Instalar
+  // Acción al pulsar el botón Instalar
   function triggerAppInstall() {
     dismissInstallBanner();
     const p = getDetailedPlatform();
@@ -3981,7 +4021,7 @@ html.splash-active, body.splash-active {
       }
     }
 
-    // Si estamos en iPhone, o si Android aún no tiene el evento activo, abrir modal interactivo
+    // En iPhone o cuando se requiera el asistente, abrir modal adaptado
     openPwaInstallModal(p.isIos ? 'ios' : 'android');
   }
 
@@ -4015,7 +4055,7 @@ html.splash-active, body.splash-active {
     if (modal) modal.classList.add('hidden');
   }
 
-  // Renderizar contenido dinámico según la pestaña seleccionada (Android o iPhone)
+  // Renderizar contenido dinámico
   function renderPwaTabContent(tab) {
     const steps = document.getElementById('pwaModalSteps');
     const actionBox = document.getElementById('pwaDirectActionBox');
@@ -4039,7 +4079,7 @@ html.splash-active, body.splash-active {
           <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">2</div>
           <div class="flex-1">
             <strong class="text-slate-800 font-bold block">Toca "Instalar aplicación"</strong>
-            <p class="text-slate-500 text-[11px]">Pulsa sobre <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
+            <p class="text-slate-500 text-[11px]">Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
           </div>
         </div>
 
@@ -4047,7 +4087,7 @@ html.splash-active, body.splash-active {
           <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-xs shrink-0">3</div>
           <div class="flex-1">
             <strong class="text-slate-800 font-bold block">Confirma la instalación</strong>
-            <p class="text-slate-500 text-[11px]">Toca <strong>Instalar</strong>. El icono se agregará a tu cajón de apps y pantalla de inicio.</p>
+            <p class="text-slate-500 text-[11px]">Toca <strong>Instalar</strong>. El icono se agregará a tu pantalla de inicio.</p>
           </div>
         </div>
       `;
@@ -4055,7 +4095,7 @@ html.splash-active, body.splash-active {
       if (promptEvent) {
         actionBox.innerHTML = `
           <button onclick="triggerAppInstall()" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <span>⚡ Toca aquí para Instalar Directamente en Android</span>
+            <span>⚡ Toca aquí para Instalar en 1 Clic (Android)</span>
           </button>
         `;
       } else {
@@ -4064,58 +4104,78 @@ html.splash-active, body.splash-active {
 
     } else {
       // Pestaña iPhone / iPad (iOS)
+      // Nota técnica: En iOS, Apple restringe por seguridad que los scripts de la página toquen el botón de compartir del navegador.
+      // Por eso se ilustra con máxima precisión el botón nativo de Chrome y Safari.
+      const isChrome = p.isChromeIos;
+
       steps.innerHTML = `
+        <!-- Tarjeta explicativa con esquema de Chrome en iPhone -->
+        <div class="bg-gradient-to-r from-slate-900 to-[#2A363B] text-white p-3 rounded-2xl border border-slate-700 shadow-sm">
+          <div class="flex items-center justify-between text-[11px] mb-2 border-b border-slate-700/60 pb-1.5">
+            <span class="text-[#FECEAB] font-bold">Barra de ${isChrome ? 'Google Chrome' : 'Safari'} en tu iPhone:</span>
+            <span class="text-[9.5px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">Arriba a la derecha</span>
+          </div>
+          <!-- Mockup visual de la barra de Chrome -->
+          <div class="flex items-center gap-1.5 bg-[#1a2225] p-1.5 rounded-xl border border-slate-700 text-[10px]">
+            <span class="text-slate-400 pl-1">🔒</span>
+            <span class="flex-1 text-slate-300 font-mono truncate">rgamercm.github.io</span>
+            <!-- Botón de compartir resaltado -->
+            <div class="px-2 py-0.5 rounded-lg bg-[#E84A5F] text-white font-extrabold flex items-center gap-1 shadow-sm ring-2 ring-white/40 animate-pulse">
+              <span>⎋</span>
+              <span class="text-[9px]">Compartir</span>
+            </div>
+            <span class="text-slate-400 px-1 font-bold">...</span>
+          </div>
+          <p class="text-[10px] text-[#99B898] mt-2 font-medium">
+            ⚠️ <em>Por seguridad de Apple, las páginas web no pueden presionar el botón de Chrome por ti. Debes tocar el botón Compartir que ves arriba en tu navegador.</em>
+          </p>
+        </div>
+
         <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
           <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">1</div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block">Toca el botón Compartir</strong>
-            <p class="text-slate-500 text-[11px]">En Safari pulsa el icono <span class="font-bold text-blue-600 bg-blue-50 px-1 rounded">⎋</span> (barra inferior). En Chrome pulsa Compartir (barra superior o menú <strong class="text-slate-800">...</strong>).</p>
+            <strong class="text-slate-800 font-bold block">Toca el botón Compartir de Chrome</strong>
+            <p class="text-slate-500 text-[11px]">En la esquina superior derecha (junto a la dirección) o en los tres puntos <strong class="text-slate-800">...</strong> de Chrome.</p>
           </div>
         </div>
 
         <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
           <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">2</div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block">Elige "Agregar al inicio"</strong>
-            <p class="text-slate-500 text-[11px]">Desliza la lista de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/80 px-1 rounded">➕ Agregar al inicio</span>.</p>
+            <strong class="text-slate-800 font-bold block">Pulsa "Añadir a pantalla de inicio"</strong>
+            <p class="text-slate-500 text-[11px]">En la lista que se abre, busca y selecciona:
+              <span class="inline-block font-extrabold text-[#2A363B] bg-[#99B898]/40 border border-[#99B898] px-2 py-0.5 rounded-md mt-0.5">➕ Añadir a pantalla de inicio</span>
+            </p>
           </div>
         </div>
 
         <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
           <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-xs shrink-0">3</div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block">Toca "Agregar"</strong>
-            <p class="text-slate-500 text-[11px]">Pulsa <strong>Agregar</strong> en la esquina superior derecha. Se guardará como app nativa.</p>
+            <strong class="text-slate-800 font-bold block">Toca "Agregar" arriba a la derecha</strong>
+            <p class="text-slate-500 text-[11px]">¡Listo! El icono de FerreInventario quedará instalado en tu inicio como app nativa.</p>
           </div>
         </div>
       `;
 
-      // Si el navegador soporta navigator.share, ofrecer botón para desplegar el menú directamente
-      if (navigator.share) {
-        actionBox.innerHTML = `
-          <button onclick="triggerIosNativeShare()" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <span>📤 Abrir Menú Compartir en tu iPhone</span>
-          </button>
-        `;
-      } else {
-        actionBox.innerHTML = '';
-      }
+      actionBox.innerHTML = `
+        <button onclick="showToolbarPointer()" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+          <span>👆 Señalarme dónde está el botón en mi pantalla</span>
+        </button>
+      `;
     }
   }
 
-  // Disparar Web Share API para facilitar el acceso a "Agregar al inicio" en iOS
-  function triggerIosNativeShare() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'FerreInventario QR',
-        text: 'Control Inteligente de Inventario de Ferretería',
-        url: window.location.href
-      }).then(() => {
-        showToast('👉 Selecciona "Agregar al inicio" (➕) en el menú');
-      }).catch(() => {});
-    } else {
-      showToast('ℹ️ Sigue los 3 pasos indicados arriba');
-    }
+  // Mostrar indicador visual que señala la barra de Chrome
+  function showToolbarPointer() {
+    closePwaModal();
+    const pointer = document.getElementById('pwaToolbarPointer');
+    if (pointer) pointer.classList.remove('hidden');
+  }
+
+  function hideToolbarPointer() {
+    const pointer = document.getElementById('pwaToolbarPointer');
+    if (pointer) pointer.classList.add('hidden');
   }
 
   function showToast(msg) {
