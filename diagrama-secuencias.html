@@ -320,6 +320,15 @@
     display: inline-block;
   }
 </style>
+<script>
+  if (window.self !== window.top) {
+    document.documentElement.classList.add('in-iframe');
+  }
+</script>
+<style>
+  html.in-iframe #suite-navbar { display: none !important; }
+  html.in-iframe header { padding-top: 10px !important; padding-bottom: 10px !important; }
+</style>
 </head>
 <body>
 <!-- Unified Suite Navbar -->
@@ -451,9 +460,16 @@
       </div>
     </div>
 
-    <!-- Canvas -->
-    <div class="seq-canvas" id="seqCanvas" style="height: 560px;">
-      <!-- Dynamic content rendered here -->
+    <!-- Mobile Scroll Helper Bar -->
+    <div class="px-6 py-2 bg-slate-900/60 border-b border-slate-700/40 text-[11px] text-slate-400 flex items-center justify-between sm:hidden">
+      <span>👉 Desliza horizontalmente para ver todos los actores</span>
+      <span class="text-indigo-400 font-bold">Touch ↔</span>
+    </div>
+    <!-- Canvas Viewport with Touch Scroll -->
+    <div id="seqCanvasViewport" class="w-full overflow-x-auto overflow-y-hidden" style="touch-action: pan-x pan-y !important; -webkit-overflow-scrolling: touch !important;">
+      <div class="seq-canvas" id="seqCanvas" style="height: 560px;">
+        <!-- Dynamic content rendered here -->
+      </div>
     </div>
 
     <!-- Legend -->
@@ -654,13 +670,24 @@ function renderScenario() {
   const canvas = document.getElementById('seqCanvas');
   const numActors = sc.actors.length;
   const isMobile = window.innerWidth < 640;
-  const actorHeadW = isMobile ? 66 : 90;
-  const minSpacing = isMobile ? 75 : 130;
-  const actorSpacing = Math.max(minSpacing, Math.min(180, (canvas.clientWidth - 40) / numActors));
-  const canvasWidth = Math.max(actorSpacing * numActors + 40, canvas.clientWidth);
+  const actorHeadW = isMobile ? 68 : 90;
+  const halfHead = Math.floor(actorHeadW / 2);
+  const minSpacing = isMobile ? 85 : 130;
+
+  // Reset width before measuring container to prevent cumulative inflation
+  canvas.style.minWidth = '';
+  canvas.style.width = '';
+  const viewport = document.getElementById('seqCanvasViewport');
+  const containerW = (viewport ? viewport.clientWidth : (canvas.parentElement ? canvas.parentElement.clientWidth : 360)) || 360;
+  const availableW = Math.max(containerW, 360);
+  const naturalSpacing = Math.floor((availableW - 60 - actorHeadW) / Math.max(numActors - 1, 1));
+  const actorSpacing = Math.max(minSpacing, naturalSpacing);
+  const canvasWidth = Math.max(availableW, (numActors - 1) * actorSpacing + actorHeadW + 60);
   const canvasHeight = 70 + sc.messages.length * 48 + 60;
+
   canvas.style.height = Math.max(500, canvasHeight) + 'px';
   canvas.style.minWidth = canvasWidth + 'px';
+  canvas.style.width = canvasWidth + 'px';
   canvas.innerHTML = '';
 
   const actorPositions = [];
@@ -668,21 +695,21 @@ function renderScenario() {
   // Draw actors & lifelines
   sc.actors.forEach((name, i) => {
     const col = ACTOR_COLORS[name] || ACTOR_COLORS['Usuario'];
-    const x = 30 + i * actorSpacing;
+    const x = 25 + i * actorSpacing;
     actorPositions.push(x);
 
-    // Lifeline
+    // Lifeline - perfectly centered
     const ll = document.createElement('div');
     ll.className = 'lifeline lifeline-dashed';
-    ll.style.left = (x + 45) + 'px';
+    ll.style.left = (x + halfHead) + 'px';
     ll.style.height = (canvasHeight - 70) + 'px';
     ll.style.color = col.border;
     canvas.appendChild(ll);
 
-    // Activation bar
+    // Activation bar - centered with lifeline
     const ab = document.createElement('div');
     ab.className = 'activation-bar';
-    ab.style.left = (x + 40) + 'px';
+    ab.style.left = (x + halfHead - 5) + 'px';
     ab.style.top = '65px';
     ab.style.height = (canvasHeight - 100) + 'px';
     ab.style.background = `linear-gradient(180deg, ${col.border}33, ${col.border}11)`;
@@ -711,8 +738,8 @@ function renderScenario() {
 
   // Draw messages
   sc.messages.forEach((msg, idx) => {
-    const fromX = actorPositions[msg.from] + 45;
-    const toX = actorPositions[msg.to] + 45;
+    const fromX = actorPositions[msg.from] + halfHead;
+    const toX = actorPositions[msg.to] + halfHead;
     const y = 85 + idx * 48;
     const isRight = toX > fromX;
     const lineLeft = Math.min(fromX, toX);
@@ -911,12 +938,122 @@ function setSpeed(s, btn) {
   btn.classList.add('active');
 }
 
+
+// ===================== VIEW MODE SWITCHER & TIMELINE =====================
+let activeSeqView = 'graphic';
+let activeTimelineStep = 0;
+
+function switchSeqView(view) {
+  activeSeqView = view;
+  const graphicCard = document.getElementById('diagramContainerVisual');
+  const timelineCard = document.getElementById('seqTimelineContainer');
+  const btnG = document.getElementById('btnSeqGraphic');
+  const btnT = document.getElementById('btnSeqTimeline');
+
+  if (view === 'timeline') {
+    if (graphicCard) graphicCard.classList.add('hidden');
+    if (timelineCard) timelineCard.classList.remove('hidden');
+    if (btnT) {
+      btnT.classList.add('bg-[#E84A5F]', 'text-white');
+      btnT.classList.remove('text-slate-300');
+    }
+    if (btnG) {
+      btnG.classList.remove('bg-[#E84A5F]', 'text-white');
+      btnG.classList.add('text-slate-300');
+    }
+    renderSeqTimeline();
+  } else {
+    if (timelineCard) timelineCard.classList.add('hidden');
+    if (graphicCard) graphicCard.classList.remove('hidden');
+    if (btnG) {
+      btnG.classList.add('bg-[#E84A5F]', 'text-white');
+      btnG.classList.remove('text-slate-300');
+    }
+    if (btnT) {
+      btnT.classList.remove('bg-[#E84A5F]', 'text-white');
+      btnT.classList.add('text-slate-300');
+    }
+    renderScenario();
+  }
+}
+
+function renderSeqTimeline() {
+  const list = document.getElementById('seqTimelineList');
+  if (!list) return;
+  const sc = SCENARIOS[currentTab];
+  if (!sc) return;
+
+  list.innerHTML = sc.messages.map((m, idx) => {
+    const fromActor = sc.actors[m.from];
+    const toActor = sc.actors[m.to];
+    const fromCol = ACTOR_COLORS[fromActor] || ACTOR_COLORS['Usuario'];
+    const toCol = ACTOR_COLORS[toActor] || ACTOR_COLORS['Usuario'];
+    const isActive = idx === activeTimelineStep;
+    const isPast = idx < activeTimelineStep;
+    const typeBadge = m.type === 'request'
+      ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">Solicitud</span>'
+      : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Respuesta</span>';
+
+    return `
+      <div onclick="setTimelineStep(${idx})" class="p-3.5 rounded-2xl border transition cursor-pointer ${isActive ? 'bg-indigo-950/60 border-indigo-500/80 shadow-lg ring-1 ring-indigo-500' : isPast ? 'bg-slate-900/40 border-slate-800 opacity-80' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'}">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isActive ? 'bg-[#E84A5F] text-white' : 'bg-slate-800 text-slate-400'}">${idx + 1}</span>
+            <span class="text-xs font-bold text-white">${m.label}</span>
+          </div>
+          ${typeBadge}
+        </div>
+        <div class="flex items-center gap-2 text-[11px] text-slate-300 mb-1.5 pl-8">
+          <span class="inline-flex items-center gap-1 font-semibold" style="color:${fromCol.border}">
+            <span>${fromCol.emoji}</span> ${fromActor}
+          </span>
+          <span class="text-slate-500">➔</span>
+          <span class="inline-flex items-center gap-1 font-semibold" style="color:${toCol.border}">
+            <span>${toCol.emoji}</span> ${toActor}
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed pl-8">${m.desc || 'Interacción del protocolo de control de inventario.'}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function setTimelineStep(idx) {
+  const sc = SCENARIOS[currentTab];
+  if (idx >= 0 && idx < sc.messages.length) {
+    activeTimelineStep = idx;
+    renderSeqTimeline();
+  }
+}
+
+function prevStepTimeline() {
+  if (activeTimelineStep > 0) {
+    activeTimelineStep--;
+    renderSeqTimeline();
+  }
+}
+
+function nextStepTimeline() {
+  const sc = SCENARIOS[currentTab];
+  if (activeTimelineStep < sc.messages.length - 1) {
+    activeTimelineStep++;
+    renderSeqTimeline();
+  }
+}
+
 // ===================== INIT =====================
 window.addEventListener('DOMContentLoaded', () => {
   renderScenario();
 });
 window.addEventListener('resize', () => {
   renderScenario();
+});
+// Re-render al volver al iframe (evita distorsión)
+window.addEventListener('pageshow', (e) => {
+  setTimeout(renderScenario, 80);
+});
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) setTimeout(renderScenario, 80);
 });
 </script>
 </body>

@@ -185,6 +185,15 @@
   }
 
 </style>
+<script>
+  if (window.self !== window.top) {
+    document.documentElement.classList.add('in-iframe');
+  }
+</script>
+<style>
+  html.in-iframe #suite-navbar { display: none !important; }
+  html.in-iframe header { padding-top: 10px !important; padding-bottom: 10px !important; }
+</style>
 </head>
 <body class="min-h-screen flex flex-col">
 <!-- Unified Suite Navbar -->
@@ -954,6 +963,13 @@
 
     // ============ INIT ============
     document.addEventListener('DOMContentLoaded', init);
+    // Re-render al volver al iframe (evita distorsión)
+    window.addEventListener('pageshow', (e) => {
+      setTimeout(init, 80);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) setTimeout(init, 80);
+    });
     </script>
 </body>
 </html>

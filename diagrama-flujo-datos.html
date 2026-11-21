@@ -78,6 +78,15 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
+<script>
+  if (window.self !== window.top) {
+    document.documentElement.classList.add('in-iframe');
+  }
+</script>
+<style>
+  html.in-iframe #suite-navbar { display: none !important; }
+  html.in-iframe header { padding-top: 10px !important; padding-bottom: 10px !important; }
+</style>
 </head>
 <body class="text-slate-200 font-sans">
 <!-- Unified Suite Navbar -->
@@ -185,7 +194,7 @@
         </div>
 
         <!-- SVG Diagram -->
-        <div class="glass rounded-2xl p-2 overflow-auto shadow-2xl" style="min-height: 650px; overflow: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x pan-y !important;">
+        <div id="dfdGraphicCard" class="glass rounded-2xl p-2 overflow-auto shadow-2xl" style="min-height: 650px; overflow: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x pan-y !important;">
             <svg id="dfd-svg" viewBox="0 0 1440 920" width="100%" height="100%" style="min-width:900px; min-height:580px;" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <!-- Arrow markers -->
@@ -890,6 +899,113 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
     });
-    </script>
+    
+// Re-render al volver al iframe (evita distorsión en móviles)
+
+    // ==========================================
+    // CONMUTADOR DE VISTAS (GRÁFICO vs CATÁLOGO MÓVIL)
+    // ==========================================
+    let activeDfdView = 'graphic';
+
+    function switchDfdView(view) {
+        activeDfdView = view;
+        const graphicCard = document.getElementById('dfdGraphicCard');
+        const catalogCard = document.getElementById('mobileDfdView');
+        const btnG = document.getElementById('btnDfdGraphic');
+        const btnC = document.getElementById('btnDfdCatalog');
+
+        if (view === 'catalog') {
+            if (graphicCard) graphicCard.classList.add('hidden');
+            if (catalogCard) catalogCard.classList.remove('hidden');
+            if (btnC) {
+                btnC.classList.add('bg-[#E84A5F]', 'text-white');
+                btnC.classList.remove('text-slate-300');
+            }
+            if (btnG) {
+                btnG.classList.remove('bg-[#E84A5F]', 'text-white');
+                btnG.classList.add('text-slate-300');
+            }
+            renderMobileDfd();
+        } else {
+            if (catalogCard) catalogCard.classList.add('hidden');
+            if (graphicCard) graphicCard.classList.remove('hidden');
+            if (btnG) {
+                btnG.classList.add('bg-[#E84A5F]', 'text-white');
+                btnG.classList.remove('text-slate-300');
+            }
+            if (btnC) {
+                btnC.classList.remove('bg-[#E84A5F]', 'text-white');
+                btnC.classList.add('text-slate-300');
+            }
+        }
+    }
+
+    function renderMobileDfd() {
+        const grid = document.getElementById('mobileDfdGrid');
+        if (!grid || !nodesData) return;
+
+        const keys = Object.keys(nodesData);
+        grid.innerHTML = keys.map(key => {
+            const node = nodesData[key];
+            const badgeColor = node.type === 'Entidad Externa' 
+                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' 
+                : node.type === 'Proceso' 
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+            const flowsInHtml = (node.flowsIn || []).map(f => `
+                <li class="flex items-start gap-1.5 text-[11px] text-slate-300">
+                    <span class="text-blue-400 font-bold">←</span>
+                    <span>${f.replace(/^[←→]\s*/, '')}</span>
+                </li>
+            `).join('');
+
+            const flowsOutHtml = (node.flowsOut || []).map(f => `
+                <li class="flex items-start gap-1.5 text-[11px] text-slate-300">
+                    <span class="text-emerald-400 font-bold">→</span>
+                    <span>${f.replace(/^[←→]\s*/, '')}</span>
+                </li>
+            `).join('');
+
+            return `
+                <div class="bg-slate-900/90 rounded-2xl border border-slate-700/80 shadow-lg p-4 flex flex-col justify-between hover:border-slate-600 transition">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}">${node.type}</span>
+                            <span class="text-xs text-slate-400 font-mono">${key.toUpperCase()}</span>
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                            <span>${node.title}</span>
+                        </h4>
+                        <p class="text-xs text-slate-400 mb-3 leading-relaxed">${node.desc}</p>
+
+                        ${flowsInHtml ? `
+                        <div class="mb-2">
+                            <h5 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flujos de Entrada</h5>
+                            <ul class="space-y-1 bg-slate-950/40 p-2 rounded-xl border border-slate-800">${flowsInHtml}</ul>
+                        </div>` : ''}
+
+                        ${flowsOutHtml ? `
+                        <div class="mb-3">
+                            <h5 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flujos de Salida</h5>
+                            <ul class="space-y-1 bg-slate-950/40 p-2 rounded-xl border border-slate-800">${flowsOutHtml}</ul>
+                        </div>` : ''}
+                    </div>
+
+                    <button onclick="showDetails('${key}')" class="w-full mt-2 py-2 bg-slate-800 hover:bg-[#E84A5F] text-xs font-bold text-slate-200 hover:text-white rounded-xl transition border border-slate-700 flex items-center justify-center gap-1.5">
+                        <span>🔍 Ver Ficha Detallada</span>
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+window.addEventListener('pageshow', (e) => {
+  if (window.self !== window.top) {
+    var nav = document.getElementById('suite-navbar');
+    if (nav) nav.style.display = 'none';
+  }
+});
+</script>
 </body>
 </html>

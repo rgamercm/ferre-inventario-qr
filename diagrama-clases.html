@@ -253,6 +253,15 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
     </style>
+<script>
+  if (window.self !== window.top) {
+    document.documentElement.classList.add('in-iframe');
+  }
+</script>
+<style>
+  html.in-iframe #suite-navbar { display: none !important; }
+  html.in-iframe header { padding-top: 10px !important; padding-bottom: 10px !important; }
+</style>
 </head>
 <body class="bg-grid">
 <!-- Unified Suite Navbar -->
@@ -1010,6 +1019,19 @@
 
     // Redraw on resize
     window.addEventListener('resize', drawRelationships);
+    // Re-render al volver al iframe (evita distorsión)
+    window.addEventListener('pageshow', (e) => {
+      setTimeout(() => {
+        if (window.innerWidth < 768) autoFitMobile();
+        drawRelationships();
+      }, 80);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) setTimeout(() => {
+        if (window.innerWidth < 768) autoFitMobile();
+        drawRelationships();
+      }, 80);
+    });
     </script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.2.0';
+    var APP_RELEASE = 'v3.3.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -146,7 +146,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.2</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.3</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -198,7 +198,7 @@ html.splash-active, body.splash-active {
 
           <div class="flex items-center gap-1.5 shrink-0">
             <!-- Campana de Notificaciones -->
-            <button id="appTopBellBtn" onclick="openNotificationsModal()" class="hidden relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Centro de Notificaciones">
+            <button id="appTopBellBtn" onclick="openNotificationsModal()" style="display:none" class="hidden relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 active:scale-95 rounded-lg transition" title="Centro de Notificaciones">
               <span class="text-base">🔔</span>
               <span id="badgeCount" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-[#E84A5F] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">0</span>
             </button>
@@ -987,7 +987,7 @@ html.splash-active, body.splash-active {
 
         <!-- Marco Iframe de Altura Óptima para Móviles -->
         <div class="w-full h-[calc(100dvh-170px)] min-h-[580px] sm:h-[720px] bg-slate-900 relative">
-          <iframe id="diagramIframe" src="diagrama-gantt.html" class="w-full h-full border-0" loading="lazy" style="touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch;"></iframe>
+          <iframe id="diagramIframe" src="about:blank" data-default-src="diagrama-gantt.html" class="w-full h-full border-0" loading="lazy" style="touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch;"></iframe>
         </div>
       </div>
 
@@ -3684,7 +3684,13 @@ html.splash-active, body.splash-active {
     const linkEl = document.getElementById('viewerExternalLink');
     const linkElD = document.getElementById('viewerExternalLinkDesktop');
 
-    if (iframe) iframe.src = url;
+    // Cache-busting: forzar recarga limpia del iframe para evitar distorsión
+    if (iframe) {
+      iframe.src = 'about:blank';
+      setTimeout(function() {
+        iframe.src = url + '?v=' + Date.now();
+      }, 60);
+    }
     if (titleEl) titleEl.textContent = title;
     if (linkEl) linkEl.href = url;
     if (linkElD) linkElD.href = url;
@@ -3702,7 +3708,9 @@ html.splash-active, body.splash-active {
 
     const card = document.getElementById('diagramViewerCard');
     if (card && window.innerWidth < 640) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function() {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
     }
     showToast(`📐 ${title}`);
   }
@@ -3746,6 +3754,11 @@ html.splash-active, body.splash-active {
   // INICIAR AL CARGAR DOM
   document.addEventListener('DOMContentLoaded', () => {
     initApp();
+    // Cargar primer diagrama con cache-busting al hacer visible la sección
+    var diagramIframeEl = document.getElementById('diagramIframe');
+    if (diagramIframeEl && diagramIframeEl.dataset.defaultSrc) {
+      diagramIframeEl.src = diagramIframeEl.dataset.defaultSrc + '?v=' + Date.now();
+    }
   });
   </script>
 </body>
