@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.5.0';
+    var APP_RELEASE = 'v3.6.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -175,7 +175,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.5</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.6</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -280,10 +280,19 @@ html.splash-active, body.splash-active {
           </div>
           
           <div class="w-full max-w-xs space-y-2 mb-2 shrink-0">
-            <!-- Botón de Descarga / Instalación en Inicio (Solo si NO está instalada) -->
-            <button id="btnInstallAppSplash" onclick="triggerAppInstall()" class="hidden w-full py-2.5 px-4 bg-gradient-to-r from-[#99B898] to-[#82a881] hover:brightness-105 active:scale-95 text-[#2A363B] font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 border border-emerald-300/40">
-              <span class="text-sm">📲</span>
-              <span id="installBtnTextSplash">Descargar App para tu Inicio</span>
+            <!-- Botón Universal de Instalación en Inicio (Android & iPhone) -->
+            <button id="btnInstallAppSplash" onclick="triggerAppInstall()" class="hidden w-full py-2.5 px-3 bg-gradient-to-r from-[#99B898] via-[#8db08c] to-[#99B898] hover:brightness-105 active:scale-95 text-[#2A363B] font-extrabold text-xs rounded-2xl shadow-md transition flex flex-col items-center justify-center gap-0.5 border border-emerald-300/60 select-none">
+              <div class="flex items-center gap-1.5 font-black text-xs text-[#2A363B]">
+                <span>📲</span>
+                <span>Instalar App en Pantalla de Inicio</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[9.5px] text-emerald-950 font-bold bg-white/40 px-2 py-0.5 rounded-full">
+                <span>🤖 Android</span>
+                <span>•</span>
+                <span> iPhone</span>
+                <span>•</span>
+                <span>Acceso Directo</span>
+              </div>
             </button>
             <button onclick="navigateTo('screenDashboard')" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/40 transition flex items-center justify-center gap-2">
               <span>⚡ Modo Demo Directo</span>
@@ -957,10 +966,13 @@ html.splash-active, body.splash-active {
               <button onclick="navigateTo('screenProfile'); toggleDrawer();" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 flex items-center gap-2.5">
                 <span>👤</span> Perfil de Administrador
               </button>
-              <!-- Botón Drawer de Instalación (Solo si no está instalada) -->
-              <button id="btnInstallAppDrawer" onclick="triggerAppInstall(); toggleDrawer();" class="hidden w-full text-left p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#2A363B] border border-emerald-200/60 flex items-center gap-2.5 font-bold transition">
-                <span>📲</span>
-                <span id="installBtnTextDrawer">Instalar App en Inicio</span>
+              <!-- Botón Drawer Universal de Instalación (Solo si no está instalada) -->
+              <button id="btnInstallAppDrawer" onclick="triggerAppInstall(); toggleDrawer();" class="hidden w-full text-left p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#2A363B] border border-emerald-200/60 flex items-center justify-between font-bold transition">
+                <div class="flex items-center gap-2">
+                  <span>📲</span>
+                  <span>Instalar en Inicio</span>
+                </div>
+                <span class="text-[9px] bg-[#99B898] text-[#2A363B] font-black px-2 py-0.5 rounded-full">Android & iOS</span>
               </button>
               
               <div class="pt-3 mt-3 border-t border-slate-100">
@@ -1090,11 +1102,11 @@ html.splash-active, body.splash-active {
           <button onclick="dismissInstallBanner()" class="text-slate-400 hover:text-white p-1 text-xs">✕</button>
         </div>
         <p class="text-[11px] text-slate-300 mt-1 leading-snug">
-          Descarga <strong class="text-[#FECEAB]">FerreInventario QR</strong> para abrirla como app nativa, rápida y a pantalla completa.
+          Disponible para <strong class="text-[#FECEAB]">Android & iPhone</strong>. Acceso instantáneo a pantalla completa y sin barras de navegador.
         </p>
         <div class="flex items-center gap-2 mt-3">
-          <button onclick="triggerAppInstall()" class="flex-1 py-1.5 px-3 bg-[#99B898] hover:bg-[#85a884] text-[#2A363B] font-extrabold text-xs rounded-xl shadow transition text-center">
-            Instalar App
+          <button onclick="triggerAppInstall()" class="flex-1 py-1.5 px-3 bg-[#99B898] hover:bg-[#85a884] text-[#2A363B] font-extrabold text-xs rounded-xl shadow transition text-center flex items-center justify-center gap-1.5">
+            <span>📲 Instalar Ahora</span>
           </button>
           <button onclick="dismissInstallBanner()" class="py-1.5 px-3 bg-slate-700/70 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold rounded-xl transition">
             Ahora no
@@ -1104,44 +1116,59 @@ html.splash-active, body.splash-active {
     </div>
   </div>
 
-  <!-- ==================== MODAL GUÍA DE INSTALACIÓN (iOS / ANDROID) ==================== -->
-  <div id="modalPwaInstall" class="hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 no-print">
-    <div onclick="event.stopPropagation()" class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-4 animate-fade-in border border-slate-200 text-[#2A363B]">
+  <!-- ==================== MODAL GUÍA DE INSTALACIÓN UNIVERSAL (ANDROID & iOS) ==================== -->
+  <div id="modalPwaInstall" class="hidden fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 no-print">
+    <div onclick="event.stopPropagation()" class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-3.5 animate-fade-in border border-slate-200 text-[#2A363B]">
       
       <!-- Encabezado Modal -->
       <div class="flex items-center justify-between pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-white font-bold text-base shadow">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-white font-bold text-lg shadow">
             📲
           </div>
           <div>
-            <h3 id="pwaModalTitle" class="text-xs font-bold text-[#2A363B]">Instalar FerreInventario QR</h3>
-            <p id="pwaModalSubtitle" class="text-[10px] text-slate-500">Acceso directo en tu pantalla de inicio</p>
+            <h3 class="text-xs font-bold text-[#2A363B]">Instalar en Pantalla de Inicio</h3>
+            <p class="text-[10px] text-slate-500">Compatible con Android & iPhone</p>
           </div>
         </div>
         <button onclick="closePwaModal()" class="text-slate-400 hover:text-black text-sm p-1">✕</button>
       </div>
 
-      <!-- Contenedor de Pasos (Dinámico: iOS o Android) -->
-      <div id="pwaModalSteps" class="space-y-3 text-xs">
-        <!-- Inyectado por JS -->
+      <!-- Selector de Sistema Operativo (Pestañas Android vs iPhone) -->
+      <div class="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-bold gap-1 border border-slate-200/60">
+        <button id="pwaTabAndroid" onclick="switchPwaTab('android')" class="flex-1 py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1.5 bg-[#2A363B] text-white shadow-xs">
+          <span>🤖</span>
+          <span>Android</span>
+        </button>
+        <button id="pwaTabIos" onclick="switchPwaTab('ios')" class="flex-1 py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-black">
+          <span></span>
+          <span>iPhone</span>
+        </button>
       </div>
 
+      <!-- Contenedor Dinámico de Instrucciones -->
+      <div id="pwaModalSteps" class="space-y-2.5 text-xs">
+        <!-- Inyectado por JS según la pestaña activa -->
+      </div>
+
+      <!-- Botón de Acción Principal Directa (Si aplica al navegador) -->
+      <div id="pwaDirectActionBox"></div>
+
       <!-- Vista previa del icono instalado -->
-      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-[#2A363B] flex items-center justify-center shadow-md shrink-0 border border-slate-700">
-          <span class="text-2xl">🔧</span>
+      <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#2A363B] flex items-center justify-center shadow shrink-0 border border-slate-700">
+          <span class="text-xl">🔧</span>
         </div>
-        <div class="text-[11px] leading-tight">
+        <div class="text-[11px] leading-tight flex-1">
           <strong class="text-[#2A363B] font-bold block">FerreInventario QR</strong>
-          <span class="text-slate-500 text-[10px]">App Web Progresiva (PWA)</span>
-          <span class="text-emerald-600 font-bold block text-[9.5px] mt-0.5">● Funciona sin conexión</span>
+          <span class="text-slate-500 text-[10px]">App Web Progresiva Oficial</span>
+          <span class="text-emerald-600 font-bold block text-[9.5px] mt-0.5">● Sin descargas pesadas de tienda</span>
         </div>
       </div>
 
       <!-- Botón de Cierre -->
-      <button onclick="closePwaModal()" class="w-full py-2.5 bg-[#2A363B] hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
-        ¡Entendido!
+      <button onclick="closePwaModal()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+        Cerrar
       </button>
 
     </div>
@@ -3829,11 +3856,11 @@ html.splash-active, body.splash-active {
   // ==========================================
   
   // ==========================================
-  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN (v3.5.0)
+  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN (v3.6.0)
   // ==========================================
   let deferredInstallPrompt = window.__deferredInstallPrompt || null;
+  let activePwaTab = 'android';
 
-  // Escuchar si el evento llega después de la carga inicial
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
@@ -3888,29 +3915,13 @@ html.splash-active, body.splash-active {
   function updateInstallUI() {
     const splashBtn = document.getElementById('btnInstallAppSplash');
     const drawerBtn = document.getElementById('btnInstallAppDrawer');
-    const splashText = document.getElementById('installBtnTextSplash');
-    const drawerText = document.getElementById('installBtnTextDrawer');
-    const p = getDetailedPlatform();
 
     if (isAppInstalled()) {
       hideAllInstallUI();
       return;
     }
 
-    let label = 'Descargar App en Inicio';
-    if (p.isChromeIos) {
-      label = 'Agregar al Inicio (Chrome iPhone)';
-    } else if (p.isSafariIos) {
-      label = 'Agregar al Inicio (Safari iPhone)';
-    } else if (p.isAndroid) {
-      label = 'Instalar App (Android)';
-    } else if (p.isDesktopChrome) {
-      label = 'Instalar App en Inicio';
-    }
-
-    if (splashText) splashText.textContent = label;
-    if (drawerText) drawerText.textContent = label;
-
+    // Mostrar botones universales de instalación (visibles para Android y iPhone)
     if (splashBtn) splashBtn.classList.remove('hidden');
     if (drawerBtn) drawerBtn.classList.remove('hidden');
 
@@ -3945,166 +3956,166 @@ html.splash-active, body.splash-active {
     sessionStorage.setItem('ferre_install_banner_dismissed', 'true');
   }
 
-  // Acción principal al presionar Instalar / Descargar
+  // Acción principal al pulsar el botón Instalar
   function triggerAppInstall() {
     dismissInstallBanner();
     const p = getDetailedPlatform();
     const promptEvent = window.__deferredInstallPrompt || deferredInstallPrompt;
 
-    // 1. Si el navegador cuenta con el disparador nativo directo (Chrome Android, Chrome Desktop, Edge):
-    if (promptEvent) {
+    // Si estamos en Android / Desktop y tenemos el prompt nativo listo, DISPARARLO DE INMEDIATO (1 clic)
+    if (promptEvent && !p.isIos) {
       try {
         promptEvent.prompt();
         promptEvent.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            console.log('[PWA] El usuario aceptó la instalación nativa');
             localStorage.setItem('ferre_app_installed', 'true');
             hideAllInstallUI();
-          } else {
-            console.log('[PWA] El usuario descartó el diálogo nativo');
+            showToast('🎉 ¡FerreInventario instalado exitosamente!');
           }
           deferredInstallPrompt = null;
           window.__deferredInstallPrompt = null;
         });
         return;
       } catch (err) {
-        console.warn('Error ejecutando prompt:', err);
+        console.warn('Error en prompt nativo:', err);
       }
     }
 
-    // 2. Si no hay prompt nativo disponible (ej: en iPhone donde Apple requiere el menú Compartir, o Chrome Android que aún no lo habilitó):
-    openPwaInstallModal(p);
+    // Si estamos en iPhone, o si Android aún no tiene el evento activo, abrir modal interactivo
+    openPwaInstallModal(p.isIos ? 'ios' : 'android');
   }
 
-  function openPwaInstallModal(p) {
-    const modal = document.getElementById('modalPwaInstall');
-    const title = document.getElementById('pwaModalTitle');
-    const subtitle = document.getElementById('pwaModalSubtitle');
-    const steps = document.getElementById('pwaModalSteps');
-    if (!modal || !steps) return;
+  function switchPwaTab(tab) {
+    activePwaTab = tab;
+    const tabA = document.getElementById('pwaTabAndroid');
+    const tabI = document.getElementById('pwaTabIos');
 
-    if (p.isChromeIos) {
-      // Usuario usando Google Chrome en iPhone / iPad
-      title.textContent = 'Instalar desde Chrome en iPhone 🌐';
-      subtitle.textContent = 'Cómo agregar la app a tu inicio desde Google Chrome:';
-      steps.innerHTML = `
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
-            1
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Toca el botón Compartir de Chrome</strong>
-            <p class="text-slate-500 text-[11px]">En la esquina superior derecha (junto a la barra de búsqueda) o en el menú de tres puntos <strong class="text-slate-700">...</strong> abajo a la derecha, pulsa <strong>Compartir</strong>.</p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
-            2
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Selecciona "Agregar a pantalla de inicio"</strong>
-            <p class="text-slate-500 text-[11px]">Desliza la lista de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/70 px-1.5 py-0.5 rounded">➕ Agregar a pantalla de inicio</span>.</p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
-            3
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Toca "Agregar"</strong>
-            <p class="text-slate-500 text-[11px]">Confirma tocando <strong>Agregar</strong> arriba a la derecha. ¡Aparecerá en tu pantalla de inicio!</p>
-          </div>
-        </div>
-
-        <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-[10px] text-amber-900 leading-snug">
-          💡 <strong>Tip para iPhone:</strong> Si abres este mismo enlace en <strong>Safari</strong>, se instala directamente con el icono de compartir nativo de Apple.
-        </div>
-      `;
-    } else if (p.isSafariIos) {
-      // Usuario usando Safari en iPhone / iPad
-      title.textContent = 'Instalar desde Safari en iPhone ';
-      subtitle.textContent = 'Agrega la app a tu pantalla de inicio en 3 toques:';
-      steps.innerHTML = `
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
-            1
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Toca el botón Compartir</strong>
-            <p class="text-slate-500 text-[11px]">En la barra inferior de Safari, pulsa el icono de compartir:
-              <span class="inline-flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">
-                <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                Compartir (cuadro con flecha ↑)
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
-            2
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Selecciona "Agregar al inicio"</strong>
-            <p class="text-slate-500 text-[11px]">Desplaza la hoja de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/70 px-1.5 py-0.5 rounded">➕ Agregar al inicio</span>.</p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
-            3
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Pulsa "Agregar"</strong>
-            <p class="text-slate-500 text-[11px]">Toca <strong>Agregar</strong> en la esquina superior derecha. Se agregará como app nativa a tu inicio.</p>
-          </div>
-        </div>
-      `;
+    if (tab === 'android') {
+      if (tabA) { tabA.classList.add('bg-[#2A363B]', 'text-white', 'shadow-xs'); tabA.classList.remove('text-slate-600'); }
+      if (tabI) { tabI.classList.remove('bg-[#2A363B]', 'text-white', 'shadow-xs'); tabI.classList.add('text-slate-600'); }
     } else {
-      // Android / Chrome / Otros
-      title.textContent = 'Instalar en tu Pantalla de Inicio 📲';
-      subtitle.textContent = 'Acceso directo con un toque en Android / Chrome:';
-      steps.innerHTML = `
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
-            1
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Abre el menú de opciones</strong>
-            <p class="text-slate-500 text-[11px]">Toca los <strong class="text-slate-800 text-sm">tres puntos (⋮)</strong> en la esquina superior derecha de tu navegador.</p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
-            2
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Toca "Instalar aplicación"</strong>
-            <p class="text-slate-500 text-[11px]">Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
-          </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
-            3
-          </div>
-          <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Confirma la instalación</strong>
-            <p class="text-slate-500 text-[11px]">Pulsa <strong>Instalar</strong>. La app aparecerá en tu menú de aplicaciones y pantalla de inicio.</p>
-          </div>
-        </div>
-      `;
+      if (tabI) { tabI.classList.add('bg-[#2A363B]', 'text-white', 'shadow-xs'); tabI.classList.remove('text-slate-600'); }
+      if (tabA) { tabA.classList.remove('bg-[#2A363B]', 'text-white', 'shadow-xs'); tabA.classList.add('text-slate-600'); }
     }
 
+    renderPwaTabContent(tab);
+  }
+
+  function openPwaInstallModal(initialTab) {
+    const modal = document.getElementById('modalPwaInstall');
+    if (!modal) return;
+    const p = getDetailedPlatform();
+    const tab = initialTab || (p.isIos ? 'ios' : 'android');
+    switchPwaTab(tab);
     modal.classList.remove('hidden');
   }
 
   function closePwaModal() {
     const modal = document.getElementById('modalPwaInstall');
     if (modal) modal.classList.add('hidden');
+  }
+
+  // Renderizar contenido dinámico según la pestaña seleccionada (Android o iPhone)
+  function renderPwaTabContent(tab) {
+    const steps = document.getElementById('pwaModalSteps');
+    const actionBox = document.getElementById('pwaDirectActionBox');
+    if (!steps || !actionBox) return;
+
+    const p = getDetailedPlatform();
+    const promptEvent = window.__deferredInstallPrompt || deferredInstallPrompt;
+
+    if (tab === 'android') {
+      // Pestaña Android
+      steps.innerHTML = `
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">1</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Abre el menú de tu navegador</strong>
+            <p class="text-slate-500 text-[11px]">Toca los <strong class="text-slate-800 text-xs">tres puntos (⋮)</strong> arriba a la derecha en Chrome o Samsung Internet.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">2</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Toca "Instalar aplicación"</strong>
+            <p class="text-slate-500 text-[11px]">Pulsa sobre <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-xs shrink-0">3</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Confirma la instalación</strong>
+            <p class="text-slate-500 text-[11px]">Toca <strong>Instalar</strong>. El icono se agregará a tu cajón de apps y pantalla de inicio.</p>
+          </div>
+        </div>
+      `;
+
+      if (promptEvent) {
+        actionBox.innerHTML = `
+          <button onclick="triggerAppInstall()" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <span>⚡ Toca aquí para Instalar Directamente en Android</span>
+          </button>
+        `;
+      } else {
+        actionBox.innerHTML = '';
+      }
+
+    } else {
+      // Pestaña iPhone / iPad (iOS)
+      steps.innerHTML = `
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">1</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Toca el botón Compartir</strong>
+            <p class="text-slate-500 text-[11px]">En Safari pulsa el icono <span class="font-bold text-blue-600 bg-blue-50 px-1 rounded">⎋</span> (barra inferior). En Chrome pulsa Compartir (barra superior o menú <strong class="text-slate-800">...</strong>).</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">2</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Elige "Agregar al inicio"</strong>
+            <p class="text-slate-500 text-[11px]">Desliza la lista de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/80 px-1 rounded">➕ Agregar al inicio</span>.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-xs shrink-0">3</div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block">Toca "Agregar"</strong>
+            <p class="text-slate-500 text-[11px]">Pulsa <strong>Agregar</strong> en la esquina superior derecha. Se guardará como app nativa.</p>
+          </div>
+        </div>
+      `;
+
+      // Si el navegador soporta navigator.share, ofrecer botón para desplegar el menú directamente
+      if (navigator.share) {
+        actionBox.innerHTML = `
+          <button onclick="triggerIosNativeShare()" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <span>📤 Abrir Menú Compartir en tu iPhone</span>
+          </button>
+        `;
+      } else {
+        actionBox.innerHTML = '';
+      }
+    }
+  }
+
+  // Disparar Web Share API para facilitar el acceso a "Agregar al inicio" en iOS
+  function triggerIosNativeShare() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'FerreInventario QR',
+        text: 'Control Inteligente de Inventario de Ferretería',
+        url: window.location.href
+      }).then(() => {
+        showToast('👉 Selecciona "Agregar al inicio" (➕) en el menú');
+      }).catch(() => {});
+    } else {
+      showToast('ℹ️ Sigue los 3 pasos indicados arriba');
+    }
   }
 
   function showToast(msg) {
