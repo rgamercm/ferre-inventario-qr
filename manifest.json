@@ -1,4 +1,5 @@
 {
+  "id": "ferre-inventario-qr-app",
   "name": "FerreInventario QR — Control de Stock",
   "short_name": "FerreInventario",
   "description": "Control Inteligente de Stock y Movimientos con Escaneo QR para Ferretería Central. Autor: Roger García (@rgamercm).",
@@ -9,6 +10,7 @@
   "background_color": "#2A363B",
   "theme_color": "#2A363B",
   "lang": "es",
+  "prefer_related_applications": false,
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {

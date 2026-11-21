@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.4.0';
+    var APP_RELEASE = 'v3.5.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -24,6 +24,25 @@
   })();
 </script>
 <!-- PWA & Apple Web App Metatags -->
+<script>
+  // PWA Early Capture: asegurar que antes de cualquier renderizado Chrome capture beforeinstallprompt
+  window.__deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.__deferredInstallPrompt = e;
+    console.log('[PWA Early] beforeinstallprompt guardado en head');
+    if (typeof updateInstallUI === 'function') {
+      try { updateInstallUI(); } catch(err) {}
+    }
+  });
+
+  // Pre-registro de Service Worker en head
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js').catch(function(){});
+    });
+  }
+</script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2A363B">
 <meta name="mobile-web-app-capable" content="yes">
@@ -156,7 +175,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.4</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.5</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -3810,87 +3829,83 @@ html.splash-active, body.splash-active {
   // ==========================================
   
   // ==========================================
-  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN
+  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN (v3.5.0)
   // ==========================================
-  let deferredInstallPrompt = null;
+  let deferredInstallPrompt = window.__deferredInstallPrompt || null;
 
-  // Registrar Service Worker para PWA
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => {
-          console.log('[PWA] Service Worker registrado con éxito:', reg.scope);
-        })
-        .catch(err => {
-          console.warn('[PWA] Fallo registro Service Worker:', err);
-        });
-    });
-  }
-
-  // Capturar evento nativo de instalación en Android / Chrome / Edge
+  // Escuchar si el evento llega después de la carga inicial
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
-    console.log('[PWA] beforeinstallprompt capturado');
+    window.__deferredInstallPrompt = e;
+    console.log('[PWA] beforeinstallprompt activo en ventana');
     updateInstallUI();
   });
 
-  // Evento cuando la app se instala con éxito
   window.addEventListener('appinstalled', () => {
     deferredInstallPrompt = null;
+    window.__deferredInstallPrompt = null;
     localStorage.setItem('ferre_app_installed', 'true');
     hideAllInstallUI();
     closePwaModal();
     showToast('🎉 ¡FerreInventario instalado exitosamente en tu pantalla de inicio!');
   });
 
-  // Detección si la app ya está instalada o ejecutándose desde la pantalla de inicio
+  // Detección estricta de si la app ya está instalada / corriendo en inicio
   function isAppInstalled() {
-    // 1. Modo Standalone estándar (PWA instalada en Android, Chrome, Edge, etc.)
     if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
-    // 2. Modo Standalone específico de iOS Safari
     if (window.navigator && window.navigator.standalone === true) return true;
-    // 3. Document referrer de aplicación Android (WebAPK / TWA)
     if (document.referrer && document.referrer.includes('android-app://')) return true;
-    // 4. Modos fullscreen o minimal-ui
     if (window.matchMedia && (window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: minimal-ui)').matches)) return true;
-    // 5. Flag previo guardado si el usuario la instaló en esta instancia
     if (localStorage.getItem('ferre_app_installed') === 'true') return true;
     return false;
   }
 
-  // Detectar plataforma del dispositivo
-  function getDevicePlatform() {
+  // Detección detallada del navegador y sistema operativo
+  function getDetailedPlatform() {
     const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-      return 'ios';
-    }
-    if (/android/i.test(ua)) {
-      return 'android';
-    }
-    return 'desktop';
+    const isIos = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /android/i.test(ua);
+    const isChromeIos = isIos && (/CriOS/i.test(ua) || (window.chrome && !/Safari/i.test(ua)));
+    const isSafariIos = isIos && !isChromeIos && /Safari/i.test(ua);
+    const isChromeAndroid = isAndroid && /Chrome/i.test(ua) && !/SamsungBrowser/i.test(ua);
+    const isSamsung = isAndroid && /SamsungBrowser/i.test(ua);
+    const isEdge = /Edg/i.test(ua);
+    const isDesktopChrome = !isIos && !isAndroid && /Chrome/i.test(ua) && !isEdge;
+
+    return {
+      isIos,
+      isAndroid,
+      isChromeIos,
+      isSafariIos,
+      isChromeAndroid,
+      isSamsung,
+      isEdge,
+      isDesktopChrome
+    };
   }
 
-  // Actualizar visibilidad de elementos de instalación
   function updateInstallUI() {
     const splashBtn = document.getElementById('btnInstallAppSplash');
     const drawerBtn = document.getElementById('btnInstallAppDrawer');
     const splashText = document.getElementById('installBtnTextSplash');
     const drawerText = document.getElementById('installBtnTextDrawer');
-    const platform = getDevicePlatform();
+    const p = getDetailedPlatform();
 
     if (isAppInstalled()) {
-      // Si YA está instalada, ocultar completamente todas las opciones de descarga
       hideAllInstallUI();
       return;
     }
 
-    // Adaptar textos según el dispositivo
     let label = 'Descargar App en Inicio';
-    if (platform === 'ios') {
-      label = 'Agregar al Inicio (iPhone)';
-    } else if (platform === 'android') {
+    if (p.isChromeIos) {
+      label = 'Agregar al Inicio (Chrome iPhone)';
+    } else if (p.isSafariIos) {
+      label = 'Agregar al Inicio (Safari iPhone)';
+    } else if (p.isAndroid) {
       label = 'Instalar App (Android)';
+    } else if (p.isDesktopChrome) {
+      label = 'Instalar App en Inicio';
     }
 
     if (splashText) splashText.textContent = label;
@@ -3899,7 +3914,6 @@ html.splash-active, body.splash-active {
     if (splashBtn) splashBtn.classList.remove('hidden');
     if (drawerBtn) drawerBtn.classList.remove('hidden');
 
-    // Mostrar banner inicial al arrancar si no se ha descartado en esta sesión
     checkShowInitialBanner();
   }
 
@@ -3916,13 +3930,12 @@ html.splash-active, body.splash-active {
     if (isAppInstalled()) return;
     const dismissed = sessionStorage.getItem('ferre_install_banner_dismissed');
     if (!dismissed) {
-      // Mostrar banner tras 1.2 segundos para no interferir con la animación inicial
       setTimeout(() => {
         if (!isAppInstalled()) {
           const banner = document.getElementById('pwaInstallBanner');
           if (banner) banner.classList.remove('hidden');
         }
-      }, 1200);
+      }, 1000);
     }
   }
 
@@ -3932,41 +3945,87 @@ html.splash-active, body.splash-active {
     sessionStorage.setItem('ferre_install_banner_dismissed', 'true');
   }
 
-  // Disparar flujo de instalación
+  // Acción principal al presionar Instalar / Descargar
   function triggerAppInstall() {
     dismissInstallBanner();
-    const platform = getDevicePlatform();
+    const p = getDetailedPlatform();
+    const promptEvent = window.__deferredInstallPrompt || deferredInstallPrompt;
 
-    // 1. Si tenemos el prompt nativo de Android / Chrome
-    if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      deferredInstallPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('[PWA] El usuario aceptó la instalación');
-          localStorage.setItem('ferre_app_installed', 'true');
-          hideAllInstallUI();
-        } else {
-          console.log('[PWA] El usuario canceló la instalación');
-        }
-        deferredInstallPrompt = null;
-      });
-      return;
+    // 1. Si el navegador cuenta con el disparador nativo directo (Chrome Android, Chrome Desktop, Edge):
+    if (promptEvent) {
+      try {
+        promptEvent.prompt();
+        promptEvent.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('[PWA] El usuario aceptó la instalación nativa');
+            localStorage.setItem('ferre_app_installed', 'true');
+            hideAllInstallUI();
+          } else {
+            console.log('[PWA] El usuario descartó el diálogo nativo');
+          }
+          deferredInstallPrompt = null;
+          window.__deferredInstallPrompt = null;
+        });
+        return;
+      } catch (err) {
+        console.warn('Error ejecutando prompt:', err);
+      }
     }
 
-    // 2. En iOS o en navegadores donde no hay prompt automático (ej: Safari en iPhone)
-    openPwaInstallModal(platform);
+    // 2. Si no hay prompt nativo disponible (ej: en iPhone donde Apple requiere el menú Compartir, o Chrome Android que aún no lo habilitó):
+    openPwaInstallModal(p);
   }
 
-  function openPwaInstallModal(platform) {
+  function openPwaInstallModal(p) {
     const modal = document.getElementById('modalPwaInstall');
     const title = document.getElementById('pwaModalTitle');
     const subtitle = document.getElementById('pwaModalSubtitle');
     const steps = document.getElementById('pwaModalSteps');
     if (!modal || !steps) return;
 
-    if (platform === 'ios') {
-      title.textContent = 'Instalar en tu iPhone / iPad ';
-      subtitle.textContent = 'Añade la app a tu pantalla de inicio en 3 simples toques:';
+    if (p.isChromeIos) {
+      // Usuario usando Google Chrome en iPhone / iPad
+      title.textContent = 'Instalar desde Chrome en iPhone 🌐';
+      subtitle.textContent = 'Cómo agregar la app a tu inicio desde Google Chrome:';
+      steps.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
+            1
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Toca el botón Compartir de Chrome</strong>
+            <p class="text-slate-500 text-[11px]">En la esquina superior derecha (junto a la barra de búsqueda) o en el menú de tres puntos <strong class="text-slate-700">...</strong> abajo a la derecha, pulsa <strong>Compartir</strong>.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
+            2
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Selecciona "Agregar a pantalla de inicio"</strong>
+            <p class="text-slate-500 text-[11px]">Desliza la lista de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/70 px-1.5 py-0.5 rounded">➕ Agregar a pantalla de inicio</span>.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
+            3
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Toca "Agregar"</strong>
+            <p class="text-slate-500 text-[11px]">Confirma tocando <strong>Agregar</strong> arriba a la derecha. ¡Aparecerá en tu pantalla de inicio!</p>
+          </div>
+        </div>
+
+        <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-[10px] text-amber-900 leading-snug">
+          💡 <strong>Tip para iPhone:</strong> Si abres este mismo enlace en <strong>Safari</strong>, se instala directamente con el icono de compartir nativo de Apple.
+        </div>
+      `;
+    } else if (p.isSafariIos) {
+      // Usuario usando Safari en iPhone / iPad
+      title.textContent = 'Instalar desde Safari en iPhone ';
+      subtitle.textContent = 'Agrega la app a tu pantalla de inicio en 3 toques:';
       steps.innerHTML = `
         <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
           <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
@@ -3975,7 +4034,7 @@ html.splash-active, body.splash-active {
           <div class="flex-1">
             <strong class="text-slate-800 font-bold block mb-0.5">Toca el botón Compartir</strong>
             <p class="text-slate-500 text-[11px]">En la barra inferior de Safari, pulsa el icono de compartir:
-              <span class="inline-flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200">
+              <span class="inline-flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">
                 <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                 Compartir (cuadro con flecha ↑)
               </span>
@@ -3989,11 +4048,7 @@ html.splash-active, body.splash-active {
           </div>
           <div class="flex-1">
             <strong class="text-slate-800 font-bold block mb-0.5">Selecciona "Agregar al inicio"</strong>
-            <p class="text-slate-500 text-[11px]">Desliza hacia abajo en el menú de Safari y presiona la opción:
-              <span class="inline-flex items-center gap-1 font-bold text-slate-800 bg-slate-200/70 px-2 py-0.5 rounded-lg">
-                ➕ Agregar al inicio
-              </span>
-            </p>
+            <p class="text-slate-500 text-[11px]">Desplaza la hoja de opciones hacia abajo y pulsa <span class="font-bold text-slate-800 bg-slate-200/70 px-1.5 py-0.5 rounded">➕ Agregar al inicio</span>.</p>
           </div>
         </div>
 
@@ -4002,22 +4057,23 @@ html.splash-active, body.splash-active {
             3
           </div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Confirma pulsando "Agregar"</strong>
-            <p class="text-slate-500 text-[11px]">Toca <strong>"Agregar"</strong> en la esquina superior derecha. La aplicación se instalará como app nativa.</p>
+            <strong class="text-slate-800 font-bold block mb-0.5">Pulsa "Agregar"</strong>
+            <p class="text-slate-500 text-[11px]">Toca <strong>Agregar</strong> en la esquina superior derecha. Se agregará como app nativa a tu inicio.</p>
           </div>
         </div>
       `;
     } else {
-      title.textContent = 'Instalar en tu Dispositivo 🤖';
-      subtitle.textContent = 'Descarga directa en tu pantalla de inicio:';
+      // Android / Chrome / Otros
+      title.textContent = 'Instalar en tu Pantalla de Inicio 📲';
+      subtitle.textContent = 'Acceso directo con un toque en Android / Chrome:';
       steps.innerHTML = `
         <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
           <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
             1
           </div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Abre el menú de tu navegador</strong>
-            <p class="text-slate-500 text-[11px]">Toca los tres puntos <strong class="text-slate-800 text-xs">⋮</strong> en la esquina superior de Chrome o tu navegador.</p>
+            <strong class="text-slate-800 font-bold block mb-0.5">Abre el menú de opciones</strong>
+            <p class="text-slate-500 text-[11px]">Toca los <strong class="text-slate-800 text-sm">tres puntos (⋮)</strong> en la esquina superior derecha de tu navegador.</p>
           </div>
         </div>
 
@@ -4026,8 +4082,8 @@ html.splash-active, body.splash-active {
             2
           </div>
           <div class="flex-1">
-            <strong class="text-slate-800 font-bold block mb-0.5">Elige "Instalar aplicación"</strong>
-            <p class="text-slate-500 text-[11px]">Pulsa sobre <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
+            <strong class="text-slate-800 font-bold block mb-0.5">Toca "Instalar aplicación"</strong>
+            <p class="text-slate-500 text-[11px]">Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
           </div>
         </div>
 
@@ -4037,7 +4093,7 @@ html.splash-active, body.splash-active {
           </div>
           <div class="flex-1">
             <strong class="text-slate-800 font-bold block mb-0.5">Confirma la instalación</strong>
-            <p class="text-slate-500 text-[11px]">Pulsa <strong>Instalar</strong>. El icono se agregará a tus aplicaciones y se abrirá a pantalla completa.</p>
+            <p class="text-slate-500 text-[11px]">Pulsa <strong>Instalar</strong>. La app aparecerá en tu menú de aplicaciones y pantalla de inicio.</p>
           </div>
         </div>
       `;
