@@ -9,7 +9,7 @@
 <script>
   // Invalidador dinámico de caché para navegadores móviles (iOS Safari / Chrome)
   (function() {
-    var APP_RELEASE = 'v3.3.0';
+    var APP_RELEASE = 'v3.4.0';
     try {
       var localRel = localStorage.getItem('ferre_app_release');
       if (localRel && localRel !== APP_RELEASE) {
@@ -23,6 +23,16 @@
     } catch(e) {}
   })();
 </script>
+<!-- PWA & Apple Web App Metatags -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2A363B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FerreInventario">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon.png">
 <title>FerreInventario QR — Simulador Móvil & Suite de Diagramas</title>
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 <script src="js/qrcode.min.js"></script>
@@ -146,7 +156,7 @@ html.splash-active, body.splash-active {
           <div>
             <h1 class="text-sm font-bold tracking-tight leading-tight flex items-center gap-1.5">
               FerreInventario QR
-              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.3</span>
+              <span class="text-[10px] bg-[#99B898] text-[#2A363B] font-extrabold px-1.5 py-0.5 rounded-full">v3.4</span>
             </h1>
             <p class="text-[11px] text-[#FECEAB]">
               Autor: <strong class="text-white font-semibold">Roger García</strong> (<a href="https://github.com/rgamercm" target="_blank" class="hover:underline text-[#FF847C]">@rgamercm</a>)
@@ -251,6 +261,11 @@ html.splash-active, body.splash-active {
           </div>
           
           <div class="w-full max-w-xs space-y-2 mb-2 shrink-0">
+            <!-- Botón de Descarga / Instalación en Inicio (Solo si NO está instalada) -->
+            <button id="btnInstallAppSplash" onclick="triggerAppInstall()" class="hidden w-full py-2.5 px-4 bg-gradient-to-r from-[#99B898] to-[#82a881] hover:brightness-105 active:scale-95 text-[#2A363B] font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 border border-emerald-300/40">
+              <span class="text-sm">📲</span>
+              <span id="installBtnTextSplash">Descargar App para tu Inicio</span>
+            </button>
             <button onclick="navigateTo('screenDashboard')" class="w-full py-2.5 px-4 bg-[#E84A5F] hover:bg-[#d43f53] active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/40 transition flex items-center justify-center gap-2">
               <span>⚡ Modo Demo Directo</span>
             </button>
@@ -923,6 +938,11 @@ html.splash-active, body.splash-active {
               <button onclick="navigateTo('screenProfile'); toggleDrawer();" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 flex items-center gap-2.5">
                 <span>👤</span> Perfil de Administrador
               </button>
+              <!-- Botón Drawer de Instalación (Solo si no está instalada) -->
+              <button id="btnInstallAppDrawer" onclick="triggerAppInstall(); toggleDrawer();" class="hidden w-full text-left p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#2A363B] border border-emerald-200/60 flex items-center gap-2.5 font-bold transition">
+                <span>📲</span>
+                <span id="installBtnTextDrawer">Instalar App en Inicio</span>
+              </button>
               
               <div class="pt-3 mt-3 border-t border-slate-100">
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">Evaluación Docente</p>
@@ -1038,6 +1058,75 @@ html.splash-active, body.splash-active {
   </main>
 
   <!-- ==================== MODALES DEL SISTEMA ==================== -->
+
+    <!-- ==================== BANNER FLOTANTE DE INSTALACIÓN AL INICIAR ==================== -->
+  <div id="pwaInstallBanner" class="hidden fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:w-96 bg-[#2A363B] text-white p-4 rounded-3xl shadow-2xl z-50 border border-slate-700/80 animate-fade-in no-print">
+    <div class="flex items-start gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-xl shrink-0 shadow-md">
+        📲
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-white tracking-tight">Instalar en Pantalla de Inicio</h4>
+          <button onclick="dismissInstallBanner()" class="text-slate-400 hover:text-white p-1 text-xs">✕</button>
+        </div>
+        <p class="text-[11px] text-slate-300 mt-1 leading-snug">
+          Descarga <strong class="text-[#FECEAB]">FerreInventario QR</strong> para abrirla como app nativa, rápida y a pantalla completa.
+        </p>
+        <div class="flex items-center gap-2 mt-3">
+          <button onclick="triggerAppInstall()" class="flex-1 py-1.5 px-3 bg-[#99B898] hover:bg-[#85a884] text-[#2A363B] font-extrabold text-xs rounded-xl shadow transition text-center">
+            Instalar App
+          </button>
+          <button onclick="dismissInstallBanner()" class="py-1.5 px-3 bg-slate-700/70 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold rounded-xl transition">
+            Ahora no
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL GUÍA DE INSTALACIÓN (iOS / ANDROID) ==================== -->
+  <div id="modalPwaInstall" class="hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 no-print">
+    <div onclick="event.stopPropagation()" class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-4 animate-fade-in border border-slate-200 text-[#2A363B]">
+      
+      <!-- Encabezado Modal -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#E84A5F] to-[#FF847C] flex items-center justify-center text-white font-bold text-base shadow">
+            📲
+          </div>
+          <div>
+            <h3 id="pwaModalTitle" class="text-xs font-bold text-[#2A363B]">Instalar FerreInventario QR</h3>
+            <p id="pwaModalSubtitle" class="text-[10px] text-slate-500">Acceso directo en tu pantalla de inicio</p>
+          </div>
+        </div>
+        <button onclick="closePwaModal()" class="text-slate-400 hover:text-black text-sm p-1">✕</button>
+      </div>
+
+      <!-- Contenedor de Pasos (Dinámico: iOS o Android) -->
+      <div id="pwaModalSteps" class="space-y-3 text-xs">
+        <!-- Inyectado por JS -->
+      </div>
+
+      <!-- Vista previa del icono instalado -->
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-[#2A363B] flex items-center justify-center shadow-md shrink-0 border border-slate-700">
+          <span class="text-2xl">🔧</span>
+        </div>
+        <div class="text-[11px] leading-tight">
+          <strong class="text-[#2A363B] font-bold block">FerreInventario QR</strong>
+          <span class="text-slate-500 text-[10px]">App Web Progresiva (PWA)</span>
+          <span class="text-emerald-600 font-bold block text-[9.5px] mt-0.5">● Funciona sin conexión</span>
+        </div>
+      </div>
+
+      <!-- Botón de Cierre -->
+      <button onclick="closePwaModal()" class="w-full py-2.5 bg-[#2A363B] hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
+        ¡Entendido!
+      </button>
+
+    </div>
+  </div>
 
   <!-- MODAL 1: AGREGAR PRODUCTO (VALIDACIÓN ESTRICTA & ANTI-DUPLICADOS) -->
   <div id="modalAddProduct" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -1590,6 +1679,7 @@ html.splash-active, body.splash-active {
     populateQuickScanSelect();
     renderNotifications();
     updateAppHeader('screenSplash');
+    updateInstallUI();
 
     // Inicializar información de navegador en modal
     const devInfo = document.getElementById('devBrowserInfo');
@@ -3718,6 +3808,249 @@ html.splash-active, body.splash-active {
   // ==========================================
   // UTILIDADES: TOAST Y AUDIO BEEPER
   // ==========================================
+  
+  // ==========================================
+  // PWA (PROGRESSIVE WEB APP) & INSTALACIÓN
+  // ==========================================
+  let deferredInstallPrompt = null;
+
+  // Registrar Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          console.log('[PWA] Service Worker registrado con éxito:', reg.scope);
+        })
+        .catch(err => {
+          console.warn('[PWA] Fallo registro Service Worker:', err);
+        });
+    });
+  }
+
+  // Capturar evento nativo de instalación en Android / Chrome / Edge
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    console.log('[PWA] beforeinstallprompt capturado');
+    updateInstallUI();
+  });
+
+  // Evento cuando la app se instala con éxito
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    localStorage.setItem('ferre_app_installed', 'true');
+    hideAllInstallUI();
+    closePwaModal();
+    showToast('🎉 ¡FerreInventario instalado exitosamente en tu pantalla de inicio!');
+  });
+
+  // Detección si la app ya está instalada o ejecutándose desde la pantalla de inicio
+  function isAppInstalled() {
+    // 1. Modo Standalone estándar (PWA instalada en Android, Chrome, Edge, etc.)
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    // 2. Modo Standalone específico de iOS Safari
+    if (window.navigator && window.navigator.standalone === true) return true;
+    // 3. Document referrer de aplicación Android (WebAPK / TWA)
+    if (document.referrer && document.referrer.includes('android-app://')) return true;
+    // 4. Modos fullscreen o minimal-ui
+    if (window.matchMedia && (window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: minimal-ui)').matches)) return true;
+    // 5. Flag previo guardado si el usuario la instaló en esta instancia
+    if (localStorage.getItem('ferre_app_installed') === 'true') return true;
+    return false;
+  }
+
+  // Detectar plataforma del dispositivo
+  function getDevicePlatform() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+      return 'ios';
+    }
+    if (/android/i.test(ua)) {
+      return 'android';
+    }
+    return 'desktop';
+  }
+
+  // Actualizar visibilidad de elementos de instalación
+  function updateInstallUI() {
+    const splashBtn = document.getElementById('btnInstallAppSplash');
+    const drawerBtn = document.getElementById('btnInstallAppDrawer');
+    const splashText = document.getElementById('installBtnTextSplash');
+    const drawerText = document.getElementById('installBtnTextDrawer');
+    const platform = getDevicePlatform();
+
+    if (isAppInstalled()) {
+      // Si YA está instalada, ocultar completamente todas las opciones de descarga
+      hideAllInstallUI();
+      return;
+    }
+
+    // Adaptar textos según el dispositivo
+    let label = 'Descargar App en Inicio';
+    if (platform === 'ios') {
+      label = 'Agregar al Inicio (iPhone)';
+    } else if (platform === 'android') {
+      label = 'Instalar App (Android)';
+    }
+
+    if (splashText) splashText.textContent = label;
+    if (drawerText) drawerText.textContent = label;
+
+    if (splashBtn) splashBtn.classList.remove('hidden');
+    if (drawerBtn) drawerBtn.classList.remove('hidden');
+
+    // Mostrar banner inicial al arrancar si no se ha descartado en esta sesión
+    checkShowInitialBanner();
+  }
+
+  function hideAllInstallUI() {
+    const splashBtn = document.getElementById('btnInstallAppSplash');
+    const drawerBtn = document.getElementById('btnInstallAppDrawer');
+    const banner = document.getElementById('pwaInstallBanner');
+    if (splashBtn) splashBtn.classList.add('hidden');
+    if (drawerBtn) drawerBtn.classList.add('hidden');
+    if (banner) banner.classList.add('hidden');
+  }
+
+  function checkShowInitialBanner() {
+    if (isAppInstalled()) return;
+    const dismissed = sessionStorage.getItem('ferre_install_banner_dismissed');
+    if (!dismissed) {
+      // Mostrar banner tras 1.2 segundos para no interferir con la animación inicial
+      setTimeout(() => {
+        if (!isAppInstalled()) {
+          const banner = document.getElementById('pwaInstallBanner');
+          if (banner) banner.classList.remove('hidden');
+        }
+      }, 1200);
+    }
+  }
+
+  function dismissInstallBanner() {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.classList.add('hidden');
+    sessionStorage.setItem('ferre_install_banner_dismissed', 'true');
+  }
+
+  // Disparar flujo de instalación
+  function triggerAppInstall() {
+    dismissInstallBanner();
+    const platform = getDevicePlatform();
+
+    // 1. Si tenemos el prompt nativo de Android / Chrome
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('[PWA] El usuario aceptó la instalación');
+          localStorage.setItem('ferre_app_installed', 'true');
+          hideAllInstallUI();
+        } else {
+          console.log('[PWA] El usuario canceló la instalación');
+        }
+        deferredInstallPrompt = null;
+      });
+      return;
+    }
+
+    // 2. En iOS o en navegadores donde no hay prompt automático (ej: Safari en iPhone)
+    openPwaInstallModal(platform);
+  }
+
+  function openPwaInstallModal(platform) {
+    const modal = document.getElementById('modalPwaInstall');
+    const title = document.getElementById('pwaModalTitle');
+    const subtitle = document.getElementById('pwaModalSubtitle');
+    const steps = document.getElementById('pwaModalSteps');
+    if (!modal || !steps) return;
+
+    if (platform === 'ios') {
+      title.textContent = 'Instalar en tu iPhone / iPad ';
+      subtitle.textContent = 'Añade la app a tu pantalla de inicio en 3 simples toques:';
+      steps.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
+            1
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Toca el botón Compartir</strong>
+            <p class="text-slate-500 text-[11px]">En la barra inferior de Safari, pulsa el icono de compartir:
+              <span class="inline-flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200">
+                <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                Compartir (cuadro con flecha ↑)
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
+            2
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Selecciona "Agregar al inicio"</strong>
+            <p class="text-slate-500 text-[11px]">Desliza hacia abajo en el menú de Safari y presiona la opción:
+              <span class="inline-flex items-center gap-1 font-bold text-slate-800 bg-slate-200/70 px-2 py-0.5 rounded-lg">
+                ➕ Agregar al inicio
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
+            3
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Confirma pulsando "Agregar"</strong>
+            <p class="text-slate-500 text-[11px]">Toca <strong>"Agregar"</strong> en la esquina superior derecha. La aplicación se instalará como app nativa.</p>
+          </div>
+        </div>
+      `;
+    } else {
+      title.textContent = 'Instalar en tu Dispositivo 🤖';
+      subtitle.textContent = 'Descarga directa en tu pantalla de inicio:';
+      steps.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
+            1
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Abre el menú de tu navegador</strong>
+            <p class="text-slate-500 text-[11px]">Toca los tres puntos <strong class="text-slate-800 text-xs">⋮</strong> en la esquina superior de Chrome o tu navegador.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
+            2
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Elige "Instalar aplicación"</strong>
+            <p class="text-slate-500 text-[11px]">Pulsa sobre <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-[#E84A5F] flex items-center justify-center font-bold text-base shrink-0">
+            3
+          </div>
+          <div class="flex-1">
+            <strong class="text-slate-800 font-bold block mb-0.5">Confirma la instalación</strong>
+            <p class="text-slate-500 text-[11px]">Pulsa <strong>Instalar</strong>. El icono se agregará a tus aplicaciones y se abrirá a pantalla completa.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closePwaModal() {
+    const modal = document.getElementById('modalPwaInstall');
+    if (modal) modal.classList.add('hidden');
+  }
+
   function showToast(msg) {
     const toast = document.getElementById('toastNotification');
     const msgEl = document.getElementById('toastMsg');
