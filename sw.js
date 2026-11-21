@@ -1,6 +1,6 @@
-// FerreInventario QR — Service Worker v3.4.0
+// FerreInventario QR — Service Worker v3.10.0
 // Autor: Roger García (@rgamercm)
-const CACHE_NAME = 'ferre-cache-v3.4.0';
+const CACHE_NAME = 'ferre-cache-v3.10.0';
 
 const PRECACHE_ASSETS = [
   './',

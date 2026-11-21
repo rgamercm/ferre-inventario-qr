@@ -278,10 +278,10 @@
         </div>
         <div id="ganttQuadrantBar" class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs">
             <span class="text-[10px] font-bold text-slate-400 px-1 uppercase tracking-wider hidden sm:inline">Semanas:</span>
-            <button onclick="filterGanttWeeks('all', this)" class="gantt-quad-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#E84A5F] text-white transition">Todas (12)</button>
-            <button onclick="filterGanttWeeks('1-4', this)" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">1–4</button>
-            <button onclick="filterGanttWeeks('5-8', this)" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">5–8</button>
-            <button onclick="filterGanttWeeks('9-12', this)" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">9–12</button>
+            <button onclick="filterGanttWeeks('all', this)" data-range="all" class="gantt-quad-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#E84A5F] text-white transition">Todas (12)</button>
+            <button onclick="filterGanttWeeks('1-4', this)" data-range="1-4" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">1–4</button>
+            <button onclick="filterGanttWeeks('5-8', this)" data-range="5-8" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">5–8</button>
+            <button onclick="filterGanttWeeks('9-12', this)" data-range="9-12" class="gantt-quad-btn px-2 py-1 rounded-lg text-[10.5px] font-bold text-slate-300 hover:text-white transition">9–12</button>
         </div>
     </div>
 
@@ -348,8 +348,8 @@
 
         <!-- Gantt Chart -->
         <!-- Guía de deslizamiento táctil -->
-        <div class="flex items-center justify-between px-3 py-1.5 mb-2 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] text-slate-400 sm:hidden">
-            <span>👉 Desliza horizontalmente para ver las 12 semanas</span>
+        <div id="ganttSwipeHint" class="flex items-center justify-between px-3 py-1.5 mb-2 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] text-slate-400 sm:hidden">
+            <span id="ganttSwipeText">👉 Desliza horizontalmente para ver las 12 semanas</span>
             <span class="text-rose-400 font-bold">Touch ↔</span>
         </div>
         <div id="ganttGridCard" class="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden mb-6">
@@ -357,6 +357,14 @@
             <div class="bg-slate-800/80 px-4 sm:px-6 py-3 border-b border-slate-700/50 flex flex-wrap items-center gap-4">
                 <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Leyenda:</span>
                 <div class="flex flex-wrap gap-3" id="legendContainer"></div>
+            </div>
+            <!-- Indicador dinámico de rango de semanas y fases activas -->
+            <div id="ganttFilterStatus" class="bg-slate-900/90 px-4 py-2 border-b border-slate-700/60 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="ganttRangeLabel" class="font-bold text-white">Cronograma Completo: Semanas 1 a 12 (SDLC)</span>
+                </div>
+                <span id="ganttActivePhasesCount" class="text-[11px] font-medium text-slate-300">6 fases activas</span>
             </div>
 
             <div class="gantt-container p-2 sm:p-4">
@@ -539,25 +547,75 @@
         `).join('');
     }
 
+    function getWeekRange() {
+        if (activeWeekRange === '1-4') {
+            return { start: 1, end: 4, count: 4, label: 'Cuadrante: Semanas 1 a 4 (Análisis y Diseño Inicial)', hint: 'Visualizando Semanas 1 a 4' };
+        }
+        if (activeWeekRange === '5-8') {
+            return { start: 5, end: 8, count: 4, label: 'Cuadrante: Semanas 5 a 8 (Desarrollo Central)', hint: 'Visualizando Semanas 5 a 8' };
+        }
+        if (activeWeekRange === '9-12') {
+            return { start: 9, end: 12, count: 4, label: 'Cuadrante: Semanas 9 a 12 (Pruebas, Despliegue y Cierre)', hint: 'Visualizando Semanas 9 a 12' };
+        }
+        return { start: 1, end: 12, count: 12, label: 'Cronograma Completo: Semanas 1 a 12 (SDLC)', hint: 'Desliza horizontalmente para ver las 12 semanas' };
+    }
+
     function renderGantt() {
         const chart = document.getElementById('ganttChart');
+        if (!chart) return;
+
+        const { start: minW, end: maxW, count: numWeeks, label: rangeLabel, hint: swipeHint } = getWeekRange();
+
+        // Actualizar indicador visual de rango activo
+        const rangeLabelEl = document.getElementById('ganttRangeLabel');
+        if (rangeLabelEl) rangeLabelEl.textContent = rangeLabel;
+        const swipeTextEl = document.getElementById('ganttSwipeText');
+        if (swipeTextEl) swipeTextEl.textContent = '👉 ' + swipeHint;
+
+        // Ajuste de ancho del grid
+        if (activeWeekRange === 'all') {
+            chart.style.minWidth = '860px';
+        } else {
+            chart.style.minWidth = window.innerWidth < 640 ? '480px' : '100%';
+        }
 
         // Build header
-        let headerCells = '<div class="sticky left-0 z-20 bg-slate-800 border-b border-r border-slate-700/50 px-3 py-2 min-w-[200px] sm:min-w-[260px]"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fase / Tarea</span></div>';
+        let headerCells = '<div class="sticky left-0 z-20 bg-slate-800 border-b border-r border-slate-700/50 px-3 py-2 min-w-[190px] sm:min-w-[240px]"><span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fase / Tarea</span></div>';
 
-        for (let w = 1; w <= TOTAL_WEEKS; w++) {
-            headerCells += `<div class="week-col border-b border-r border-slate-700/30 px-1 py-2 text-center min-w-[60px] sm:min-w-[72px]">
-                <span class="text-[10px] sm:text-xs font-semibold text-slate-400">Sem ${w}</span>
+        for (let w = minW; w <= maxW; w++) {
+            headerCells += `<div class="week-col border-b border-r border-slate-700/30 px-1 py-2 text-center min-w-[55px] sm:min-w-[70px]" data-week="${w}">
+                <span class="text-[10px] sm:text-xs font-bold text-slate-300">Sem ${w}</span>
             </div>`;
         }
 
-        let html = `<div class="grid" style="grid-template-columns: minmax(200px,260px) repeat(${TOTAL_WEEKS}, minmax(60px,1fr));">`;
+        const colWidth = activeWeekRange === 'all' ? 'minmax(55px,1fr)' : 'minmax(70px,1fr)';
+        let html = `<div class="grid" style="grid-template-columns: minmax(190px,240px) repeat(${numWeeks}, ${colWidth});">`;
         html += headerCells;
 
+        // Filtrar fases activas en este período de semanas
+        const visiblePhases = phases.filter(phase => {
+            if (activeWeekRange === 'all') return true;
+            return phase.startWeek <= maxW && phase.endWeek >= minW;
+        });
+
+        const activeCountEl = document.getElementById('ganttActivePhasesCount');
+        if (activeCountEl) {
+            activeCountEl.textContent = `${visiblePhases.length} fases activas en este período`;
+        }
+
+        if (visiblePhases.length === 0) {
+            html += `<div class="col-span-full py-12 text-center text-slate-400">No hay tareas programadas para este rango de semanas.</div></div>`;
+            chart.innerHTML = html;
+            return;
+        }
+
         // Render phases and tasks
-        phases.forEach((phase, pIdx) => {
+        visiblePhases.forEach((phase, pIdx) => {
+            const isDimmed = (activeFilter !== 'all' && phase.id != activeFilter);
+            const rowClass = `phase-row ${isDimmed ? 'dimmed' : ''}`;
+
             // Phase header row
-            html += `<div class="phase-row sticky left-0 z-20 bg-slate-800/90 border-b border-r border-slate-700/50 px-3 py-2.5 min-w-[200px] sm:min-w-[260px] flex items-center gap-2 cursor-pointer" data-phase="${phase.id}" onclick="togglePhaseDetail(${phase.id})" style="animation-delay:${pIdx * 80}ms">
+            html += `<div class="${rowClass} sticky left-0 z-20 bg-slate-800/90 border-b border-r border-slate-700/50 px-3 py-2.5 min-w-[190px] sm:min-w-[240px] flex items-center gap-2 cursor-pointer" data-phase="${phase.id}" onclick="togglePhaseDetail(${phase.id})" style="animation-delay:${pIdx * 80}ms">
                 <span class="text-base">${phase.icon}</span>
                 <div class="flex-1 min-w-0">
                     <span class="text-xs sm:text-sm font-bold text-white block truncate">${phase.name}</span>
@@ -569,54 +627,66 @@
             </div>`;
 
             // Phase bar cells
-            for (let w = 1; w <= TOTAL_WEEKS; w++) {
+            for (let w = minW; w <= maxW; w++) {
                 const isInRange = w >= phase.startWeek && w <= phase.endWeek;
                 const isStart = w === phase.startWeek;
-                const isEnd = w === phase.endWeek;
+                const continuesLeft = (w === minW && phase.startWeek < minW);
+                const continuesRight = (w === maxW && phase.endWeek > maxW);
 
                 let barHtml = '';
                 if (isInRange) {
-                    const roundL = isStart ? 'rounded-l-md' : '';
-                    const roundR = isEnd ? 'rounded-r-md' : '';
-                    barHtml = `<div class="gantt-bar phase-row h-7 ${roundL} ${roundR} flex items-center justify-center relative" data-phase="${phase.id}" style="background:${phase.colorMid};"
+                    const roundL = (w === phase.startWeek) ? 'rounded-l-md' : '';
+                    const roundR = (w === phase.endWeek) ? 'rounded-r-md' : '';
+                    barHtml = `<div class="gantt-bar phase-row h-7 ${roundL} ${roundR} flex items-center justify-between px-1.5 relative overflow-hidden" data-phase="${phase.id}" style="background:${phase.colorMid};"
                         onmouseenter="showTooltip(event, ${phase.id}, -1)" onmouseleave="hideTooltip()" onclick="togglePhaseDetail(${phase.id})">
                         <div class="bar-fill ${roundL} ${roundR}" style="width:${phase.progress}%"></div>
-                        ${isStart ? `<span class="relative z-10 text-[9px] font-bold text-white/80 whitespace-nowrap pl-1">${phase.name.split(' ')[0]}</span>` : ''}
+                        <div class="relative z-10 flex items-center gap-1 w-full text-[9px] font-bold text-white/90 truncate">
+                            ${continuesLeft ? '<span class="text-amber-300 font-mono text-[9px]">◀</span>' : ''}
+                            ${(isStart || (w === minW && phase.startWeek < minW)) ? `<span class="truncate">${phase.name}</span>` : ''}
+                            ${continuesRight ? '<span class="text-amber-300 font-mono text-[9px] ml-auto">▶</span>' : ''}
+                        </div>
                     </div>`;
                 }
 
-                html += `<div class="phase-row border-b border-r border-slate-700/20 px-0.5 flex items-center" data-phase="${phase.id}">
+                html += `<div class="${rowClass} border-b border-r border-slate-700/20 px-0.5 flex items-center" data-phase="${phase.id}">
                     ${barHtml}
                 </div>`;
             }
 
             // Task rows
             phase.tasks.forEach((task, tIdx) => {
-                html += `<div class="phase-row sticky left-0 z-20 bg-slate-900/50 border-b border-r border-slate-700/30 px-3 py-2 min-w-[200px] sm:min-w-[260px] pl-8 sm:pl-10 flex items-center gap-2" data-phase="${phase.id}" style="animation-delay:${(pIdx * 80) + (tIdx * 40)}ms">
+                if (activeWeekRange !== 'all') {
+                    const taskInRange = task.start <= maxW && task.end >= minW;
+                    if (!taskInRange) return;
+                }
+
+                html += `<div class="${rowClass} sticky left-0 z-20 bg-slate-900/50 border-b border-r border-slate-700/30 px-3 py-2 min-w-[190px] sm:min-w-[240px] pl-7 sm:pl-9 flex items-center gap-2" data-phase="${phase.id}" style="animation-delay:${(pIdx * 80) + (tIdx * 40)}ms">
                     <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${phase.color}"></div>
                     <div class="flex-1 min-w-0">
-                        <span class="text-[11px] sm:text-xs text-slate-300 block truncate">${task.name}</span>
+                        <span class="text-[11px] sm:text-xs text-slate-300 block truncate" title="${task.name}">${task.name}</span>
                     </div>
                     <span class="text-[10px] font-mono text-slate-500 flex-shrink-0">${task.progress}%</span>
                 </div>`;
 
-                for (let w = 1; w <= TOTAL_WEEKS; w++) {
+                for (let w = minW; w <= maxW; w++) {
                     const isInRange = w >= task.start && w <= task.end;
-                    const isStart = w === task.start;
-                    const isEnd = w === task.end;
+                    const roundL = (w === task.start) ? 'rounded-l-md' : '';
+                    const roundR = (w === task.end) ? 'rounded-r-md' : '';
+                    const continuesLeft = (w === minW && task.start < minW);
+                    const continuesRight = (w === maxW && task.end > maxW);
 
                     let taskBar = '';
                     if (isInRange) {
-                        const roundL = isStart ? 'rounded-l-md' : '';
-                        const roundR = isEnd ? 'rounded-r-md' : '';
                         const taskId = `task-${phase.id}-${tIdx}`;
-                        taskBar = `<div id="${taskId}" class="gantt-bar phase-row h-5 ${roundL} ${roundR} relative" data-phase="${phase.id}" style="background:${phase.color}; opacity: 0.75;"
+                        taskBar = `<div id="${taskId}" class="gantt-bar phase-row h-5 ${roundL} ${roundR} relative flex items-center justify-between px-1" data-phase="${phase.id}" style="background:${phase.color}; opacity: 0.85;"
                             onmouseenter="showTooltip(event, ${phase.id}, ${tIdx})" onmouseleave="hideTooltip()" onclick="selectTask(${phase.id}, ${tIdx})">
                             <div class="bar-fill ${roundL} ${roundR}" style="width:${task.progress}%"></div>
+                            ${continuesLeft ? '<span class="relative z-10 text-[8px] text-white/90">◀</span>' : '<span></span>'}
+                            ${continuesRight ? '<span class="relative z-10 text-[8px] text-white/90">▶</span>' : '<span></span>'}
                         </div>`;
                     }
 
-                    html += `<div class="phase-row border-b border-r border-slate-700/10 px-0.5 flex items-center" data-phase="${phase.id}">
+                    html += `<div class="${rowClass} border-b border-r border-slate-700/10 px-0.5 flex items-center" data-phase="${phase.id}">
                         ${taskBar}
                     </div>`;
                 }
@@ -790,15 +860,24 @@
             if (btn.dataset.filter == phaseId) btn.classList.add('active');
         });
 
-        // Update rows
-        document.querySelectorAll('.phase-row').forEach(row => {
-            const rowPhase = row.dataset.phase;
-            if (phaseId === 'all' || rowPhase == phaseId) {
-                row.classList.remove('dimmed');
-            } else {
-                row.classList.add('dimmed');
+        // Si se selecciona una fase específica que no está en el rango activo de semanas,
+        // restauramos automáticamente el rango a 'all' para asegurar su visualización
+        if (phaseId !== 'all') {
+            const sel = phases.find(p => p.id == phaseId);
+            if (sel) {
+                const { start: minW, end: maxW } = getWeekRange();
+                if (sel.startWeek > maxW || sel.endWeek < minW) {
+                    activeWeekRange = 'all';
+                    updateQuadrantButtons('all');
+                }
             }
-        });
+        }
+
+        renderGantt();
+
+        if (activeGanttView === 'phases') {
+            renderMobilePhases();
+        }
     }
 
     function toggleProgress() {
@@ -844,18 +923,29 @@
     let activeGanttView = 'grid';
     let activeWeekRange = 'all';
 
+    function updateQuadrantButtons(range) {
+        document.querySelectorAll('.gantt-quad-btn').forEach(b => {
+            b.classList.remove('bg-[#E84A5F]', 'text-white', 'shadow-xs');
+            b.classList.add('text-slate-300');
+            if (b.getAttribute('data-range') === range) {
+                b.classList.add('bg-[#E84A5F]', 'text-white', 'shadow-xs');
+                b.classList.remove('text-slate-300');
+            }
+        });
+    }
+
     function switchGanttView(view) {
         activeGanttView = view;
         const gridCard = document.getElementById('ganttGridCard');
         const phasesView = document.getElementById('mobilePhasesView');
-        const quadBar = document.getElementById('ganttQuadrantBar');
+        const swipeHint = document.getElementById('ganttSwipeHint');
         const btnG = document.getElementById('btnGanttGrid');
         const btnP = document.getElementById('btnGanttPhases');
 
         if (view === 'phases') {
             if (gridCard) gridCard.classList.add('hidden');
             if (phasesView) phasesView.classList.remove('hidden');
-            if (quadBar) quadBar.classList.add('hidden');
+            if (swipeHint) swipeHint.classList.add('hidden');
             if (btnP) {
                 btnP.classList.add('bg-[#E84A5F]', 'text-white');
                 btnP.classList.remove('text-slate-300');
@@ -868,7 +958,7 @@
         } else {
             if (phasesView) phasesView.classList.add('hidden');
             if (gridCard) gridCard.classList.remove('hidden');
-            if (quadBar) quadBar.classList.remove('hidden');
+            if (swipeHint) swipeHint.classList.remove('hidden');
             if (btnG) {
                 btnG.classList.add('bg-[#E84A5F]', 'text-white');
                 btnG.classList.remove('text-slate-300');
@@ -877,40 +967,54 @@
                 btnP.classList.remove('bg-[#E84A5F]', 'text-white');
                 btnP.classList.add('text-slate-300');
             }
+            renderGantt();
         }
     }
 
     function filterGanttWeeks(range, btn) {
         activeWeekRange = range;
-        document.querySelectorAll('.gantt-quad-btn').forEach(b => {
-            b.classList.remove('bg-[#E84A5F]', 'text-white');
-            b.classList.add('text-slate-300');
-        });
-        if (btn) {
-            btn.classList.add('bg-[#E84A5F]', 'text-white');
-            btn.classList.remove('text-slate-300');
-        }
+        updateQuadrantButtons(range);
 
-        const cols = document.querySelectorAll('.week-col');
-        cols.forEach(col => {
-            const w = parseInt(col.dataset.week);
-            if (range === 'all') {
-                col.style.display = '';
-            } else if (range === '1-4') {
-                col.style.display = (w >= 1 && w <= 4) ? '' : 'none';
-            } else if (range === '5-8') {
-                col.style.display = (w >= 5 && w <= 8) ? '' : 'none';
-            } else if (range === '9-12') {
-                col.style.display = (w >= 9 && w <= 12) ? '' : 'none';
-            }
-        });
+        renderGantt();
+
+        const container = document.querySelector('.gantt-container');
+        if (container) container.scrollLeft = 0;
+
+        if (activeGanttView === 'phases') {
+            renderMobilePhases();
+        }
     }
 
     function renderMobilePhases() {
         const list = document.getElementById('mobilePhasesList');
         if (!list) return;
-        list.innerHTML = phases.map(phase => {
-            const tasksHtml = phase.tasks.map(t => `
+
+        const { start: minW, end: maxW, label: rangeLabel } = getWeekRange();
+
+        const filtered = phases.filter(phase => {
+            if (activeFilter !== 'all' && phase.id != activeFilter) return false;
+            if (activeWeekRange === 'all') return true;
+            return phase.startWeek <= maxW && phase.endWeek >= minW;
+        });
+
+        if (filtered.length === 0) {
+            list.innerHTML = `
+                <div class="col-span-full text-center py-12 bg-slate-900/60 rounded-2xl border border-slate-800 text-slate-400">
+                    <span class="text-3xl block mb-2">🔍</span>
+                    <p class="font-bold text-white mb-1">Sin fases en este período</p>
+                    <p class="text-xs">No hay fases activas para ${rangeLabel.toLowerCase()}. Toca "Todas (12)" para ver el ciclo completo.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = filtered.map(phase => {
+            const visibleTasks = phase.tasks.filter(t => {
+                if (activeWeekRange === 'all') return true;
+                return t.start <= maxW && t.end >= minW;
+            });
+
+            const tasksHtml = visibleTasks.map(t => `
                 <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 text-xs">
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-white">${t.name}</span>
@@ -947,7 +1051,7 @@
 
                         <div class="p-3.5 space-y-3">
                             <div>
-                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tareas (${phase.tasks.length})</h5>
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tareas (${visibleTasks.length})</h5>
                                 <div class="space-y-2">${tasksHtml}</div>
                             </div>
 
